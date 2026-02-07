@@ -7,20 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Vendor extends Model
+class Product extends Model
 {
-    /** @use HasFactory<\Database\Factories\VendorFactory> */
+    /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
 
     /**
      * @var list<string>
      */
     protected $fillable = [
-        'user_id',
-        'store_name',
+        'vendor_id',
+        'name',
         'description',
-        'address',
-        'logo',
+        'price',
+        'quantity',
         'is_active',
     ];
 
@@ -30,23 +30,25 @@ class Vendor extends Model
     protected function casts(): array
     {
         return [
+            'price' => 'decimal:2',
+            'quantity' => 'integer',
             'is_active' => 'boolean',
         ];
     }
 
     /**
-     * The user account associated with this vendor.
+     * The vendor that owns this product.
      */
-    public function user(): BelongsTo
+    public function vendor(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Vendor::class);
     }
 
     /**
-     * The products belonging to this vendor.
+     * The photos for this product.
      */
-    public function products(): HasMany
+    public function photos(): HasMany
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(ProductPhoto::class)->orderBy('sort_order');
     }
 }

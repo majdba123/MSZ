@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Http\Resources;
+
+use App\Http\Resources\Admin\VendorResource;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class ProductResource extends JsonResource
+{
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'vendor_id' => $this->vendor_id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'price' => $this->price,
+            'quantity' => $this->quantity,
+            'is_active' => $this->is_active,
+            'photos' => ProductPhotoResource::collection($this->whenLoaded('photos')),
+            'vendor' => new VendorResource($this->whenLoaded('vendor')),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
+    }
+}

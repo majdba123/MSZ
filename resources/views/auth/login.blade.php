@@ -80,10 +80,21 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             window.Auth.setToken(response.data.data.token);
+
+            // Fetch user to determine redirect based on type
+            const userRes = await window.axios.get('/api/user');
+            const userType = userRes.data.type;
+
             showAlert('login-success', 'Signed in successfully! Redirecting...');
 
             setTimeout(() => {
-                window.location.href = '{{ url("/") }}';
+                if (userType === 1) {
+                    window.location.href = '{{ url("/admin/dashboard") }}';
+                } else if (userType === 2) {
+                    window.location.href = '{{ route("vendor.dashboard") }}';
+                } else {
+                    window.location.href = '{{ url("/") }}';
+                }
             }, 500);
         } catch (error) {
             handleErrors(error);

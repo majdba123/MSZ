@@ -9,6 +9,7 @@ use App\Http\Resources\Auth\UserResource;
 use App\Services\Auth\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -20,6 +21,9 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $result = $this->authService->register($request->validated());
+
+        // Establish web session alongside the API token
+        Auth::login($result['user']);
 
         return response()->json([
             'message' => __('User registered successfully.'),
@@ -37,6 +41,9 @@ class AuthController extends Controller
     {
         $result = $this->authService->login($request->validated());
 
+        // Establish web session alongside the API token
+        Auth::login($result['user']);
+
         return response()->json([
             'message' => __('Logged in successfully.'),
             'data' => [
@@ -52,6 +59,11 @@ class AuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         $this->authService->logout($request->user());
+
+        // Invalidate web session
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
             'message' => __('Logged out successfully.'),

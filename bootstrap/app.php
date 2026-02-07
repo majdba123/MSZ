@@ -17,11 +17,19 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('api/admin')
                 ->as('admin.')
                 ->group(base_path('routes/api_admin.php'));
+
+            Route::middleware(['api', 'auth:sanctum', 'vendor'])
+                ->prefix('api/vendor')
+                ->as('vendor.')
+                ->group(base_path('routes/api_vendor.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->statefulApi();
+        $middleware->validateCsrfTokens(except: ['api/*']);
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
+            'vendor' => \App\Http\Middleware\EnsureUserIsVendor::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

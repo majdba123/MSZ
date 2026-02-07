@@ -47,6 +47,19 @@
             @endif
         </a>
 
+        {{-- Products --}}
+        <a href="{{ route('admin.products.index') }}"
+           class="mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150
+                  {{ str_starts_with($currentRoute, 'admin.products') ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200' }}">
+            <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+            </svg>
+            Products
+            @if(str_starts_with($currentRoute, 'admin.products'))
+                <span class="ml-auto h-1.5 w-1.5 rounded-full bg-brand-400"></span>
+            @endif
+        </a>
+
         {{-- Users --}}
         <a href="{{ route('admin.users.index') }}"
            class="mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150

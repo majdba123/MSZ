@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Admin — SyriaZone')</title>
+    <title>@yield('title', 'Vendor — SyriaZone')</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700" rel="stylesheet" />
@@ -16,12 +16,12 @@
 <body class="min-h-screen bg-gray-50 font-sans text-gray-900 antialiased">
 
     {{-- Authenticated wrapper (hidden until verified) --}}
-    <div id="admin-app" class="hidden">
+    <div id="vendor-app" class="hidden">
         {{-- Mobile sidebar backdrop --}}
         <div id="sidebar-backdrop" class="fixed inset-0 z-40 hidden bg-gray-900/60 backdrop-blur-sm transition-opacity lg:hidden" onclick="closeSidebar()"></div>
 
         {{-- Sidebar --}}
-        <x-admin.sidebar />
+        <x-vendor.sidebar />
 
         {{-- Main Column --}}
         <div class="lg:pl-72">
@@ -42,10 +42,10 @@
                     {{-- Right side --}}
                     <div class="flex items-center gap-x-3">
                         <div class="hidden items-center gap-2 sm:flex">
-                            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700" id="admin-avatar">A</div>
-                            <span id="admin-name" class="text-sm font-medium text-gray-700"></span>
+                            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700" id="vendor-avatar">V</div>
+                            <span id="vendor-name" class="text-sm font-medium text-gray-700"></span>
                         </div>
-                        <button onclick="adminLogout()" class="btn-ghost btn-sm text-gray-500 hover:text-red-600" title="Sign Out">
+                        <button onclick="vendorLogout()" class="btn-ghost btn-sm text-gray-500 hover:text-red-600" title="Sign Out">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
                             <span class="hidden sm:inline">Sign Out</span>
                         </button>
@@ -61,15 +61,15 @@
     </div>
 
     {{-- Loading Screen --}}
-    <div id="admin-loading" class="flex min-h-screen items-center justify-center bg-gray-50">
+    <div id="vendor-loading" class="flex min-h-screen items-center justify-center bg-gray-50">
         <div class="text-center">
-            <div class="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500"></div>
-            <p class="mt-4 text-sm font-medium text-gray-500">Verifying access...</p>
+            <div class="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-emerald-500"></div>
+            <p class="mt-4 text-sm font-medium text-gray-500">Loading your store...</p>
         </div>
     </div>
 
     <script>
-        // Admin Auth Guard — redirect to main login if not authenticated or not admin
+        // Vendor Auth Guard
         document.addEventListener('DOMContentLoaded', async function () {
             if (!window.Auth || !window.Auth.isAuthenticated()) {
                 window.location.href = '{{ route("login") }}';
@@ -80,22 +80,23 @@
                 const response = await window.axios.get('/api/user');
                 const user = response.data;
 
-                if (user.type !== 1) {
+                if (user.type !== 2) {
+                    window.Auth.removeToken();
                     window.location.href = '{{ route("login") }}';
                     return;
                 }
 
-                document.getElementById('admin-name').textContent = user.name;
-                document.getElementById('admin-avatar').textContent = (user.name || 'A').charAt(0).toUpperCase();
-                document.getElementById('admin-loading').classList.add('hidden');
-                document.getElementById('admin-app').classList.remove('hidden');
+                document.getElementById('vendor-name').textContent = user.name;
+                document.getElementById('vendor-avatar').textContent = (user.name || 'V').charAt(0).toUpperCase();
+                document.getElementById('vendor-loading').classList.add('hidden');
+                document.getElementById('vendor-app').classList.remove('hidden');
             } catch (e) {
                 window.Auth.removeToken();
                 window.location.href = '{{ route("login") }}';
             }
         });
 
-        async function adminLogout() {
+        async function vendorLogout() {
             try { await window.axios.post('/api/auth/logout'); } catch (e) {}
             window.Auth.removeToken();
             window.location.href = '{{ route("login") }}';
@@ -106,7 +107,7 @@
             const toggle = document.getElementById('sidebar-toggle');
             if (toggle) {
                 toggle.addEventListener('click', function () {
-                    document.getElementById('admin-sidebar').classList.remove('-translate-x-full');
+                    document.getElementById('vendor-sidebar').classList.remove('-translate-x-full');
                     document.getElementById('sidebar-backdrop').classList.remove('hidden');
                     document.body.classList.add('overflow-hidden', 'lg:overflow-auto');
                 });
@@ -114,7 +115,7 @@
         });
 
         function closeSidebar() {
-            document.getElementById('admin-sidebar').classList.add('-translate-x-full');
+            document.getElementById('vendor-sidebar').classList.add('-translate-x-full');
             document.getElementById('sidebar-backdrop').classList.add('hidden');
             document.body.classList.remove('overflow-hidden', 'lg:overflow-auto');
         }
@@ -123,3 +124,4 @@
     @stack('scripts')
 </body>
 </html>
+

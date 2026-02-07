@@ -1,26 +1,20 @@
 <?php
 
-use App\Http\Controllers\Api\Admin\ProductController;
-use App\Http\Controllers\Api\Admin\ProductPhotoController;
-use App\Http\Controllers\Api\Admin\UserController;
-use App\Http\Controllers\Api\Admin\VendorController;
+use App\Http\Controllers\Api\Vendor\ProductController;
+use App\Http\Controllers\Api\Vendor\ProductPhotoController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Admin API Routes
+| Vendor API Routes
 |--------------------------------------------------------------------------
 |
-| Routes for admin-only operations. All routes here are prefixed with
-| /api/admin and protected by auth:sanctum + admin middleware.
+| Routes for vendor-only operations. All routes here are prefixed with
+| /api/vendor and protected by auth:sanctum + vendor middleware.
 |
 */
 
-Route::apiResource('vendors', VendorController::class);
-Route::patch('vendors/{vendor}/toggle-active', [VendorController::class, 'toggleActive'])->name('vendors.toggle-active');
-Route::apiResource('users', UserController::class);
 Route::apiResource('products', ProductController::class);
-Route::patch('products/{product}/toggle-active', [ProductController::class, 'toggleActive'])->name('products.toggle-active');
 
 // Product Photos (separate API)
 Route::get('products/{product}/photos', [ProductPhotoController::class, 'index'])->name('products.photos.index');

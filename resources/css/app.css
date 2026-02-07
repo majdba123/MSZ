@@ -6,6 +6,160 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* SyriaZone brand colors */
+    --color-brand-50: #fff7ed;
+    --color-brand-100: #ffedd5;
+    --color-brand-200: #fed7aa;
+    --color-brand-300: #fdba74;
+    --color-brand-400: #fb923c;
+    --color-brand-500: #f97316;
+    --color-brand-600: #ea580c;
+    --color-brand-700: #c2410c;
+    --color-brand-800: #9a3412;
+    --color-brand-900: #7c2d12;
+
+    --color-navy-700: #232f3e;
+    --color-navy-800: #1a242f;
+    --color-navy-900: #131921;
+}
+
+/* Custom scrollbar */
+@layer base {
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
+}
+
+@layer components {
+    /* ── Form Controls ── */
+    .form-input {
+        @apply block w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 shadow-sm transition-all duration-150 placeholder:text-gray-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none;
+    }
+
+    .form-select {
+        @apply block w-full appearance-none rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 pr-10 text-sm text-gray-900 shadow-sm transition-all duration-150 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+    }
+
+    .form-textarea {
+        @apply block w-full resize-none rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 shadow-sm transition-all duration-150 placeholder:text-gray-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none;
+    }
+
+    .form-label {
+        @apply mb-1.5 block text-sm font-medium text-gray-700;
+    }
+
+    .form-error {
+        @apply mt-1 hidden text-xs text-red-600;
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-600 focus:ring-2 focus:ring-brand-500/50 focus:ring-offset-2 focus:outline-none active:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 focus:ring-2 focus:ring-gray-500/20 focus:ring-offset-2 focus:outline-none active:bg-gray-100;
+    }
+
+    .btn-danger {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-red-700 focus:ring-2 focus:ring-red-500/50 focus:ring-offset-2 focus:outline-none active:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .btn-ghost {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-all duration-150 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-gray-500/20 focus:outline-none;
+    }
+
+    .btn-sm {
+        @apply px-3 py-1.5 text-xs;
+    }
+
+    .btn-xs {
+        @apply px-2 py-1 text-xs;
+    }
+
+    /* ── Cards ── */
+    .card {
+        @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+    }
+
+    .card-body {
+        @apply p-5 sm:p-6;
+    }
+
+    /* ── Badges ── */
+    .badge {
+        @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+    }
+
+    .badge-success {
+        @apply bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20 ring-inset;
+    }
+
+    .badge-danger {
+        @apply bg-red-50 text-red-700 ring-1 ring-red-600/20 ring-inset;
+    }
+
+    .badge-warning {
+        @apply bg-amber-50 text-amber-700 ring-1 ring-amber-600/20 ring-inset;
+    }
+
+    .badge-info {
+        @apply bg-blue-50 text-blue-700 ring-1 ring-blue-600/20 ring-inset;
+    }
+
+    .badge-purple {
+        @apply bg-purple-50 text-purple-700 ring-1 ring-purple-600/20 ring-inset;
+    }
+
+    .badge-brand {
+        @apply bg-brand-50 text-brand-700 ring-1 ring-brand-600/20 ring-inset;
+    }
+
+    /* ── Toggle Switch ── */
+    .toggle-switch {
+        @apply relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:outline-none;
+    }
+
+    .toggle-switch-dot {
+        @apply pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out;
+    }
+
+    /* ── Table ── */
+    .admin-table {
+        @apply min-w-full divide-y divide-gray-200;
+    }
+
+    .admin-table thead {
+        @apply bg-gray-50;
+    }
+
+    .admin-table th {
+        @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500;
+    }
+
+    .admin-table td {
+        @apply px-4 py-3.5 text-sm;
+    }
+
+    .admin-table tbody tr {
+        @apply border-b border-gray-100 transition-colors hover:bg-gray-50/50;
+    }
 }

@@ -170,9 +170,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     window.removeSelectedPhotos = async function () {
         if (selectedIds.size === 0) return;
+        if (!confirm(`Remove ${selectedIds.size} photo(s)?`)) return;
+
         try {
             await window.axios.delete('/api/admin/products/' + productId + '/photos', {
                 data: { photo_ids: Array.from(selectedIds) },
+                headers: { 'Content-Type': 'application/json' },
             });
             existingPhotos = existingPhotos.filter(p => !selectedIds.has(p.id));
             selectedIds.clear();

@@ -91,7 +91,17 @@ class ProductPhotoController extends Controller
      */
     private function authorizeOwnership(Request $request, Product $product): void
     {
-        if ($product->vendor_id !== $request->user()->vendor->id) {
+        $user = $request->user();
+        if (! $user) {
+            abort(401, __('Unauthenticated.'));
+        }
+
+        $vendor = $user->vendor;
+        if (! $vendor) {
+            abort(403, __('Vendor profile not found.'));
+        }
+
+        if ($product->vendor_id !== $vendor->id) {
             abort(403, __('You do not own this product.'));
         }
     }

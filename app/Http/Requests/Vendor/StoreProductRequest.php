@@ -21,9 +21,22 @@ class StoreProductRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:2000'],
             'price' => ['required', 'numeric', 'min:0'],
             'quantity' => ['required', 'integer', 'min:0'],
-            'is_active' => ['sometimes', 'boolean'],
+            'is_active' => ['sometimes', 'boolean', 'nullable'],
             'photos' => ['nullable', 'array', 'max:10'],
-            'photos.*' => ['image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
+            'photos.*' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Convert string '1'/'0' to boolean for is_active
+        if ($this->has('is_active')) {
+            $this->merge([
+                'is_active' => filter_var($this->input('is_active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
+            ]);
+        }
     }
 }

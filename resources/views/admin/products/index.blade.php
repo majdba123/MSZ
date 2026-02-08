@@ -35,31 +35,15 @@
         </div>
     </div>
 
-    {{-- Table --}}
-    <div id="products-table-wrapper" class="hidden">
-        <div class="card overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th class="w-12">#</th>
-                            <th>Product</th>
-                            <th class="hidden sm:table-cell">Price</th>
-                            <th class="hidden md:table-cell">Qty</th>
-                            <th>Status</th>
-                            <th class="text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="products-tbody"></tbody>
-                </table>
-            </div>
+    {{-- Products Grid --}}
+    <div id="products-grid-wrapper" class="hidden">
+        <div id="products-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
 
-            <div class="flex flex-col items-center gap-3 border-t border-gray-100 px-4 py-3 sm:flex-row sm:justify-between">
-                <p id="products-info" class="text-xs text-gray-500"></p>
-                <div class="flex gap-2">
-                    <button id="prev-page" class="btn-secondary btn-xs" disabled>Prev</button>
-                    <button id="next-page" class="btn-secondary btn-xs" disabled>Next</button>
-                </div>
+        <div class="mt-4 flex flex-col items-center gap-3 border-t border-gray-100 px-4 py-3 sm:flex-row sm:justify-between">
+            <p id="products-info" class="text-xs text-gray-500"></p>
+            <div class="flex gap-2">
+                <button id="prev-page" class="btn-secondary btn-xs" disabled>Prev</button>
+                <button id="next-page" class="btn-secondary btn-xs" disabled>Next</button>
             </div>
         </div>
     </div>
@@ -112,38 +96,56 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderProducts(products) {
-        const tbody = document.getElementById('products-tbody');
-        const tableW = document.getElementById('products-table-wrapper');
+        const grid = document.getElementById('products-grid');
+        const gridW = document.getElementById('products-grid-wrapper');
         const empty = document.getElementById('products-empty');
 
-        if (!products || products.length === 0) { tableW.classList.add('hidden'); empty.classList.remove('hidden'); return; }
-        empty.classList.add('hidden'); tableW.classList.remove('hidden');
+        if (!products || products.length === 0) { gridW.classList.add('hidden'); empty.classList.remove('hidden'); return; }
+        empty.classList.add('hidden'); gridW.classList.remove('hidden');
 
-        tbody.innerHTML = products.map(p => `<tr class="group">
-                <td class="font-medium text-gray-400">${p.id}</td>
-                <td>
-                    <p class="text-sm font-semibold text-gray-900">${esc(p.name)}</p>
-                    <p class="mt-0.5 truncate text-xs text-gray-500 max-w-[220px]">${esc(p.description || '')}</p>
-                </td>
-                <td class="hidden sm:table-cell"><span class="font-semibold text-gray-900">$${parseFloat(p.price).toFixed(2)}</span></td>
-                <td class="hidden md:table-cell"><span class="text-gray-700">${p.quantity}</span></td>
-                <td>
-                    <button onclick="toggleProductStatus(${p.id})" class="badge cursor-pointer transition-opacity hover:opacity-80 ${p.is_active ? 'badge-success' : 'badge-danger'}" title="Click to toggle">
-                        <span class="mr-1 inline-block h-1.5 w-1.5 rounded-full ${p.is_active ? 'bg-emerald-500' : 'bg-red-500'}"></span>
-                        ${p.is_active ? 'Active' : 'Inactive'}
-                    </button>
-                </td>
-                <td class="text-right">
-                    <div class="flex items-center justify-end gap-1">
-                        <a href="/admin/products/${p.id}/edit" class="btn-ghost btn-xs text-gray-600" title="Edit">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
-                        </a>
-                        <button onclick="openDeleteModal(${p.id})" class="btn-ghost btn-xs text-red-500 hover:text-red-700" title="Delete">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+        grid.innerHTML = products.map(p => {
+            const photoUrl = p.first_photo_url || null;
+            return `<div class="group card overflow-hidden transition-shadow hover:shadow-lg">
+                <div class="relative aspect-square overflow-hidden bg-gray-100">
+                    ${photoUrl
+                        ? `<img src="${photoUrl}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" alt="${esc(p.name)}">`
+                        : `<div class="flex h-full w-full items-center justify-center text-gray-300">
+                            <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+                        </div>`
+                    }
+                    <div class="absolute right-2 top-2">
+                        <button onclick="toggleProductStatus(${p.id})" class="badge ${p.is_active ? 'badge-success' : 'badge-danger'} shadow-lg">
+                            <span class="mr-1 inline-block h-1.5 w-1.5 rounded-full ${p.is_active ? 'bg-emerald-500' : 'bg-red-500'}"></span>
+                            ${p.is_active ? 'Active' : 'Inactive'}
                         </button>
                     </div>
-                </td>
-            </tr>`).join('');
+                </div>
+                <div class="card-body">
+                    <h3 class="text-base font-semibold text-gray-900 line-clamp-1">${esc(p.name)}</h3>
+                    <p class="mt-1 text-xs text-gray-500 line-clamp-2">${esc(p.description || 'No description')}</p>
+                    <div class="mt-3 flex items-center justify-between">
+                        <div>
+                            <p class="text-lg font-bold text-gray-900">$${parseFloat(p.price || 0).toFixed(2)}</p>
+                            <p class="text-xs text-gray-500">Qty: ${p.quantity}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex gap-2 border-t border-gray-100 pt-3">
+                        <a href="/admin/products/${p.id}" class="btn-secondary btn-xs flex-1 text-center">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            Show
+                        </a>
+                        <a href="/admin/products/${p.id}/edit" class="btn-primary btn-xs flex-1 text-center">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                            Edit
+                        </a>
+                        <button onclick="openDeleteModal(${p.id})" class="btn-danger btn-xs flex-1">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
     }
 
     function renderPagination(meta) {

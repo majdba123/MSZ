@@ -25,7 +25,16 @@ class ProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $vendor = $request->user()->vendor;
+        $user = $request->user();
+        if (! $user) {
+            abort(401, __('Unauthenticated.'));
+        }
+
+        $vendor = $user->vendor;
+        if (! $vendor) {
+            abort(403, __('Vendor profile not found.'));
+        }
+
         $products = $this->productService->listForVendor($vendor);
 
         return response()->json([
@@ -60,7 +69,16 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request): JsonResponse
     {
-        $vendor = $request->user()->vendor;
+        $user = $request->user();
+        if (! $user) {
+            abort(401, __('Unauthenticated.'));
+        }
+
+        $vendor = $user->vendor;
+        if (! $vendor) {
+            abort(403, __('Vendor profile not found.'));
+        }
+
         $validated = $request->validated();
         $photos = $request->file('photos', []);
         unset($validated['photos']);
@@ -112,7 +130,17 @@ class ProductController extends Controller
      */
     private function authorizeVendorOwnership(Request $request, Product $product): void
     {
-        if ($product->vendor_id !== $request->user()->vendor->id) {
+        $user = $request->user();
+        if (! $user) {
+            abort(401, __('Unauthenticated.'));
+        }
+
+        $vendor = $user->vendor;
+        if (! $vendor) {
+            abort(403, __('Vendor profile not found.'));
+        }
+
+        if ($product->vendor_id !== $vendor->id) {
             abort(403, __('You do not own this product.'));
         }
     }

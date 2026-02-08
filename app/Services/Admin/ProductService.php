@@ -8,11 +8,14 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 class ProductService
 {
     /**
-     * Get paginated products (no eager loading — slim list).
+     * Get paginated products with first photo (optimized for list).
      */
     public function list(int $perPage = 15): LengthAwarePaginator
     {
         return Product::query()
+            ->with(['photos' => function ($query) {
+                $query->orderBy('sort_order')->limit(1);
+            }])
             ->latest()
             ->paginate($perPage);
     }

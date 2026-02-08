@@ -14,6 +14,8 @@ class ProductListResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $firstPhoto = $this->whenLoaded('photos') ? $this->photos->first() : null;
+
         return [
             'id' => $this->id,
             'vendor_id' => $this->vendor_id,
@@ -22,6 +24,7 @@ class ProductListResource extends JsonResource
             'price' => $this->price,
             'quantity' => $this->quantity,
             'is_active' => $this->is_active,
+            'first_photo_url' => $firstPhoto ? asset('storage/'.$firstPhoto->path) : null,
         ];
     }
 }

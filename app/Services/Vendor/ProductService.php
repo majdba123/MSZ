@@ -9,11 +9,14 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 class ProductService
 {
     /**
-     * Get paginated products for the given vendor (no eager loading — slim list).
+     * Get paginated products for the given vendor with first photo (optimized for list).
      */
     public function listForVendor(Vendor $vendor, int $perPage = 15): LengthAwarePaginator
     {
         return $vendor->products()
+            ->with(['photos' => function ($query) {
+                $query->orderBy('sort_order')->limit(1);
+            }])
             ->latest()
             ->paginate($perPage);
     }

@@ -79,11 +79,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 password: form.password.value,
             });
 
+            // Set token for future API requests
             window.Auth.setToken(response.data.data.token);
 
-            // Fetch user to determine redirect based on type
-            const userRes = await window.axios.get('/api/user');
-            const userType = userRes.data.type;
+            // Get user type from login response (no need for separate API call)
+            const userType = response.data.data.user?.type;
 
             showAlert('login-success', 'Signed in successfully! Redirecting...');
 

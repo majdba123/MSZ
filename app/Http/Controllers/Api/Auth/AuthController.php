@@ -58,12 +58,27 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $this->authService->logout($request->user());
+        $user = $request->user();
 
-        // Invalidate web session
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Revoke Sanctum token if user exists
+        if ($user) {
+            $this->authService->logout($user);
+        }
+
+        // Invalidate web session if it exists
+        if (Auth::guard('web')->check()) {
+            Auth::guard('web')->logout();
+        }
+
+        // Safely invalidate session
+        try {
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
+        } catch (\Exception $e) {
+            // Session might not exist, ignore
+        }
 
         return response()->json([
             'message' => __('Logged out successfully.'),

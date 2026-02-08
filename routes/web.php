@@ -56,6 +56,10 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'vendor'])->group(fu
     Route::get('/products/{id}/edit', function (string $id) {
         return view('vendor.products.edit', ['productId' => $id]);
     })->name('products.edit');
+
+    Route::get('/products/{id}', function (string $id) {
+        return view('vendor.products.show', ['productId' => $id]);
+    })->name('products.show');
 });
 
 /*
@@ -103,6 +107,10 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'admin'])->group(funct
     Route::get('/products/{id}/edit', function (string $id) {
         return view('admin.products.edit', ['productId' => $id]);
     })->name('products.edit');
+
+    Route::get('/products/{id}', function (string $id) {
+        return view('admin.products.show', ['productId' => $id]);
+    })->name('products.show');
 
     // User Management
     Route::get('/users', function () {

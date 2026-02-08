@@ -26,7 +26,7 @@
     </div>
 
     {{-- Stats Grid --}}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
         {{-- Total Users --}}
         <div class="card card-body">
             <div class="flex items-start justify-between">
@@ -78,10 +78,57 @@
                 </div>
             </div>
         </div>
+
+        {{-- Total Products --}}
+        <div class="card card-body">
+            <div class="flex items-start justify-between">
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-xs font-semibold uppercase tracking-wider text-gray-500">Total Products</p>
+                    <p id="stat-products" class="mt-2 text-2xl font-bold text-gray-900">—</p>
+                </div>
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- Active Products --}}
+        <div class="card card-body">
+            <div class="flex items-start justify-between">
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-xs font-semibold uppercase tracking-wider text-gray-500">Active Products</p>
+                    <p id="stat-active-products" class="mt-2 text-2xl font-bold text-emerald-600">—</p>
+                </div>
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Recent Products --}}
+    <div class="card">
+        <div class="card-body border-b border-gray-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">Recent Products</h3>
+                    <p class="mt-0.5 text-sm text-gray-500">Latest products added to the platform</p>
+                </div>
+                <a href="{{ route('admin.products.index') }}" class="btn-secondary btn-xs">View All</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="recent-products" class="space-y-3">
+                <div class="py-8 text-center">
+                    <div class="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-gray-200 border-t-brand-500"></div>
+                    <p class="mt-2 text-sm text-gray-500">Loading products...</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- Quick links --}}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <a href="{{ route('admin.vendors.index') }}" class="card card-body group flex items-center gap-4 transition-shadow hover:shadow-md">
             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35"/></svg>
@@ -103,6 +150,17 @@
             </div>
             <svg class="h-5 w-5 shrink-0 text-gray-400 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
         </a>
+
+        <a href="{{ route('admin.products.index') }}" class="card card-body group flex items-center gap-4 transition-shadow hover:shadow-md">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-600 transition-colors group-hover:bg-purple-100">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold text-gray-900">Manage Products</p>
+                <p class="text-xs text-gray-500">View, edit, and manage all products</p>
+            </div>
+            <svg class="h-5 w-5 shrink-0 text-gray-400 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+        </a>
     </div>
 </div>
 @endsection
@@ -111,9 +169,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', async function () {
     try {
-        const [usersRes, vendorsRes] = await Promise.all([
+        const [usersRes, vendorsRes, productsRes] = await Promise.all([
             window.axios.get('/api/admin/users?page=1'),
             window.axios.get('/api/admin/vendors?page=1'),
+            window.axios.get('/api/admin/products?page=1&per_page=5'),
         ]);
 
         document.getElementById('stat-users').textContent = usersRes.data.meta?.total ?? '0';
@@ -127,8 +186,45 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         document.getElementById('stat-active-vendors').textContent = active;
         document.getElementById('stat-inactive-vendors').textContent = inactive;
+
+        const totalProducts = productsRes.data.meta?.total ?? 0;
+        document.getElementById('stat-products').textContent = totalProducts;
+
+        const products = productsRes.data.data || [];
+        let activeProducts = 0;
+        products.forEach(p => { if (p.is_active) activeProducts++; });
+        document.getElementById('stat-active-products').textContent = activeProducts;
+
+        // Render recent products
+        const productsContainer = document.getElementById('recent-products');
+        if (products.length === 0) {
+            productsContainer.innerHTML = '<p class="py-8 text-center text-sm text-gray-400">No products yet.</p>';
+        } else {
+            productsContainer.innerHTML = products.map(p => `
+                <a href="/admin/products/${p.id}" class="group flex items-center gap-3 rounded-lg border border-gray-200 p-3 transition-colors hover:border-brand-300 hover:bg-brand-50/50">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm font-semibold text-gray-900">${esc(p.name)}</p>
+                        <p class="text-xs text-gray-500">$${parseFloat(p.price || 0).toFixed(2)} · Qty: ${p.quantity}</p>
+                    </div>
+                    <span class="badge ${p.is_active ? 'badge-success' : 'badge-danger'}">
+                        ${p.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-gray-400 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                </a>
+            `).join('');
+        }
     } catch (e) {
         // Stats unavailable
+    }
+
+    function esc(t) {
+        if (!t) return '';
+        const d = document.createElement('div');
+        d.textContent = t;
+        return d.innerHTML;
     }
 });
 </script>

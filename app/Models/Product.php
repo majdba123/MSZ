@@ -12,6 +12,12 @@ class Product extends Model
     /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
 
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_APPROVED = 'approved';
+
+    public const STATUS_REJECTED = 'rejected';
+
     /**
      * @var list<string>
      */
@@ -22,6 +28,8 @@ class Product extends Model
         'price',
         'quantity',
         'is_active',
+        'status',
+        'primary_photo_id',
     ];
 
     /**
@@ -50,5 +58,13 @@ class Product extends Model
     public function photos(): HasMany
     {
         return $this->hasMany(ProductPhoto::class)->orderBy('sort_order');
+    }
+
+    /**
+     * The primary photo for this product.
+     */
+    public function primaryPhoto(): BelongsTo
+    {
+        return $this->belongsTo(ProductPhoto::class, 'primary_photo_id');
     }
 }

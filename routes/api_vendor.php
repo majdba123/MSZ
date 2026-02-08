@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\Vendor\ProductController;
-use App\Http\Controllers\Api\Vendor\ProductPhotoController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProductPhotoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::apiResource('products', ProductController::class);
+Route::patch('products/{product}/photos/{photo}/set-primary', [ProductController::class, 'setPrimaryPhoto'])->name('products.set-primary-photo');
 
 // Product Photos (separate API)
 Route::get('products/{product}/photos', [ProductPhotoController::class, 'index'])->name('products.photos.index');

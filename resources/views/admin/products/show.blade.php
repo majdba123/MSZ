@@ -36,8 +36,16 @@
 
             <div class="card-body">
                 <div class="mb-6 rounded-lg bg-gray-50 px-4 py-3">
-                    <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Vendor</p>
-                    <p class="mt-1 text-sm font-semibold text-gray-900" id="product-vendor">—</p>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Vendor</p>
+                            <p class="mt-1 text-sm font-semibold text-gray-900" id="product-vendor">—</p>
+                        </div>
+                        <a id="view-vendor-link" href="#" class="btn-secondary btn-xs">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            View Vendor
+                        </a>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -98,6 +106,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         const vendorName = p.vendor?.store_name || '—';
         const ownerName = p.vendor?.user?.name || '';
         document.getElementById('product-vendor').textContent = vendorName + (ownerName ? ' — ' + ownerName : '');
+
+        // Set vendor link if vendor exists
+        if (p.vendor?.id) {
+            document.getElementById('view-vendor-link').href = '/admin/vendors/' + p.vendor.id;
+        } else {
+            document.getElementById('view-vendor-link').classList.add('hidden');
+        }
 
         const statusBadge = p.is_active
             ? '<span class="badge badge-success"><span class="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Active</span>'

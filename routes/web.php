@@ -91,6 +91,10 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'admin'])->group(funct
         return view('admin.vendors.create');
     })->name('vendors.create');
 
+    Route::get('/vendors/{id}', function (string $id) {
+        return view('admin.vendors.show', ['vendorId' => $id]);
+    })->name('vendors.show');
+
     Route::get('/vendors/{id}/edit', function (string $id) {
         return view('admin.vendors.edit', ['vendorId' => $id]);
     })->name('vendors.edit');

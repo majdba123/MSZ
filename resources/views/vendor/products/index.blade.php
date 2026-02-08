@@ -14,6 +14,25 @@
         </a>
     </div>
 
+    {{-- Filters --}}
+    <div class="card">
+        <div class="card-body">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div class="flex-1">
+                    <label for="filter-status" class="form-label">Filter by Status</label>
+                    <select id="filter-status" class="form-input">
+                        <option value="">All Status</option>
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+                <div>
+                    <button id="clear-filters" class="btn-secondary btn-sm">Clear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <x-alert type="error" id="products-alert" />
     <x-alert type="success" id="products-success" />
 
@@ -74,18 +93,29 @@
 document.addEventListener('DOMContentLoaded', function () {
     let currentPage = 1;
     let deleteId = null;
+    const statusSelect = document.getElementById('filter-status');
 
     loadProducts();
 
-    document.getElementById('prev-page').addEventListener('click', () => { currentPage--; loadProducts(); });
+    document.getElementById('prev-page').addEventListener('click', () => { currentPage = 1; loadProducts(); });
     document.getElementById('next-page').addEventListener('click', () => { currentPage++; loadProducts(); });
     document.getElementById('delete-cancel').addEventListener('click', closeDeleteModal);
     document.getElementById('delete-confirm').addEventListener('click', confirmDelete);
+    document.getElementById('clear-filters').addEventListener('click', () => {
+        statusSelect.value = '';
+        currentPage = 1;
+        loadProducts();
+    });
+
+    statusSelect.addEventListener('change', () => { currentPage = 1; loadProducts(); });
 
     async function loadProducts() {
         showLoading(true);
         try {
-            const res = await window.axios.get('/api/vendor/products?page=' + currentPage);
+            const params = new URLSearchParams({ page: currentPage });
+            if (statusSelect.value !== '') params.append('is_active', statusSelect.value);
+
+            const res = await window.axios.get('/api/vendor/products?' + params.toString());
             renderProducts(res.data.data);
             renderPagination(res.data.meta);
         } catch (e) {

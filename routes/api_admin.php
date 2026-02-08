@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\Admin\ProductController;
-use App\Http\Controllers\Api\Admin\ProductPhotoController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProductPhotoController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\VendorController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +21,8 @@ Route::patch('vendors/{vendor}/toggle-active', [VendorController::class, 'toggle
 Route::apiResource('users', UserController::class);
 Route::apiResource('products', ProductController::class);
 Route::patch('products/{product}/toggle-active', [ProductController::class, 'toggleActive'])->name('products.toggle-active');
+Route::patch('products/{product}/status', [ProductController::class, 'updateStatus'])->name('products.update-status');
+Route::patch('products/{product}/photos/{photo}/set-primary', [ProductController::class, 'setPrimaryPhoto'])->name('products.set-primary-photo');
 
 // Product Photos (separate API)
 Route::get('products/{product}/photos', [ProductPhotoController::class, 'index'])->name('products.photos.index');

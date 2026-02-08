@@ -16,15 +16,16 @@ class ProductListResource extends JsonResource
     {
         $firstPhoto = $this->whenLoaded('photos') ? $this->photos->first() : null;
 
-        return [
-            'id' => $this->id,
-            'vendor_id' => $this->vendor_id,
-            'name' => $this->name,
-            'description' => $this->description,
-            'price' => $this->price,
-            'quantity' => $this->quantity,
-            'is_active' => $this->is_active,
-            'first_photo_url' => $firstPhoto ? asset('storage/'.$firstPhoto->path) : null,
-        ];
+            return [
+                'id' => $this->id,
+                'vendor_id' => $this->vendor_id,
+                'name' => $this->name,
+                'description' => $this->description,
+                'price' => $this->price,
+                'quantity' => $this->quantity,
+                'is_active' => $this->is_active,
+                'status' => $this->status,
+                'first_photo_url' => $firstPhoto ? asset('storage/'.$firstPhoto->path) : null,
+            ];
     }
 }

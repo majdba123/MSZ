@@ -1,25 +1,28 @@
 <?php
 
-namespace App\Http\Controllers\Api\Vendor;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductPhotoResource;
 use App\Models\Product;
 use App\Models\ProductPhoto;
-use App\Services\ProductPhotoService;
+use App\Models\User;
+use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProductPhotoController extends Controller
 {
-    public function __construct(public ProductPhotoService $photoService) {}
+    public function __construct(public ProductService $productService) {}
 
     /**
      * List photos for a product.
+     * Admin: can view any product's photos.
+     * Vendor: can only view their own product's photos.
      */
     public function index(Request $request, Product $product): JsonResponse
     {
-        $this->authorizeOwnership($request, $product);
+        $this->authorizeAccess($request, $product);
 
         $product->load('photos');
 
@@ -31,17 +34,19 @@ class ProductPhotoController extends Controller
 
     /**
      * Upload photos to a product.
+     * Admin: can upload to any product.
+     * Vendor: can only upload to their own products.
      */
     public function store(Request $request, Product $product): JsonResponse
     {
-        $this->authorizeOwnership($request, $product);
+        $this->authorizeAccess($request, $product);
 
         $request->validate([
             'photos' => ['required', 'array', 'min:1', 'max:10'],
             'photos.*' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
         ]);
 
-        $photos = $this->photoService->addPhotos($product, $request->file('photos'));
+        $photos = $this->productService->addPhotos($product, $request->file('photos'));
 
         return response()->json([
             'message' => __(':count photo(s) uploaded successfully.', ['count' => count($photos)]),
@@ -51,16 +56,18 @@ class ProductPhotoController extends Controller
 
     /**
      * Remove a single photo.
+     * Admin: can remove from any product.
+     * Vendor: can only remove from their own products.
      */
     public function destroy(Request $request, Product $product, ProductPhoto $photo): JsonResponse
     {
-        $this->authorizeOwnership($request, $product);
+        $this->authorizeAccess($request, $product);
 
         if ($photo->product_id !== $product->id) {
             abort(404);
         }
 
-        $this->photoService->removePhoto($photo);
+        $this->productService->removePhoto($photo);
 
         return response()->json([
             'message' => __('Photo deleted successfully.'),
@@ -69,17 +76,19 @@ class ProductPhotoController extends Controller
 
     /**
      * Bulk-remove photos by IDs.
+     * Admin: can remove from any product.
+     * Vendor: can only remove from their own products.
      */
     public function bulkDestroy(Request $request, Product $product): JsonResponse
     {
-        $this->authorizeOwnership($request, $product);
+        $this->authorizeAccess($request, $product);
 
         $request->validate([
             'photo_ids' => ['required', 'array', 'min:1'],
             'photo_ids.*' => ['required', 'integer', 'exists:product_photos,id'],
         ]);
 
-        $count = $this->photoService->removePhotos($product, $request->input('photo_ids'));
+        $count = $this->productService->removePhotos($product, $request->input('photo_ids'));
 
         return response()->json([
             'message' => __(':count photo(s) deleted successfully.', ['count' => $count]),
@@ -87,22 +96,24 @@ class ProductPhotoController extends Controller
     }
 
     /**
-     * Ensure the product belongs to the authenticated vendor.
+     * Authorize access to product photos.
+     * Admin: can access any product.
+     * Vendor: can only access their own products.
      */
-    private function authorizeOwnership(Request $request, Product $product): void
+    private function authorizeAccess(Request $request, Product $product): void
     {
         $user = $request->user();
-        if (! $user) {
-            abort(401, __('Unauthenticated.'));
-        }
 
-        $vendor = $user->vendor;
-        if (! $vendor) {
-            abort(403, __('Vendor profile not found.'));
+        // Vendor can only access their own products
+        if ($user && $user->type === User::TYPE_VENDOR) {
+            $vendor = $user->vendor;
+            if (! $vendor) {
+                abort(403, __('Vendor profile not found.'));
+            }
+            if ($product->vendor_id !== $vendor->id) {
+                abort(403, __('You do not own this product.'));
+            }
         }
-
-        if ($product->vendor_id !== $vendor->id) {
-            abort(403, __('You do not own this product.'));
-        }
+        // Admin has access to all products, no check needed
     }
 }

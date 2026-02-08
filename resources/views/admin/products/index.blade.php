@@ -14,6 +14,40 @@
         </a>
     </div>
 
+    {{-- Filters --}}
+    <div class="card">
+        <div class="card-body">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div class="flex-1">
+                    <label for="filter-vendor" class="form-label">Filter by Vendor</label>
+                    <select id="filter-vendor" class="form-input">
+                        <option value="">All Vendors</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label for="filter-product-status" class="form-label">Filter by Product Status</label>
+                    <select id="filter-product-status" class="form-input">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label for="filter-status" class="form-label">Filter by Active</label>
+                    <select id="filter-status" class="form-input">
+                        <option value="">All</option>
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button id="clear-filters" class="btn-secondary btn-sm">Clear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <x-alert type="error" id="products-alert" />
     <x-alert type="success" id="products-success" />
 
@@ -71,21 +105,49 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     let currentPage = 1;
     let deleteId = null;
+    const vendorSelect = document.getElementById('filter-vendor');
+    const statusSelect = document.getElementById('filter-status');
+
+    // Load vendors for filter
+    try {
+        const vendorsRes = await window.axios.get('/api/admin/vendors?per_page=100');
+        const vendors = vendorsRes.data.data || [];
+        vendorSelect.innerHTML = '<option value="">All Vendors</option>' +
+            vendors.map(v => `<option value="${v.id}">${esc(v.store_name)}</option>`).join('');
+    } catch (e) {
+        console.error('Failed to load vendors:', e);
+    }
 
     loadProducts();
 
-    document.getElementById('prev-page').addEventListener('click', () => { currentPage--; loadProducts(); });
+    document.getElementById('prev-page').addEventListener('click', () => { currentPage = 1; loadProducts(); });
     document.getElementById('next-page').addEventListener('click', () => { currentPage++; loadProducts(); });
     document.getElementById('delete-cancel').addEventListener('click', closeDeleteModal);
     document.getElementById('delete-confirm').addEventListener('click', confirmDelete);
+    document.getElementById('clear-filters').addEventListener('click', () => {
+        vendorSelect.value = '';
+        productStatusSelect.value = '';
+        statusSelect.value = '';
+        currentPage = 1;
+        loadProducts();
+    });
+
+    vendorSelect.addEventListener('change', () => { currentPage = 1; loadProducts(); });
+    productStatusSelect.addEventListener('change', () => { currentPage = 1; loadProducts(); });
+    statusSelect.addEventListener('change', () => { currentPage = 1; loadProducts(); });
 
     async function loadProducts() {
         showLoading(true);
         try {
-            const res = await window.axios.get('/api/admin/products?page=' + currentPage);
+            const params = new URLSearchParams({ page: currentPage });
+            if (vendorSelect.value) params.append('vendor_id', vendorSelect.value);
+            if (productStatusSelect.value) params.append('status', productStatusSelect.value);
+            if (statusSelect.value !== '') params.append('is_active', statusSelect.value);
+
+            const res = await window.axios.get('/api/admin/products?' + params.toString());
             renderProducts(res.data.data);
             renderPagination(res.data.meta);
         } catch (e) {

@@ -68,10 +68,23 @@
             </div>
         </div>
 
-        {{-- Photos Card --}}
+        {{-- Primary Photo Card --}}
         <div class="card">
             <div class="card-body border-b border-gray-100">
-                <h3 class="text-lg font-bold text-gray-900">Product Photos</h3>
+                <h3 class="text-lg font-bold text-gray-900">Primary Photo</h3>
+                <p class="mt-0.5 text-sm text-gray-500">Main product image</p>
+            </div>
+            <div class="card-body">
+                <div id="primary-photo-container" class="flex justify-center">
+                    <p class="text-sm text-gray-400 py-8">No primary photo available.</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- All Photos Card --}}
+        <div class="card">
+            <div class="card-body border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-900">All Product Photos</h3>
                 <p class="mt-0.5 text-sm text-gray-500" id="photo-count">0 photos</p>
             </div>
             <div class="card-body">
@@ -118,24 +131,39 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.getElementById('edit-link').href = '/vendor/products/' + productId + '/edit';
 
         const photos = p.photos || [];
-        const primaryPhotoId = p.primary_photo_id || null;
         document.getElementById('photo-count').textContent = photos.length + ' photo' + (photos.length !== 1 ? 's' : '');
 
-        const photosContainer = document.getElementById('product-photos');
-        if (photos.length === 0) {
-            photosContainer.innerHTML = '<p class="col-span-full text-center text-sm text-gray-400 py-8">No photos available.</p>';
+        // Display primary photo separately
+        const primaryPhoto = photos.find(photo => photo.is_primary === true);
+        const primaryPhotoContainer = document.getElementById('primary-photo-container');
+        if (primaryPhoto) {
+            primaryPhotoContainer.innerHTML = `
+                <div class="group relative max-w-md overflow-hidden rounded-xl border-2 border-blue-400 ring-2 ring-blue-200">
+                    <img src="${primaryPhoto.url}" class="h-auto w-full object-cover transition-transform group-hover:scale-105" alt="Primary product photo">
+                    <div class="absolute left-3 top-3 rounded bg-blue-500 px-2 py-1 text-xs font-semibold text-white">Primary Photo</div>
+                    <div class="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 transition-all group-hover:bg-black/50 group-hover:opacity-100">
+                        <button type="button" onclick="viewPhotoLarge('${primaryPhoto.url}')" title="View Large" class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg transition-all hover:bg-blue-600 group-hover:opacity-100">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
+                        </button>
+                    </div>
+                </div>
+            `;
         } else {
-            photosContainer.innerHTML = photos.map(photo => {
-                const isPrimary = photo.id === primaryPhotoId;
-                return `<div class="group relative aspect-square overflow-hidden rounded-lg border-2 transition-colors ${isPrimary ? 'border-blue-400 ring-2 ring-blue-200' : 'border-gray-200'}">
+            primaryPhotoContainer.innerHTML = '<p class="text-sm text-gray-400 py-8">No primary photo available.</p>';
+        }
+
+        // Display all photos (excluding primary if it exists)
+        const otherPhotos = photos.filter(photo => photo.is_primary !== true);
+        const photosContainer = document.getElementById('product-photos');
+        if (otherPhotos.length === 0) {
+            photosContainer.innerHTML = '<p class="col-span-full text-center text-sm text-gray-400 py-8">No additional photos available.</p>';
+        } else {
+            photosContainer.innerHTML = otherPhotos.map(photo => {
+                return `<div class="group relative aspect-square overflow-hidden rounded-lg border-2 border-gray-200 transition-colors">
                     <img src="${photo.url}" class="h-full w-full object-cover transition-transform group-hover:scale-105" alt="">
-                    ${isPrimary ? '<div class="absolute left-2 top-2 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">Primary</div>' : ''}
                     <div class="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 transition-all group-hover:bg-black/50 group-hover:opacity-100">
                         <button type="button" onclick="viewPhotoLarge('${photo.url}')" title="View Large" class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg transition-all hover:bg-blue-600 group-hover:opacity-100">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
-                        </button>
-                        <button type="button" onclick="setPrimaryPhoto(${photo.id})" title="Set as Primary" class="flex h-8 w-8 items-center justify-center rounded-full ${isPrimary ? 'bg-green-500' : 'bg-gray-600'} text-white opacity-0 shadow-lg transition-all hover:bg-green-600 group-hover:opacity-100">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </button>
                     </div>
                 </div>`;

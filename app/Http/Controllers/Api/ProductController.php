@@ -83,6 +83,14 @@ class ProductController extends Controller
             $product->load(['vendor.user', 'photos']);
         }
 
+        // Ensure primary photo is set if photos exist but no primary is set
+        if ($product->photos->isNotEmpty() && ! $product->photos->where('is_primary', true)->first()) {
+            $firstPhoto = $product->photos->first();
+            $firstPhoto->update(['is_primary' => true]);
+            $product->refresh();
+            $product->load('photos');
+        }
+
         return response()->json([
             'message' => __('Product retrieved successfully.'),
             'data' => new ProductResource($product),
@@ -166,16 +174,7 @@ class ProductController extends Controller
             }
         }
 
-        // Handle photo removal if photo_ids_to_remove is provided
-        if ($request->has('photo_ids_to_remove') && is_array($request->input('photo_ids_to_remove'))) {
-            $this->productService->removePhotos($product, $request->input('photo_ids_to_remove'));
-        }
-
-        // Handle new photos upload
-        $photos = $request->file('photos', []);
-        if (! empty($photos)) {
-            $this->productService->addPhotos($product, $photos);
-        }
+        // Note: Photo updates (remove, upload, set primary) are handled separately via ProductPhotoController::updatePhotos
 
         $product = $this->productService->update($product, $validated);
         $product->load($user && $user->type === User::TYPE_VENDOR ? 'photos' : ['vendor.user', 'photos']);
@@ -227,7 +226,7 @@ class ProductController extends Controller
 
         return response()->json([
             'message' => __('Primary photo updated successfully.'),
-            'data' => new ProductResource($product->fresh(['vendor.user', 'photos', 'primaryPhoto'])),
+            'data' => new ProductResource($product->fresh(['vendor.user', 'photos'])),
         ]);
     }
 

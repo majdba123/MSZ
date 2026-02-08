@@ -20,5 +20,6 @@ Route::patch('products/{product}/photos/{photo}/set-primary', [ProductController
 // Product Photos (separate API)
 Route::get('products/{product}/photos', [ProductPhotoController::class, 'index'])->name('products.photos.index');
 Route::post('products/{product}/photos', [ProductPhotoController::class, 'store'])->name('products.photos.store');
+Route::post('products/{product}/photos/update', [ProductPhotoController::class, 'updatePhotos'])->name('products.photos.update');
 Route::delete('products/{product}/photos/{photo}', [ProductPhotoController::class, 'destroy'])->name('products.photos.destroy');
 Route::delete('products/{product}/photos', [ProductPhotoController::class, 'bulkDestroy'])->name('products.photos.bulk-destroy');

@@ -29,7 +29,6 @@ class Product extends Model
         'quantity',
         'is_active',
         'status',
-        'primary_photo_id',
     ];
 
     /**
@@ -63,8 +62,8 @@ class Product extends Model
     /**
      * The primary photo for this product.
      */
-    public function primaryPhoto(): BelongsTo
+    public function primaryPhoto(): ?ProductPhoto
     {
-        return $this->belongsTo(ProductPhoto::class, 'primary_photo_id');
+        return $this->photos()->where('is_primary', true)->first();
     }
 }

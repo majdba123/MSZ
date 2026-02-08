@@ -66,7 +66,25 @@
                     </div>
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Approval Status</p>
-                        <p class="mt-1" id="product-approval-status">—</p>
+                        <div class="mt-1 flex items-center gap-2">
+                            <span id="product-approval-status">—</span>
+                            <select id="product-status-select" class="form-input text-xs py-1 px-2 hidden">
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                            <button type="button" id="edit-status-btn" class="btn-secondary btn-xs">
+                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                Change
+                            </button>
+                            <button type="button" id="save-status-btn" class="btn-primary btn-xs hidden">
+                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                Save
+                            </button>
+                            <button type="button" id="cancel-status-btn" class="btn-secondary btn-xs hidden">
+                                Cancel
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Created</p>
@@ -81,10 +99,23 @@
             </div>
         </div>
 
-        {{-- Photos Card --}}
+        {{-- Primary Photo Card --}}
         <div class="card">
             <div class="card-body border-b border-gray-100">
-                <h3 class="text-lg font-bold text-gray-900">Product Photos</h3>
+                <h3 class="text-lg font-bold text-gray-900">Primary Photo</h3>
+                <p class="mt-0.5 text-sm text-gray-500">Main product image</p>
+            </div>
+            <div class="card-body">
+                <div id="primary-photo-container" class="flex justify-center">
+                    <p class="text-sm text-gray-400 py-8">No primary photo available.</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- All Photos Card --}}
+        <div class="card">
+            <div class="card-body border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-900">All Product Photos</h3>
                 <p class="mt-0.5 text-sm text-gray-500" id="photo-count">0 photos</p>
             </div>
             <div class="card-body">
@@ -127,39 +158,125 @@ document.addEventListener('DOMContentLoaded', async function () {
             : '<span class="badge badge-danger"><span class="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-red-500"></span>Inactive</span>';
         document.getElementById('product-active-status').innerHTML = activeStatusBadge;
 
-        // Approval status
+        // Approval status - initialize display
         const approvalStatus = p.status || 'pending';
-        let approvalStatusBadge = '';
-        if (approvalStatus === 'approved') {
-            approvalStatusBadge = '<span class="badge badge-success"><span class="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Approved</span>';
-        } else if (approvalStatus === 'rejected') {
-            approvalStatusBadge = '<span class="badge badge-danger"><span class="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-red-500"></span>Rejected</span>';
-        } else {
-            approvalStatusBadge = '<span class="badge badge-warning"><span class="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-yellow-500"></span>Pending</span>';
+        updateStatusDisplay(approvalStatus);
+        
+        // Status update handlers
+        document.getElementById('edit-status-btn').addEventListener('click', function() {
+            const statusSelect = document.getElementById('product-status-select');
+            const statusBadge = document.getElementById('product-approval-status');
+            const editBtn = document.getElementById('edit-status-btn');
+            const saveBtn = document.getElementById('save-status-btn');
+            const cancelBtn = document.getElementById('cancel-status-btn');
+            
+            statusSelect.value = approvalStatus;
+            statusBadge.classList.add('hidden');
+            statusSelect.classList.remove('hidden');
+            editBtn.classList.add('hidden');
+            saveBtn.classList.remove('hidden');
+            cancelBtn.classList.remove('hidden');
+        });
+        
+        document.getElementById('cancel-status-btn').addEventListener('click', function() {
+            const statusSelect = document.getElementById('product-status-select');
+            const statusBadge = document.getElementById('product-approval-status');
+            const editBtn = document.getElementById('edit-status-btn');
+            const saveBtn = document.getElementById('save-status-btn');
+            const cancelBtn = document.getElementById('cancel-status-btn');
+            
+            statusBadge.classList.remove('hidden');
+            statusSelect.classList.add('hidden');
+            editBtn.classList.remove('hidden');
+            saveBtn.classList.add('hidden');
+            cancelBtn.classList.add('hidden');
+        });
+        
+        document.getElementById('save-status-btn').addEventListener('click', async function() {
+            const statusSelect = document.getElementById('product-status-select');
+            const newStatus = statusSelect.value;
+            const btn = this;
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>';
+            
+            try {
+                const res = await window.axios.patch(`/api/admin/products/${productId}/status`, {
+                    status: newStatus
+                });
+                
+                // Update display
+                updateStatusDisplay(newStatus);
+                document.getElementById('cancel-status-btn').click(); // Hide edit controls
+                showAlert('edit-success', res.data.message || 'Status updated successfully.');
+            } catch (e) {
+                console.error('Failed to update status:', e);
+                showAlert('edit-alert', e.response?.data?.message || 'Failed to update status.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+        
+        function updateStatusDisplay(status) {
+            let approvalStatusBadge = '';
+            if (status === 'approved') {
+                approvalStatusBadge = '<span class="badge badge-success"><span class="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Approved</span>';
+            } else if (status === 'rejected') {
+                approvalStatusBadge = '<span class="badge badge-danger"><span class="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-red-500"></span>Rejected</span>';
+            } else {
+                approvalStatusBadge = '<span class="badge badge-warning"><span class="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-yellow-500"></span>Pending</span>';
+            }
+            document.getElementById('product-approval-status').innerHTML = approvalStatusBadge;
         }
-        document.getElementById('product-approval-status').innerHTML = approvalStatusBadge;
+        
+        function showAlert(id, msg) {
+            const el = document.getElementById(id);
+            if (el) {
+                const msgEl = document.getElementById(id + '-message');
+                if (msgEl) msgEl.textContent = msg;
+                el.classList.remove('hidden');
+                setTimeout(() => el.classList.add('hidden'), 5000);
+            }
+        }
 
         document.getElementById('edit-link').href = '/admin/products/' + productId + '/edit';
 
         const photos = p.photos || [];
-        const primaryPhotoId = p.primary_photo_id || null;
         document.getElementById('photo-count').textContent = photos.length + ' photo' + (photos.length !== 1 ? 's' : '');
 
-        const photosContainer = document.getElementById('product-photos');
-        if (photos.length === 0) {
-            photosContainer.innerHTML = '<p class="col-span-full text-center text-sm text-gray-400 py-8">No photos available.</p>';
+        // Display primary photo separately
+        const primaryPhoto = photos.find(photo => photo.is_primary === true);
+        const primaryPhotoContainer = document.getElementById('primary-photo-container');
+        if (primaryPhoto) {
+            primaryPhotoContainer.innerHTML = `
+                <div class="group relative max-w-md overflow-hidden rounded-xl border-2 border-blue-400 ring-2 ring-blue-200">
+                    <img src="${primaryPhoto.url}" class="h-auto w-full object-cover transition-transform group-hover:scale-105" alt="Primary product photo">
+                    <div class="absolute left-3 top-3 rounded bg-blue-500 px-2 py-1 text-xs font-semibold text-white">Primary Photo</div>
+                    <div class="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 transition-all group-hover:bg-black/50 group-hover:opacity-100">
+                        <button type="button" onclick="viewPhotoLarge('${primaryPhoto.url}')" title="View Large" class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg transition-all hover:bg-blue-600 group-hover:opacity-100">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
+                        </button>
+                    </div>
+                </div>
+            `;
         } else {
-            photosContainer.innerHTML = photos.map(photo => {
-                const isPrimary = photo.id === primaryPhotoId;
-                return `<div class="group relative aspect-square overflow-hidden rounded-lg border-2 transition-colors ${isPrimary ? 'border-blue-400 ring-2 ring-blue-200' : 'border-gray-200'}">
+            primaryPhotoContainer.innerHTML = '<p class="text-sm text-gray-400 py-8">No primary photo available.</p>';
+        }
+
+        // Display all photos (excluding primary if it exists)
+        const otherPhotos = photos.filter(photo => photo.is_primary !== true);
+        const photosContainer = document.getElementById('product-photos');
+        if (otherPhotos.length === 0) {
+            photosContainer.innerHTML = '<p class="col-span-full text-center text-sm text-gray-400 py-8">No additional photos available.</p>';
+        } else {
+            photosContainer.innerHTML = otherPhotos.map(photo => {
+                return `<div class="group relative aspect-square overflow-hidden rounded-lg border-2 border-gray-200 transition-colors">
                     <img src="${photo.url}" class="h-full w-full object-cover transition-transform group-hover:scale-105" alt="">
-                    ${isPrimary ? '<div class="absolute left-2 top-2 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">Primary</div>' : ''}
                     <div class="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 transition-all group-hover:bg-black/50 group-hover:opacity-100">
                         <button type="button" onclick="viewPhotoLarge('${photo.url}')" title="View Large" class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg transition-all hover:bg-blue-600 group-hover:opacity-100">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
-                        </button>
-                        <button type="button" onclick="setPrimaryPhoto(${photo.id})" title="Set as Primary" class="flex h-8 w-8 items-center justify-center rounded-full ${isPrimary ? 'bg-green-500' : 'bg-gray-600'} text-white opacity-0 shadow-lg transition-all hover:bg-green-600 group-hover:opacity-100">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </button>
                     </div>
                 </div>`;

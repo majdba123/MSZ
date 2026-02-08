@@ -96,6 +96,89 @@ class ProductPhotoController extends Controller
     }
 
     /**
+     * Update photos: remove, upload new, and set primary in one request.
+     * Admin: can update any product's photos.
+     * Vendor: can only update their own product's photos.
+     */
+    public function updatePhotos(Request $request, Product $product): JsonResponse
+    {
+        $this->authorizeAccess($request, $product);
+
+        // Build validation rules dynamically based on what's present
+        $rules = [];
+
+        if ($request->has('photo_ids_to_remove')) {
+            $rules['photo_ids_to_remove'] = ['array'];
+            $rules['photo_ids_to_remove.*'] = ['integer', 'exists:product_photos,id'];
+        }
+
+        if ($request->hasFile('photos')) {
+            $rules['photos'] = ['array', 'max:10'];
+            $rules['photos.*'] = ['image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'];
+        }
+
+        if ($request->has('primary_photo_id')) {
+            $rules['primary_photo_id'] = ['nullable', 'integer', 'exists:product_photos,id'];
+        }
+
+        if (! empty($rules)) {
+            $request->validate($rules);
+        }
+
+        // Step 1: Remove marked photos first
+        if ($request->has('photo_ids_to_remove')) {
+            $photoIdsToRemove = $request->input('photo_ids_to_remove', []);
+            if (is_array($photoIdsToRemove) && ! empty($photoIdsToRemove)) {
+                $removedPhotoIds = array_values(array_filter(array_map('intval', $photoIdsToRemove)));
+                if (! empty($removedPhotoIds)) {
+                    $this->productService->removePhotos($product, $removedPhotoIds);
+                    // Refresh product after deletion
+                    $product->refresh();
+                }
+            }
+        }
+
+        // Step 2: Upload new photos
+        if ($request->hasFile('photos')) {
+            $files = $request->file('photos');
+            if (is_array($files)) {
+                $validFiles = array_filter($files, function ($file) {
+                    return $file && $file->isValid();
+                });
+                if (! empty($validFiles)) {
+                    $this->productService->addPhotos($product, array_values($validFiles));
+                    // Refresh product after upload
+                    $product->refresh();
+                }
+            }
+        }
+
+        // Step 3: Set primary photo (must be done after uploads in case new photo is set as primary)
+        if ($request->has('primary_photo_id')) {
+            $primaryPhotoId = $request->input('primary_photo_id');
+            if ($primaryPhotoId !== null && $primaryPhotoId !== '') {
+                $primaryPhotoId = (int) $primaryPhotoId;
+                // Refresh to get latest photos
+                $product->refresh();
+                $photo = $product->photos()->where('id', $primaryPhotoId)->first();
+                if ($photo) {
+                    $this->productService->setPrimaryPhoto($product, $photo);
+                }
+            }
+        }
+
+        // Final reload of product with fresh photos
+        $product->refresh();
+        $user = $request->user();
+        $product->load($user && $user->type === User::TYPE_VENDOR ? 'photos' : ['vendor.user', 'photos']);
+
+        return response()->json([
+            'message' => __('Photos updated successfully.'),
+            'data' => new \App\Http\Resources\ProductResource($product),
+        ]);
+    }
+
+    /**
      * Authorize access to product photos.
      * Admin: can access any product.
      * Vendor: can only access their own products.

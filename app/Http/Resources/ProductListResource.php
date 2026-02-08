@@ -14,18 +14,21 @@ class ProductListResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $firstPhoto = $this->whenLoaded('photos') ? $this->photos->first() : null;
+        $photos = $this->whenLoaded('photos') ? $this->photos : collect();
 
-            return [
-                'id' => $this->id,
-                'vendor_id' => $this->vendor_id,
-                'name' => $this->name,
-                'description' => $this->description,
-                'price' => $this->price,
-                'quantity' => $this->quantity,
-                'is_active' => $this->is_active,
-                'status' => $this->status,
-                'first_photo_url' => $firstPhoto ? asset('storage/'.$firstPhoto->path) : null,
-            ];
+        // Use primary photo if available, otherwise use first photo
+        $displayPhoto = $photos->where('is_primary', true)->first() ?? $photos->first();
+
+        return [
+            'id' => $this->id,
+            'vendor_id' => $this->vendor_id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'price' => $this->price,
+            'quantity' => $this->quantity,
+            'is_active' => $this->is_active,
+            'status' => $this->status,
+            'first_photo_url' => $displayPhoto ? asset('storage/'.$displayPhoto->path) : null,
+        ];
     }
 }

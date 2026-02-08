@@ -96,9 +96,9 @@
             }
         });
 
-        function vendorLogout() {
+        async function vendorLogout() {
             // Get token before clearing (for API call)
-            const token = localStorage.getItem('auth_token');
+            const token = window.Auth?.getToken() || localStorage.getItem('auth_token');
 
             // Clear all auth data immediately
             try {
@@ -128,7 +128,7 @@
             }
 
             // Force immediate redirect - don't wait for API
-            window.location.href = '{{ route("login") }}';
+            window.location.replace('{{ route("login") }}');
         }
 
         // Sidebar toggle (mobile)

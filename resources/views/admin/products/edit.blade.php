@@ -1,4 +1,4 @@
-s@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'Edit Product — SyriaZone Admin')
 @section('page-title', 'Edit Product')
@@ -74,7 +74,7 @@ s@extends('layouts.admin')
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-lg font-bold text-gray-900">Product Photos</h2>
-                        <p class="mt-0.5 text-sm text-gray-500">Select photos to remove. They will be deleted when you save the product.</p>
+                        <p class="mt-0.5 text-sm text-gray-500">Mark photos to remove or set as primary, then click "Save Photo Changes".</p>
                     </div>
                 </div>
             </div>
@@ -84,12 +84,20 @@ s@extends('layouts.admin')
 
                 <div id="existing-photos" class="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5"></div>
 
+                {{-- Upload New --}}
                 <div class="mt-4 border-t border-gray-100 pt-4">
                     <label class="form-label">Add More Photos</label>
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-                        <input type="file" id="new-photos" multiple accept="image/jpeg,image/png,image/gif,image/webp" class="form-input flex-1 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100">
+                        <input type="file" id="new-photos" multiple accept="image/jpeg,image/png,image/gif,image/webp" class="form-input flex-1 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-emerald-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100">
                     </div>
-                    <p class="mt-2 text-xs text-gray-500">Selected photos will be removed when you save the product.</p>
+                </div>
+
+                {{-- Save Photo Changes Button --}}
+                <div class="mt-4 flex justify-end border-t border-gray-100 pt-4">
+                    <button type="button" id="save-photos-btn" class="btn-primary">
+                        <span id="save-photos-btn-text">Save Photo Changes</span>
+                        <svg id="save-photos-spinner" class="hidden h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -103,7 +111,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     const productId = '{{ $productId }}';
     const form = document.getElementById('edit-form');
     let existingPhotos = [];
-    let selectedIds = new Set();
+    let selectedIds = new Set(); // Photos marked for removal
+    let primaryPhotoId = null; // Photo marked as primary
 
     // Define helper functions first
     function showAlert(id, msg) {
@@ -123,25 +132,26 @@ document.addEventListener('DOMContentLoaded', async function () {
             return;
         }
         container.innerHTML = existingPhotos.map(photo => {
-            const isPrimary = photo.id === (window.primaryPhotoId || null);
+            const isPrimary = photo.is_primary === true;
+            const isMarkedPrimary = primaryPhotoId === photo.id;
             const isSelected = selectedIds.has(photo.id);
             const photoUrl = photo.url.replace(/"/g, '&quot;');
-            return `<div class="group relative aspect-square overflow-hidden rounded-lg border-2 transition-colors ${isSelected ? 'border-red-500 ring-4 ring-red-200' : isPrimary ? 'border-blue-400 ring-2 ring-blue-200' : 'border-gray-200'}" id="photo-${photo.id}" data-photo-id="${photo.id}" data-photo-url="${photoUrl}">
-                <img src="${photoUrl}" class="h-full w-full object-cover ${isSelected ? 'opacity-50' : ''}" alt="">
-                ${isPrimary ? '<div class="absolute left-2 top-2 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-semibold text-white z-10">Primary</div>' : ''}
-                ${isSelected ? '<div class="absolute inset-0 flex items-center justify-center bg-red-500/20 z-10 pointer-events-none"><span class="rounded bg-red-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">Marked for Removal</span></div>' : ''}
-                <div class="absolute bottom-2 left-2 right-2 z-20 flex items-center justify-center gap-2 opacity-90 transition-opacity group-hover:opacity-100">
-                    <button type="button" data-action="remove" data-photo-id="${photo.id}" title="${isSelected ? 'Cancel Removal' : 'Remove Photo'}" class="flex h-9 items-center justify-center gap-1.5 rounded-lg ${isSelected ? 'bg-white text-red-600' : 'bg-red-500 text-white'} px-3 py-1.5 text-xs font-semibold shadow-lg transition-all hover:scale-105">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
-                        ${isSelected ? 'Cancel' : 'Remove'}
+            return `<div class="space-y-2">
+                <div class="relative aspect-square overflow-hidden rounded-lg border-2 transition-all duration-200 ${isSelected ? 'border-red-500 ring-4 ring-red-200 shadow-lg' : isMarkedPrimary ? 'border-emerald-500 ring-4 ring-emerald-200 shadow-lg' : isPrimary ? 'border-blue-400 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'}" id="photo-${photo.id}" data-photo-id="${photo.id}" data-photo-url="${photoUrl}">
+                    <img src="${photoUrl}" class="h-full w-full object-cover transition-transform duration-200 ${isSelected || isMarkedPrimary ? 'opacity-60' : 'group-hover:scale-105'}" alt="">
+                    ${isPrimary && !isMarkedPrimary ? '<div class="absolute left-2 top-2 rounded-md bg-blue-500 px-2 py-1 text-[10px] font-bold text-white shadow-lg z-10">Current Primary</div>' : ''}
+                    ${isMarkedPrimary ? '<div class="absolute inset-0 flex items-center justify-center bg-emerald-500/30 backdrop-blur-sm z-10 pointer-events-none"><span class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-2xl ring-2 ring-emerald-300">Marked as Primary</span></div>' : ''}
+                    ${isSelected ? '<div class="absolute inset-0 flex items-center justify-center bg-red-500/30 backdrop-blur-sm z-10 pointer-events-none"><span class="rounded-lg bg-red-500 px-4 py-2 text-sm font-bold text-white shadow-2xl ring-2 ring-red-300">Marked for Removal</span></div>' : ''}
+                </div>
+                <div class="flex items-center justify-center gap-1.5">
+                    <button type="button" data-action="remove" data-photo-id="${photo.id}" title="${isSelected ? 'Cancel Removal' : 'Mark for Removal'}" class="group flex h-10 w-10 items-center justify-center rounded-lg ${isSelected ? 'bg-red-50 text-red-600 border-2 border-red-400 shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-400'} transition-all duration-200 shadow-sm hover:shadow-md">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
                     </button>
-                    <button type="button" data-action="view" data-photo-url="${photoUrl}" title="View Large" class="flex h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-all hover:bg-blue-600 hover:scale-105">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
-                        View
+                    <button type="button" data-action="view" data-photo-url="${photoUrl}" title="View Large" class="group flex h-10 w-10 items-center justify-center rounded-lg bg-white text-gray-600 border border-gray-300 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-400 transition-all duration-200 shadow-sm hover:shadow-md">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
                     </button>
-                    <button type="button" data-action="primary" data-photo-id="${photo.id}" title="Set as Primary" class="flex h-9 items-center justify-center gap-1.5 rounded-lg ${isPrimary ? 'bg-green-500' : 'bg-gray-600'} px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-all hover:bg-green-600 hover:scale-105">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        ${isPrimary ? 'Primary' : 'Set Primary'}
+                    <button type="button" data-action="primary" data-photo-id="${photo.id}" title="${isMarkedPrimary ? 'Cancel Primary' : 'Mark as Primary'}" class="group flex h-10 w-10 items-center justify-center rounded-lg ${isMarkedPrimary ? 'bg-emerald-50 text-emerald-600 border-2 border-emerald-400 shadow-md' : isPrimary ? 'bg-green-50 text-green-600 border border-green-300' : 'bg-white text-gray-600 border border-gray-300 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-400'} transition-all duration-200 shadow-sm hover:shadow-md">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </button>
                 </div>
             </div>`;
@@ -155,9 +165,39 @@ document.addEventListener('DOMContentLoaded', async function () {
             selectedIds.delete(photoId);
         } else {
             selectedIds.add(photoId);
+            // If marked for removal, unmark as primary
+            if (primaryPhotoId === photoId) {
+                primaryPhotoId = null;
+            }
         }
         renderExistingPhotos();
+        updateSavePhotosButton();
     };
+
+    window.togglePrimaryMark = function (id) {
+        const photoId = parseInt(id);
+        if (primaryPhotoId === photoId) {
+            primaryPhotoId = null;
+        } else {
+            primaryPhotoId = photoId;
+            // If marked as primary, unmark for removal
+            if (selectedIds.has(photoId)) {
+                selectedIds.delete(photoId);
+            }
+        }
+        renderExistingPhotos();
+        updateSavePhotosButton();
+    };
+
+    function updateSavePhotosButton() {
+        const btn = document.getElementById('save-photos-btn');
+        const hasChanges = selectedIds.size > 0 || primaryPhotoId !== null || (document.getElementById('new-photos')?.files?.length || 0) > 0;
+        if (btn) {
+            btn.disabled = !hasChanges;
+            btn.classList.toggle('opacity-50', !hasChanges);
+            btn.classList.toggle('cursor-not-allowed', !hasChanges);
+        }
+    }
 
     window.viewPhotoLarge = function (url) {
         // Remove existing modal if any
@@ -183,23 +223,87 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.body.appendChild(modal);
     };
 
-    window.setPrimaryPhoto = async function (photoId) {
+    // Save photo changes separately
+    document.getElementById('save-photos-btn')?.addEventListener('click', async function() {
+        const btn = this;
+        const btnText = document.getElementById('save-photos-btn-text');
+        const spinner = document.getElementById('save-photos-spinner');
+        
+        btn.disabled = true;
+        btnText.textContent = 'Saving...';
+        spinner.classList.remove('hidden');
+        
         try {
-            const res = await window.axios.patch(`/api/admin/products/${productId}/photos/${photoId}/set-primary`);
-            // Update primary photo ID from response
-            window.primaryPhotoId = res.data.data.primary_photo_id || photoId;
-            // Reload product to get updated data
-            const productRes = await window.axios.get(`/api/admin/products/${productId}`);
-            const product = productRes.data.data;
-            existingPhotos = product.photos || [];
-            window.primaryPhotoId = product.primary_photo_id || null;
-            renderExistingPhotos();
-            showAlert('edit-success', 'Primary photo updated successfully.');
+            const formData = new FormData();
+            
+            // Add photos to remove
+            if (selectedIds.size > 0) {
+                Array.from(selectedIds).forEach(id => {
+                    formData.append('photo_ids_to_remove[]', parseInt(id));
+                });
+            }
+            
+            // Add new photos
+            const newPhotosInput = document.getElementById('new-photos');
+            if (newPhotosInput?.files && newPhotosInput.files.length > 0) {
+                Array.from(newPhotosInput.files).forEach(f => {
+                    formData.append('photos[]', f);
+                });
+            }
+            
+            // Add primary photo ID if marked
+            if (primaryPhotoId) {
+                formData.append('primary_photo_id', parseInt(primaryPhotoId));
+            }
+            
+            console.log('Sending photo update request:', {
+                removeCount: selectedIds.size,
+                newPhotosCount: newPhotosInput?.files?.length || 0,
+                primaryPhotoId: primaryPhotoId
+            });
+            
+            const res = await window.axios.post(`/api/admin/products/${productId}/photos/update`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            
+            console.log('Photo update response:', res.data);
+            
+            // Update existing photos from response
+            const product = res.data.data;
+            if (product && product.photos) {
+                existingPhotos = product.photos;
+                selectedIds.clear();
+                primaryPhotoId = null;
+                renderExistingPhotos();
+                
+                // Clear new photos input
+                if (newPhotosInput) {
+                    newPhotosInput.value = '';
+                }
+                
+                updateSavePhotosButton();
+                showAlert('photo-success', 'Photo changes saved successfully!');
+            }
         } catch (e) {
-            console.error('Failed to set primary photo:', e);
-            showAlert('edit-alert', e.response?.data?.message || 'Failed to set primary photo.');
+            console.error('Failed to save photo changes:', e);
+            console.error('Error response:', e.response?.data);
+            let errorMsg = 'Failed to save photo changes.';
+            if (e.response?.data?.message) {
+                errorMsg = e.response.data.message;
+            } else if (e.response?.data?.errors) {
+                const errors = e.response.data.errors;
+                errorMsg = Object.values(errors).flat().join(', ');
+            }
+            showAlert('photo-alert', errorMsg);
+        } finally {
+            btn.disabled = false;
+            btnText.textContent = 'Save Photo Changes';
+            spinner.classList.add('hidden');
         }
-    };
+    });
+
+    // Update save button when new photos are selected
+    document.getElementById('new-photos')?.addEventListener('change', updateSavePhotosButton);
 
     // Add event delegation for photo actions (only once, before loading)
     const container = document.getElementById('existing-photos');
@@ -218,7 +322,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             } else if (action === 'view' && photoUrl) {
                 window.viewPhotoLarge(photoUrl);
             } else if (action === 'primary' && photoId) {
-                window.setPrimaryPhoto(parseInt(photoId));
+                window.togglePrimaryMark(parseInt(photoId));
             }
         });
     }
@@ -234,7 +338,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         form.description.value = p.description || '';
         document.getElementById('is_active').checked = p.is_active;
         existingPhotos = p.photos || [];
-        window.primaryPhotoId = p.primary_photo_id || null;
 
         // Show vendor info
         const vendorName = p.vendor?.store_name || '—';
@@ -247,38 +350,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.getElementById('edit-content').classList.remove('hidden');
     } catch (e) {
         document.getElementById('edit-loading').innerHTML = '<p class="text-red-500">Failed to load product.</p>';
-    }
-
-    function renderExistingPhotos() {
-        const container = document.getElementById('existing-photos');
-        if (existingPhotos.length === 0) {
-            container.innerHTML = '<p class="col-span-full text-sm text-gray-400">No photos yet.</p>';
-            return;
-        }
-        container.innerHTML = existingPhotos.map(photo => {
-            const isPrimary = photo.id === (window.primaryPhotoId || null);
-            const isSelected = selectedIds.has(photo.id);
-            const photoUrl = photo.url.replace(/"/g, '&quot;');
-            return `<div class="group relative aspect-square overflow-hidden rounded-lg border-2 transition-colors ${isSelected ? 'border-red-500 ring-4 ring-red-200' : isPrimary ? 'border-blue-400 ring-2 ring-blue-200' : 'border-gray-200'}" id="photo-${photo.id}" data-photo-id="${photo.id}" data-photo-url="${photoUrl}">
-                <img src="${photoUrl}" class="h-full w-full object-cover ${isSelected ? 'opacity-50' : ''}" alt="">
-                ${isPrimary ? '<div class="absolute left-2 top-2 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-semibold text-white z-10">Primary</div>' : ''}
-                ${isSelected ? '<div class="absolute inset-0 flex items-center justify-center bg-red-500/20 z-10 pointer-events-none"><span class="rounded bg-red-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">Marked for Removal</span></div>' : ''}
-                <div class="absolute bottom-2 left-2 right-2 z-20 flex items-center justify-center gap-2 opacity-90 transition-opacity group-hover:opacity-100">
-                    <button type="button" data-action="remove" data-photo-id="${photo.id}" title="${isSelected ? 'Cancel Removal' : 'Remove Photo'}" class="flex h-9 items-center justify-center gap-1.5 rounded-lg ${isSelected ? 'bg-white text-red-600' : 'bg-red-500 text-white'} px-3 py-1.5 text-xs font-semibold shadow-lg transition-all hover:scale-105">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
-                        ${isSelected ? 'Cancel' : 'Remove'}
-                    </button>
-                    <button type="button" data-action="view" data-photo-url="${photoUrl}" title="View Large" class="flex h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-all hover:bg-blue-600 hover:scale-105">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
-                        View
-                    </button>
-                    <button type="button" data-action="primary" data-photo-id="${photo.id}" title="Set as Primary" class="flex h-9 items-center justify-center gap-1.5 rounded-lg ${isPrimary ? 'bg-green-500' : 'bg-gray-600'} px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-all hover:bg-green-600 hover:scale-105">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        ${isPrimary ? 'Primary' : 'Set Primary'}
-                    </button>
-                </div>
-            </div>`;
-        }).join('');
     }
 
 
@@ -295,6 +366,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         const desc = form.description.value.trim();
         if (desc) formData.append('description', desc);
         formData.append('is_active', document.getElementById('is_active').checked ? '1' : '0');
+
+        // Find and add primary photo ID from existing photos
+        const primaryPhoto = existingPhotos.find(p => p.is_primary === true);
+        if (primaryPhoto) {
+            formData.append('primary_photo_id', primaryPhoto.id);
+        }
 
         // Add photos to remove
         if (selectedIds.size > 0) {

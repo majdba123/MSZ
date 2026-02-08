@@ -14,6 +14,7 @@ class ProductPhoto extends Model
         'product_id',
         'path',
         'sort_order',
+        'is_primary',
     ];
 
     /**
@@ -23,6 +24,7 @@ class ProductPhoto extends Model
     {
         return [
             'sort_order' => 'integer',
+            'is_primary' => 'boolean',
         ];
     }
 

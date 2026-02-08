@@ -25,7 +25,7 @@ class ProductService
             : Product::query();
 
         $query->with(['photos' => function ($query) {
-            $query->orderBy('sort_order')->limit(1);
+            $query->orderBy('is_primary', 'desc')->orderBy('sort_order');
         }]);
 
         // For admin: filter by vendor_id (only if not scoped to a vendor)
@@ -129,9 +129,13 @@ class ProductService
             throw new \InvalidArgumentException('Photo does not belong to this product.');
         }
 
-        $product->update(['primary_photo_id' => $photo->id]);
+        // Unset all other primary photos for this product
+        $product->photos()->where('is_primary', true)->update(['is_primary' => false]);
 
-        return $product->fresh(['vendor.user', 'photos', 'primaryPhoto']);
+        // Set this photo as primary
+        $photo->update(['is_primary' => true]);
+
+        return $product->fresh(['vendor.user', 'photos']);
     }
 
     /**
@@ -145,13 +149,21 @@ class ProductService
         $maxOrder = $product->photos()->max('sort_order') ?? 0;
         $photos = [];
 
-        foreach ($files as $file) {
+        // Check if there's already a primary photo
+        $hasPrimary = $product->photos()->where('is_primary', true)->exists();
+
+        foreach ($files as $index => $file) {
             $path = $file->store('products/'.$product->id, 'public');
 
             $photos[] = $product->photos()->create([
                 'path' => $path,
                 'sort_order' => ++$maxOrder,
+                'is_primary' => ! $hasPrimary && $index === 0, // Set first photo as primary if none exists
             ]);
+
+            if (! $hasPrimary && $index === 0) {
+                $hasPrimary = true;
+            }
         }
 
         return $photos;
@@ -173,11 +185,26 @@ class ProductService
      */
     public function removePhotos(Product $product, array $photoIds): int
     {
+        // Get photos to delete
         $photos = $product->photos()->whereIn('id', $photoIds)->get();
 
+        // Check if any of the photos being deleted is primary
+        $deletedPrimary = $photos->where('is_primary', true)->isNotEmpty();
+
+        // Delete photos and their files
         foreach ($photos as $photo) {
             Storage::disk('public')->delete($photo->path);
             $photo->delete();
+        }
+
+        // If the primary photo was among the deleted ones, set the first remaining photo as primary
+        if ($deletedPrimary) {
+            // Refresh product to get updated photos list
+            $product->refresh();
+            $firstRemaining = $product->photos()->orderBy('sort_order')->first();
+            if ($firstRemaining) {
+                $firstRemaining->update(['is_primary' => true]);
+            }
         }
 
         return $photos->count();

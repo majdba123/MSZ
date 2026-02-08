@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         </div>`
                     }
                     <div class="absolute right-2 top-2">
-                        <button onclick="toggleProductStatus(${p.id})" class="badge ${p.is_active ? 'badge-success' : 'badge-danger'} shadow-lg">
+                        <button onclick="toggleProductStatus(${p.id})" class="badge ${p.is_active ? 'badge-success' : 'badge-danger'} shadow-lg text-[10px]">
                             <span class="mr-1 inline-block h-1.5 w-1.5 rounded-full ${p.is_active ? 'bg-emerald-500' : 'bg-red-500'}"></span>
                             ${p.is_active ? 'Active' : 'Inactive'}
                         </button>
@@ -204,6 +204,14 @@ document.addEventListener('DOMContentLoaded', async function () {
                             <p class="text-lg font-bold text-gray-900">$${parseFloat(p.price || 0).toFixed(2)}</p>
                             <p class="text-xs text-gray-500">Qty: ${p.quantity}</p>
                         </div>
+                    </div>
+                    <div class="mt-3 border-t border-gray-100 pt-3">
+                        <label class="mb-1.5 block text-xs font-medium text-gray-500">Approval Status:</label>
+                        <select onchange="updateProductStatus(${p.id}, this.value)" data-original-value="${p.status || 'pending'}" class="w-full form-input text-xs py-1.5 px-2">
+                            <option value="pending" ${p.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="approved" ${p.status === 'approved' ? 'selected' : ''}>Approved</option>
+                            <option value="rejected" ${p.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                        </select>
                     </div>
                     <div class="mt-4 flex gap-2 border-t border-gray-100 pt-3">
                         <a href="/admin/products/${p.id}" class="btn-secondary btn-xs flex-1 text-center">
@@ -240,6 +248,35 @@ document.addEventListener('DOMContentLoaded', async function () {
             showAlert('products-alert', e.response?.data?.message || 'Failed to toggle status.');
         }
     };
+    
+    window.updateProductStatus = async function (id, status) {
+        const select = event.target;
+        const originalValue = select.dataset.originalValue || status;
+        select.disabled = true;
+        
+        try {
+            const res = await window.axios.patch('/api/admin/products/' + id + '/status', {
+                status: status
+            });
+            showAlert('products-success', res.data.message || 'Status updated successfully.');
+            select.dataset.originalValue = status;
+            // Update badge class
+            select.className = select.className.replace(/badge-(success|danger|warning)/g, '');
+            select.classList.add(getStatusBadgeClass(status));
+        } catch (e) {
+            showAlert('products-alert', e.response?.data?.message || 'Failed to update status.');
+            select.value = originalValue; // Reset to original value
+            loadProducts(); // Reload on error to reset dropdown
+        } finally {
+            select.disabled = false;
+        }
+    };
+    
+    function getStatusBadgeClass(status) {
+        if (status === 'approved') return 'badge-success';
+        if (status === 'rejected') return 'badge-danger';
+        return 'badge-warning';
+    }
 
     window.openDeleteModal = function (id) {
         deleteId = id;

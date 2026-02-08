@@ -18,6 +18,7 @@ class ProductPhotoResource extends JsonResource
             'path' => $this->path,
             'url' => asset('storage/'.$this->path),
             'sort_order' => $this->sort_order,
+            'is_primary' => $this->is_primary,
             'created_at' => $this->created_at,
         ];
     }

@@ -22,6 +22,7 @@ class UpdateProductRequest extends FormRequest
             'price' => ['sometimes', 'required', 'numeric', 'min:0'],
             'quantity' => ['sometimes', 'required', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
+            'primary_photo_id' => ['nullable', 'integer', 'exists:product_photos,id'],
         ];
     }
 }

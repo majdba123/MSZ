@@ -38,11 +38,11 @@ class ProductController extends Controller
             if (! $vendor) {
                 abort(403, __('Vendor profile not found.'));
             }
-            // Only allow status filter for vendors
-            $filters = $request->only(['is_active']);
+            // Allow status and is_active filters for vendors
+            $filters = $request->only(['status', 'is_active']);
         } else {
-            // Admin: can filter by vendor_id and is_active
-            $filters = $request->only(['vendor_id', 'is_active']);
+            // Admin: can filter by vendor_id, status, and is_active
+            $filters = $request->only(['vendor_id', 'status', 'is_active']);
         }
 
         $products = $this->productService->list($vendor, 15, $filters);

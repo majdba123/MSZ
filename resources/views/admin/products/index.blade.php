@@ -42,6 +42,7 @@
                     </select>
                 </div>
                 <div class="flex gap-2">
+                    <button id="apply-filters" class="btn-primary btn-sm">Apply Filters</button>
                     <button id="clear-filters" class="btn-secondary btn-sm">Clear</button>
                 </div>
             </div>
@@ -109,6 +110,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     let currentPage = 1;
     let deleteId = null;
     const vendorSelect = document.getElementById('filter-vendor');
+    const productStatusSelect = document.getElementById('filter-product-status');
     const statusSelect = document.getElementById('filter-status');
 
     // Load vendors for filter
@@ -123,10 +125,15 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     loadProducts();
 
-    document.getElementById('prev-page').addEventListener('click', () => { currentPage = 1; loadProducts(); });
+    document.getElementById('prev-page').addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadProducts(); } });
     document.getElementById('next-page').addEventListener('click', () => { currentPage++; loadProducts(); });
     document.getElementById('delete-cancel').addEventListener('click', closeDeleteModal);
     document.getElementById('delete-confirm').addEventListener('click', confirmDelete);
+    document.getElementById('apply-filters').addEventListener('click', () => {
+        currentPage = 1;
+        loadProducts();
+    });
+
     document.getElementById('clear-filters').addEventListener('click', () => {
         vendorSelect.value = '';
         productStatusSelect.value = '';
@@ -135,22 +142,29 @@ document.addEventListener('DOMContentLoaded', async function () {
         loadProducts();
     });
 
-    vendorSelect.addEventListener('change', () => { currentPage = 1; loadProducts(); });
-    productStatusSelect.addEventListener('change', () => { currentPage = 1; loadProducts(); });
-    statusSelect.addEventListener('change', () => { currentPage = 1; loadProducts(); });
+    // Remove auto-apply on change - user must click "Apply Filters"
 
     async function loadProducts() {
         showLoading(true);
         try {
             const params = new URLSearchParams({ page: currentPage });
-            if (vendorSelect.value) params.append('vendor_id', vendorSelect.value);
-            if (productStatusSelect.value) params.append('status', productStatusSelect.value);
-            if (statusSelect.value !== '') params.append('is_active', statusSelect.value);
+
+            // Apply filters only if they have values
+            if (vendorSelect && vendorSelect.value) {
+                params.append('vendor_id', vendorSelect.value);
+            }
+            if (productStatusSelect && productStatusSelect.value) {
+                params.append('status', productStatusSelect.value);
+            }
+            if (statusSelect && statusSelect.value !== '') {
+                params.append('is_active', statusSelect.value);
+            }
 
             const res = await window.axios.get('/api/admin/products?' + params.toString());
             renderProducts(res.data.data);
             renderPagination(res.data.meta);
         } catch (e) {
+            console.error('Failed to load products:', e);
             showAlert('products-alert', e.response?.data?.message || 'Failed to load products.');
         } finally {
             showLoading(false);
@@ -211,6 +225,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     function renderPagination(meta) {
+        currentPage = meta.current_page; // Sync currentPage with server response
         document.getElementById('products-info').textContent = `Page ${meta.current_page} of ${meta.last_page} · ${meta.total} total`;
         document.getElementById('prev-page').disabled = meta.current_page <= 1;
         document.getElementById('next-page').disabled = meta.current_page >= meta.last_page;

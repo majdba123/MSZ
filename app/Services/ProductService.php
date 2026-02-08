@@ -48,7 +48,7 @@ class ProductService
             $query->with('vendor.user');
         }
 
-        return $query->latest()->paginate($perPage);
+        return $query->latest('created_at')->paginate($perPage);
     }
 
     /**

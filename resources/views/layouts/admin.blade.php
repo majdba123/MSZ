@@ -95,9 +95,38 @@
             }
         });
 
-        async function adminLogout() {
-            try { await window.axios.post('/api/auth/logout'); } catch (e) {}
-            window.Auth.removeToken();
+        function adminLogout() {
+            // Get token before clearing (for API call)
+            const token = localStorage.getItem('auth_token');
+
+            // Clear all auth data immediately
+            try {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('auth_user');
+                sessionStorage.clear();
+                if (window.Auth) {
+                    if (window.Auth.clearAll) {
+                        window.Auth.clearAll();
+                    } else if (window.Auth.removeToken) {
+                        window.Auth.removeToken();
+                    }
+                }
+                // Clear axios default headers
+                delete window.axios.defaults.headers.common['Authorization'];
+            } catch (e) {
+                console.error('Error clearing storage:', e);
+            }
+
+            // Try to call logout API with token (fire and forget)
+            if (token) {
+                window.axios.post('/api/auth/logout', {}, {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                }).catch(() => {});
+            }
+
+            // Force immediate redirect - don't wait for API
             window.location.href = '{{ route("login") }}';
         }
 

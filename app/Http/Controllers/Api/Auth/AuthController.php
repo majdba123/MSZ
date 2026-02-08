@@ -66,8 +66,12 @@ class AuthController extends Controller
         }
 
         // Invalidate web session if it exists
-        if (Auth::guard('web')->check()) {
-            Auth::guard('web')->logout();
+        try {
+            if (Auth::guard('web')->check()) {
+                Auth::guard('web')->logout();
+            }
+        } catch (\Exception $e) {
+            // Ignore
         }
 
         // Safely invalidate session

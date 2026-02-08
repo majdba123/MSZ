@@ -37,6 +37,51 @@
 document.addEventListener('DOMContentLoaded', async function () {
     const form = document.getElementById('create-form');
     const vendorSelect = document.getElementById('vendor_id');
+    const STORAGE_KEY = 'admin_product_create_form';
+
+    // Restore form data from localStorage
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (vendorSelect) vendorSelect.value = data.vendor_id || '';
+            if (form.name) form.name.value = data.name || '';
+            if (form.price) form.price.value = data.price || '';
+            if (form.quantity) form.quantity.value = data.quantity || '';
+            if (form.description) form.description.value = data.description || '';
+            if (document.getElementById('is_active')) {
+                document.getElementById('is_active').checked = data.is_active || false;
+            }
+        }
+    } catch (e) {
+        console.error('Error restoring form:', e);
+    }
+
+    // Save form data to localStorage on change
+    function saveFormData() {
+        try {
+            const data = {
+                vendor_id: vendorSelect?.value || '',
+                name: form.name?.value || '',
+                price: form.price?.value || '',
+                quantity: form.quantity?.value || '',
+                description: form.description?.value || '',
+                is_active: document.getElementById('is_active')?.checked || false,
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+            console.error('Error saving form:', e);
+        }
+    }
+
+    // Add event listeners to save on change
+    if (vendorSelect) vendorSelect.addEventListener('change', saveFormData);
+    if (form.name) form.name.addEventListener('input', saveFormData);
+    if (form.price) form.price.addEventListener('input', saveFormData);
+    if (form.quantity) form.quantity.addEventListener('input', saveFormData);
+    if (form.description) form.description.addEventListener('input', saveFormData);
+    const isActiveCheckbox = document.getElementById('is_active');
+    if (isActiveCheckbox) isActiveCheckbox.addEventListener('change', saveFormData);
 
     // Load vendors
     try {
@@ -83,6 +128,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             await window.axios.post('/api/admin/products', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
+            // Clear saved form data on success
+            localStorage.removeItem(STORAGE_KEY);
             showAlert('create-success', 'Product created successfully! Redirecting...');
             setTimeout(() => { window.location.href = '{{ route("admin.products.index") }}'; }, 800);
         } catch (error) {

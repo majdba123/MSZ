@@ -59,6 +59,22 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Clear any remaining auth data when landing on login page
+    try {
+        if (window.Auth) {
+            if (window.Auth.clearAll) {
+                window.Auth.clearAll();
+            } else if (window.Auth.removeToken) {
+                window.Auth.removeToken();
+            }
+        }
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+        delete window.axios.defaults.headers.common['Authorization'];
+    } catch (e) {
+        console.error('Error clearing auth data:', e);
+    }
+
     const form = document.getElementById('login-form');
 
     form.addEventListener('submit', async function (e) {

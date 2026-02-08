@@ -23,7 +23,17 @@ window.Auth = {
 
     removeToken() {
         localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
         delete window.axios.defaults.headers.common['Authorization'];
+    },
+
+    setUser(user) {
+        localStorage.setItem('auth_user', JSON.stringify(user));
+    },
+
+    getUser() {
+        const user = localStorage.getItem('auth_user');
+        return user ? JSON.parse(user) : null;
     },
 
     applyToken() {
@@ -35,6 +45,13 @@ window.Auth = {
 
     isAuthenticated() {
         return !!this.getToken();
+    },
+
+    clearAll() {
+        this.removeToken();
+        // Clear any other auth-related data
+        localStorage.removeItem('auth_user');
+        sessionStorage.clear();
     },
 };
 

@@ -99,6 +99,124 @@ document.addEventListener('DOMContentLoaded', async function () {
     let existingPhotos = [];
     let selectedIds = new Set();
 
+    // Define helper functions first
+    function showAlert(id, msg) {
+        const el = document.getElementById(id);
+        if (el) {
+            const msgEl = document.getElementById(id + '-message');
+            if (msgEl) msgEl.textContent = msg;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 5000);
+        }
+    }
+
+    function renderExistingPhotos() {
+        const container = document.getElementById('existing-photos');
+        if (existingPhotos.length === 0) {
+            container.innerHTML = '<p class="col-span-full text-sm text-gray-400">No photos yet.</p>';
+            return;
+        }
+        container.innerHTML = existingPhotos.map(photo => {
+            const isPrimary = photo.id === (window.primaryPhotoId || null);
+            const isSelected = selectedIds.has(photo.id);
+            const photoUrl = photo.url.replace(/"/g, '&quot;');
+            return `<div class="group relative aspect-square overflow-hidden rounded-lg border-2 transition-colors ${isSelected ? 'border-red-500 ring-4 ring-red-200' : isPrimary ? 'border-blue-400 ring-2 ring-blue-200' : 'border-gray-200'}" id="photo-${photo.id}" data-photo-id="${photo.id}" data-photo-url="${photoUrl}">
+                <img src="${photoUrl}" class="h-full w-full object-cover ${isSelected ? 'opacity-50' : ''}" alt="">
+                ${isPrimary ? '<div class="absolute left-2 top-2 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-semibold text-white z-10">Primary</div>' : ''}
+                ${isSelected ? '<div class="absolute inset-0 flex items-center justify-center bg-red-500/20 z-10 pointer-events-none"><span class="rounded bg-red-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">Marked for Removal</span></div>' : ''}
+                <div class="absolute bottom-2 left-2 right-2 z-20 flex items-center justify-center gap-2 opacity-90 transition-opacity group-hover:opacity-100">
+                    <button type="button" data-action="remove" data-photo-id="${photo.id}" title="${isSelected ? 'Cancel Removal' : 'Remove Photo'}" class="flex h-9 items-center justify-center gap-1.5 rounded-lg ${isSelected ? 'bg-white text-red-600' : 'bg-red-500 text-white'} px-3 py-1.5 text-xs font-semibold shadow-lg transition-all hover:scale-105">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                        ${isSelected ? 'Cancel' : 'Remove'}
+                    </button>
+                    <button type="button" data-action="view" data-photo-url="${photoUrl}" title="View Large" class="flex h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-all hover:bg-blue-600 hover:scale-105">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
+                        View
+                    </button>
+                    <button type="button" data-action="primary" data-photo-id="${photo.id}" title="Set as Primary" class="flex h-9 items-center justify-center gap-1.5 rounded-lg ${isPrimary ? 'bg-green-500' : 'bg-gray-600'} px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-all hover:bg-green-600 hover:scale-105">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        ${isPrimary ? 'Primary' : 'Set Primary'}
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // Define photo action functions
+    window.togglePhotoSelect = function (id) {
+        const photoId = parseInt(id);
+        if (selectedIds.has(photoId)) {
+            selectedIds.delete(photoId);
+        } else {
+            selectedIds.add(photoId);
+        }
+        renderExistingPhotos();
+    };
+
+    window.viewPhotoLarge = function (url) {
+        // Remove existing modal if any
+        const existingModal = document.getElementById('photo-modal');
+        if (existingModal) existingModal.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'photo-modal';
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4';
+        modal.innerHTML = `
+            <div class="relative max-h-[90vh] max-w-[90vw]">
+                <img src="${url}" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl" alt="Product photo">
+                <button type="button" onclick="document.getElementById('photo-modal')?.remove()" class="absolute right-2 top-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-gray-900 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:scale-110" title="Close">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        `;
+        const closeModal = () => modal.remove();
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        // Close on Escape key
+        const escapeHandler = (e) => { if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', escapeHandler); } };
+        document.addEventListener('keydown', escapeHandler);
+        document.body.appendChild(modal);
+    };
+
+    window.setPrimaryPhoto = async function (photoId) {
+        try {
+            const res = await window.axios.patch(`/api/vendor/products/${productId}/photos/${photoId}/set-primary`);
+            // Update primary photo ID from response
+            window.primaryPhotoId = res.data.data.primary_photo_id || photoId;
+            // Reload product to get updated data
+            const productRes = await window.axios.get(`/api/vendor/products/${productId}`);
+            const product = productRes.data.data;
+            existingPhotos = product.photos || [];
+            window.primaryPhotoId = product.primary_photo_id || null;
+            renderExistingPhotos();
+            showAlert('edit-success', 'Primary photo updated successfully.');
+        } catch (e) {
+            console.error('Failed to set primary photo:', e);
+            showAlert('edit-alert', e.response?.data?.message || 'Failed to set primary photo.');
+        }
+    };
+
+    // Add event delegation for photo actions (only once, before loading)
+    const container = document.getElementById('existing-photos');
+    if (container && !container.hasAttribute('data-listener-added')) {
+        container.setAttribute('data-listener-added', 'true');
+        container.addEventListener('click', function(e) {
+            const button = e.target.closest('button[data-action]');
+            if (!button) return;
+
+            const action = button.getAttribute('data-action');
+            const photoId = button.getAttribute('data-photo-id');
+            const photoUrl = button.getAttribute('data-photo-url');
+
+            if (action === 'remove' && photoId) {
+                window.togglePhotoSelect(parseInt(photoId));
+            } else if (action === 'view' && photoUrl) {
+                window.viewPhotoLarge(photoUrl);
+            } else if (action === 'primary' && photoId) {
+                window.setPrimaryPhoto(parseInt(photoId));
+            }
+        });
+    }
+
     // Load product
     try {
         const res = await window.axios.get('/api/vendor/products/' + productId);
@@ -113,6 +231,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         window.primaryPhotoId = p.primary_photo_id || null;
 
         renderExistingPhotos();
+
         document.getElementById('edit-loading').classList.add('hidden');
         document.getElementById('edit-content').classList.remove('hidden');
     } catch (e) {
@@ -127,54 +246,30 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
         container.innerHTML = existingPhotos.map(photo => {
             const isPrimary = photo.id === (window.primaryPhotoId || null);
-            return `<div class="group relative aspect-square overflow-hidden rounded-lg border-2 transition-colors ${selectedIds.has(photo.id) ? 'border-red-400 ring-2 ring-red-200' : isPrimary ? 'border-blue-400 ring-2 ring-blue-200' : 'border-gray-200'}" id="photo-${photo.id}">
-                <img src="${photo.url}" class="h-full w-full object-cover" alt="">
-                ${isPrimary ? '<div class="absolute left-2 top-2 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">Primary</div>' : ''}
-                <div class="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 transition-all group-hover:bg-black/50 group-hover:opacity-100">
-                    <button type="button" onclick="togglePhotoSelect(${photo.id})" title="Remove" class="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white opacity-0 shadow-lg transition-all hover:bg-red-600 group-hover:opacity-100">
+            const isSelected = selectedIds.has(photo.id);
+            const photoUrl = photo.url.replace(/"/g, '&quot;');
+            return `<div class="group relative aspect-square overflow-hidden rounded-lg border-2 transition-colors ${isSelected ? 'border-red-500 ring-4 ring-red-200' : isPrimary ? 'border-blue-400 ring-2 ring-blue-200' : 'border-gray-200'}" id="photo-${photo.id}" data-photo-id="${photo.id}" data-photo-url="${photoUrl}">
+                <img src="${photoUrl}" class="h-full w-full object-cover ${isSelected ? 'opacity-50' : ''}" alt="">
+                ${isPrimary ? '<div class="absolute left-2 top-2 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-semibold text-white z-10">Primary</div>' : ''}
+                ${isSelected ? '<div class="absolute inset-0 flex items-center justify-center bg-red-500/20 z-10 pointer-events-none"><span class="rounded bg-red-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">Marked for Removal</span></div>' : ''}
+                <div class="absolute bottom-2 left-2 right-2 z-20 flex items-center justify-center gap-2 opacity-90 transition-opacity group-hover:opacity-100">
+                    <button type="button" data-action="remove" data-photo-id="${photo.id}" title="${isSelected ? 'Cancel Removal' : 'Remove Photo'}" class="flex h-9 items-center justify-center gap-1.5 rounded-lg ${isSelected ? 'bg-white text-red-600' : 'bg-red-500 text-white'} px-3 py-1.5 text-xs font-semibold shadow-lg transition-all hover:scale-105">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                        ${isSelected ? 'Cancel' : 'Remove'}
                     </button>
-                    <button type="button" onclick="viewPhotoLarge('${photo.url}')" title="View Large" class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg transition-all hover:bg-blue-600 group-hover:opacity-100">
+                    <button type="button" data-action="view" data-photo-url="${photoUrl}" title="View Large" class="flex h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-all hover:bg-blue-600 hover:scale-105">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
+                        View
                     </button>
-                    <button type="button" onclick="setPrimaryPhoto(${photo.id})" title="Set as Primary" class="flex h-8 w-8 items-center justify-center rounded-full ${isPrimary ? 'bg-green-500' : 'bg-gray-600'} text-white opacity-0 shadow-lg transition-all hover:bg-green-600 group-hover:opacity-100">
+                    <button type="button" data-action="primary" data-photo-id="${photo.id}" title="Set as Primary" class="flex h-9 items-center justify-center gap-1.5 rounded-lg ${isPrimary ? 'bg-green-500' : 'bg-gray-600'} px-3 py-1.5 text-xs font-semibold text-white shadow-lg transition-all hover:bg-green-600 hover:scale-105">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        ${isPrimary ? 'Primary' : 'Set Primary'}
                     </button>
                 </div>
             </div>`;
         }).join('');
     }
 
-    window.togglePhotoSelect = function (id) {
-        if (selectedIds.has(id)) { selectedIds.delete(id); } else { selectedIds.add(id); }
-        renderExistingPhotos();
-    };
-
-    window.viewPhotoLarge = function (url) {
-        const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4';
-        modal.innerHTML = `
-            <div class="relative max-h-[90vh] max-w-[90vw]">
-                <img src="${url}" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain" alt="Product photo">
-                <button onclick="this.closest('.fixed').remove()" class="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-gray-900 hover:bg-white">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-        `;
-        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-        document.body.appendChild(modal);
-    };
-
-    window.setPrimaryPhoto = async function (photoId) {
-        try {
-            await window.axios.patch(`/api/vendor/products/${productId}/photos/${photoId}/set-primary`);
-            window.primaryPhotoId = photoId;
-            renderExistingPhotos();
-            showAlert('edit-success', 'Primary photo updated successfully.');
-        } catch (e) {
-            showAlert('edit-alert', e.response?.data?.message || 'Failed to set primary photo.');
-        }
-    };
 
 
     // Update product form

@@ -15,6 +15,8 @@ use App\Models\User;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -56,6 +58,96 @@ class ProductController extends Controller
                 'per_page' => $products->perPage(),
                 'total' => $products->total(),
             ],
+        ]);
+    }
+
+    public function publicIndex(Request $request): JsonResponse
+    {
+        try {
+            $filters = $request->only(['vendor_id']);
+            $vendorId = $filters['vendor_id'] ?? null;
+            $page = $request->get('page', 1);
+
+            // Cache key includes vendor filter and page
+            $cacheKey = $vendorId
+                ? "products:public:list:vendor:{$vendorId}:page:{$page}"
+                : "products:public:list:page:{$page}";
+
+            try {
+                $response = Cache::remember($cacheKey, 1800, function () use ($filters) {
+                    $products = $this->productService->listPublic(15, $filters);
+
+                    return [
+                        'data' => ProductListResource::collection($products),
+                        'meta' => [
+                            'current_page' => $products->currentPage(),
+                            'last_page' => $products->lastPage(),
+                            'per_page' => $products->perPage(),
+                            'total' => $products->total(),
+                        ],
+                    ];
+                });
+            } catch (\Exception $cacheException) {
+                // Fallback if cache fails
+                $products = $this->productService->listPublic(15, $filters);
+                $response = [
+                    'data' => ProductListResource::collection($products),
+                    'meta' => [
+                        'current_page' => $products->currentPage(),
+                        'last_page' => $products->lastPage(),
+                        'per_page' => $products->perPage(),
+                        'total' => $products->total(),
+                    ],
+                ];
+            }
+
+            return response()->json([
+                'message' => __('Products retrieved successfully.'),
+                ...$response,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Public products index error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'message' => __('An error occurred while retrieving products.'),
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Show a public product (for clients/users).
+     */
+    public function publicShow(Product $product): JsonResponse
+    {
+        // Verify product is available for public viewing
+        if (! $product->is_active || $product->status !== Product::STATUS_APPROVED || $product->quantity <= 0) {
+            abort(404, __('Product not found.'));
+        }
+
+        if (! $product->vendor->is_active) {
+            abort(404, __('Product not found.'));
+        }
+
+        // Cache product details
+        $cacheKey = "products:public:{$product->id}:details";
+        try {
+            $productData = Cache::remember($cacheKey, 3600, function () use ($product) {
+                $product->load(['vendor:id,store_name,user_id', 'vendor.user:id,name', 'photos']);
+
+                return new ProductResource($product);
+            });
+        } catch (\Exception $e) {
+            // Fallback if cache fails
+            $product->load(['vendor:id,store_name,user_id', 'vendor.user:id,name', 'photos']);
+            $productData = new ProductResource($product);
+        }
+
+        return response()->json([
+            'message' => __('Product retrieved successfully.'),
+            'data' => $productData,
         ]);
     }
 

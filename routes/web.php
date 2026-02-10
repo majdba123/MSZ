@@ -7,6 +7,11 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/login', function () {
+    // If logout parameter is present, don't redirect even if authenticated
+    if (request()->has('logout')) {
+        return view('auth.login');
+    }
+
     if (auth()->check()) {
         return match (auth()->user()->type) {
             \App\Models\User::TYPE_ADMIN => redirect()->route('admin.dashboard'),
@@ -25,6 +30,24 @@ Route::get('/register', function () {
 
     return view('auth.register');
 })->name('register');
+
+/*
+|--------------------------------------------------------------------------
+| Public Product Routes (for clients/users)
+|--------------------------------------------------------------------------
+*/
+Route::get('/products/{id}', function (string $id) {
+    return view('products.show', ['productId' => $id]);
+})->name('products.show');
+
+/*
+|--------------------------------------------------------------------------
+| Public Vendor Routes (for clients/users)
+|--------------------------------------------------------------------------
+*/
+Route::get('/vendors/{id}', function (string $id) {
+    return view('vendors.show', ['vendorId' => $id]);
+})->name('vendors.show');
 
 /*
 |--------------------------------------------------------------------------

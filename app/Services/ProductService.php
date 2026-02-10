@@ -7,6 +7,7 @@ use App\Models\ProductPhoto;
 use App\Models\Vendor;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class ProductService
@@ -52,12 +53,57 @@ class ProductService
     }
 
     /**
-     * Create a product.
-     * If vendor is provided, it's scoped to that vendor.
-     * Otherwise, vendor_id must be in $data (admin use case).
+     * Get paginated public products (for clients/users).
+     * Only shows products that:
+     * - Vendor is active
+     * - Product is active
+     * - Quantity > 0
+     * - Status is approved
      *
-     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $filters
      */
+    public function listPublic(int $perPage = 15, array $filters = []): LengthAwarePaginator
+    {
+        $vendorId = isset($filters['vendor_id']) && $filters['vendor_id'] !== '' && $filters['vendor_id'] !== null
+            ? (int) $filters['vendor_id']
+            : null;
+
+        $page = request()->get('page', 1);
+        $cacheKey = $vendorId
+            ? "products:public:vendor:{$vendorId}:page:{$page}"
+            : "products:public:page:{$page}";
+
+        try {
+            return Cache::remember($cacheKey, 1800, function () use ($perPage, $vendorId) {
+                return $this->fetchPublicProducts($perPage, $vendorId);
+            });
+        } catch (\Exception $e) {
+            // Fallback if cache fails
+            return $this->fetchPublicProducts($perPage, $vendorId);
+        }
+    }
+
+    protected function fetchPublicProducts(int $perPage, ?int $vendorId): LengthAwarePaginator
+    {
+        $query = Product::query()
+            ->where('is_active', true)
+            ->where('status', Product::STATUS_APPROVED)
+            ->where('quantity', '>', 0)
+            ->whereHas('vendor', function ($q) {
+                $q->where('is_active', true);
+            })
+            ->with(['photos' => function ($query) {
+                $query->orderBy('is_primary', 'desc')->orderBy('sort_order');
+            }, 'vendor:id,store_name,user_id', 'vendor.user:id,name']);
+
+        // Filter by vendor_id if provided
+        if ($vendorId) {
+            $query->where('vendor_id', $vendorId);
+        }
+
+        return $query->latest('created_at')->paginate($perPage);
+    }
+
     public function create(?Vendor $vendor, array $data): Product
     {
         // Set default status to pending if not provided
@@ -71,17 +117,18 @@ class ProductService
             $product = Product::query()->create($data);
         }
 
+        // Invalidate cache
+        $this->invalidateProductCache($product);
+
         return $product->load($vendor ? 'photos' : ['vendor.user', 'photos']);
     }
 
-    /**
-     * Update an existing product.
-     *
-     * @param  array<string, mixed>  $data
-     */
     public function update(Product $product, array $data): Product
     {
         $product->update($data);
+
+        // Invalidate cache
+        $this->invalidateProductCache($product);
 
         return $product->fresh($product->vendor ? ['vendor.user', 'photos'] : 'photos');
     }
@@ -91,12 +138,17 @@ class ProductService
      */
     public function delete(Product $product): void
     {
+        $vendorId = $product->vendor_id;
+
         // Delete all photos from storage
         foreach ($product->photos as $photo) {
             Storage::disk('public')->delete($photo->path);
         }
 
         $product->delete();
+
+        // Invalidate cache
+        $this->invalidateProductCache($product, $vendorId);
     }
 
     /**
@@ -105,6 +157,9 @@ class ProductService
     public function toggleActive(Product $product): Product
     {
         $product->update(['is_active' => ! $product->is_active]);
+
+        // Invalidate cache
+        $this->invalidateProductCache($product);
 
         return $product->fresh(['vendor.user', 'photos']);
     }
@@ -115,6 +170,9 @@ class ProductService
     public function updateStatus(Product $product, string $status): Product
     {
         $product->update(['status' => $status]);
+
+        // Invalidate cache
+        $this->invalidateProductCache($product);
 
         return $product->fresh(['vendor.user', 'photos']);
     }
@@ -134,6 +192,9 @@ class ProductService
 
         // Set this photo as primary
         $photo->update(['is_primary' => true]);
+
+        // Invalidate cache
+        $this->invalidateProductCache($product);
 
         return $product->fresh(['vendor.user', 'photos']);
     }
@@ -166,6 +227,9 @@ class ProductService
             }
         }
 
+        // Invalidate cache
+        $this->invalidateProductCache($product);
+
         return $photos;
     }
 
@@ -174,8 +238,12 @@ class ProductService
      */
     public function removePhoto(ProductPhoto $photo): void
     {
+        $product = $photo->product;
         Storage::disk('public')->delete($photo->path);
         $photo->delete();
+
+        // Invalidate cache
+        $this->invalidateProductCache($product);
     }
 
     /**
@@ -202,11 +270,41 @@ class ProductService
             // Refresh product to get updated photos list
             $product->refresh();
             $firstRemaining = $product->photos()->orderBy('sort_order')->first();
-            if ($firstRemaining) {
+            if ($firstRemaining instanceof ProductPhoto) {
                 $firstRemaining->update(['is_primary' => true]);
             }
         }
 
+        // Invalidate cache
+        $this->invalidateProductCache($product);
+
         return $photos->count();
+    }
+
+    /**
+     * Invalidate product-related cache.
+     */
+    protected function invalidateProductCache(Product $product, ?int $vendorId = null): void
+    {
+        $vendorId = $vendorId ?? $product->vendor_id;
+
+        // Clear all paginated product caches (public) - clear first 10 pages
+        for ($i = 1; $i <= 10; $i++) {
+            Cache::forget("products:public:list:page:{$i}");
+            Cache::forget("products:public:vendor:{$vendorId}:page:{$i}");
+            Cache::forget("products:public:page:{$i}");
+        }
+
+        // Clear product detail cache
+        Cache::forget("products:public:{$product->id}:details");
+        Cache::forget("products:{$product->id}:details");
+
+        // Clear vendor cache if vendor exists
+        if ($vendorId) {
+            Cache::forget("vendors:{$vendorId}:details");
+        }
+
+        // Clear vendor list cache
+        Cache::forget('vendors:active:list');
     }
 }

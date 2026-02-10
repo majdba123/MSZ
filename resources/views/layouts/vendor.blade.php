@@ -69,8 +69,69 @@
     </div>
 
     <script>
+        // Helper function to delete a cookie
+        function deleteCookie(name, path = '/', domain = '') {
+            let cookieString = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=' + path;
+            if (domain) {
+                cookieString += '; domain=' + domain;
+            }
+            document.cookie = cookieString;
+            // Also try without domain
+            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=' + path;
+        }
+
+        // Define logout function globally before DOM loads
+        window.vendorLogout = async function() {
+            try {
+                // Get token before clearing (for API call)
+                const token = window.Auth?.getToken() || localStorage.getItem('auth_token');
+
+                // Call logout API FIRST to invalidate server-side session
+                if (token && window.axios) {
+                    try {
+                        await window.axios.post('/api/auth/logout', {}, {
+                            headers: {
+                                'Authorization': 'Bearer ' + token
+                            }
+                        });
+                    } catch (e) {
+                        // Continue even if API call fails
+                        console.log('Logout API call failed (continuing):', e);
+                    }
+                }
+
+                // Clear all auth data from client
+                if (window.Auth && window.Auth.clearAll) {
+                    window.Auth.clearAll();
+                } else {
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('auth_user');
+                    sessionStorage.clear();
+                    delete window.axios.defaults.headers.common['Authorization'];
+                }
+
+                // Delete cookies
+                deleteCookie('XSRF-TOKEN');
+                deleteCookie('laravel_session');
+
+                // Force immediate redirect with logout parameter to prevent redirect loop
+                window.location.replace('{{ route("login") }}?logout=1');
+            } catch (e) {
+                console.error('Error during logout:', e);
+                // Even on error, redirect to login
+                window.location.replace('{{ route("login") }}?logout=1');
+            }
+        };
+
         // Vendor Auth Guard
         document.addEventListener('DOMContentLoaded', async function () {
+            // Check if this is a logout redirect
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('logout') === '1') {
+                // Don't check auth, just show login page
+                return;
+            }
+
             if (!window.Auth || !window.Auth.isAuthenticated()) {
                 window.location.href = '{{ route("login") }}';
                 return;
@@ -95,41 +156,6 @@
                 window.location.href = '{{ route("login") }}';
             }
         });
-
-        async function vendorLogout() {
-            // Get token before clearing (for API call)
-            const token = window.Auth?.getToken() || localStorage.getItem('auth_token');
-
-            // Clear all auth data immediately
-            try {
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('auth_user');
-                sessionStorage.clear();
-                if (window.Auth) {
-                    if (window.Auth.clearAll) {
-                        window.Auth.clearAll();
-                    } else if (window.Auth.removeToken) {
-                        window.Auth.removeToken();
-                    }
-                }
-                // Clear axios default headers
-                delete window.axios.defaults.headers.common['Authorization'];
-            } catch (e) {
-                console.error('Error clearing storage:', e);
-            }
-
-            // Try to call logout API with token (fire and forget)
-            if (token) {
-                window.axios.post('/api/auth/logout', {}, {
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
-                }).catch(() => {});
-            }
-
-            // Force immediate redirect - don't wait for API
-            window.location.replace('{{ route("login") }}');
-        }
 
         // Sidebar toggle (mobile)
         document.addEventListener('DOMContentLoaded', function () {

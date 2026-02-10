@@ -28,7 +28,18 @@
             window.Auth.setUser(res.data.data.user);
             showAlert('login-success', 'Signed in successfully! Redirecting…');
 
-            setTimeout(() => { window.location.href = '/'; }, 600);
+            // Redirect based on user type
+            const user = res.data.data.user;
+            let redirectUrl = '/';
+            if (user.type === 1) { // Admin
+                redirectUrl = '/admin/dashboard';
+            } else if (user.type === 2) { // Vendor
+                redirectUrl = '/vendor/dashboard';
+            } else { // User/Client
+                redirectUrl = '/';
+            }
+
+            setTimeout(() => { window.location.href = redirectUrl; }, 600);
         } catch (err) {
             handleValidationErrors(err, 'login-alert');
         } finally {

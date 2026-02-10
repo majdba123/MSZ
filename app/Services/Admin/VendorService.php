@@ -4,6 +4,7 @@ namespace App\Services\Admin;
 
 use App\Models\User;
 use App\Models\Vendor;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class VendorService
@@ -25,13 +26,18 @@ class VendorService
                 'type' => User::TYPE_VENDOR,
             ]);
 
-            return Vendor::query()->create([
+            $vendor = Vendor::query()->create([
                 'user_id' => $user->id,
                 'store_name' => $data['store_name'],
                 'description' => $data['description'] ?? null,
                 'address' => $data['address'] ?? null,
                 'logo' => $data['logo'] ?? null,
             ]);
+
+            // Invalidate vendor cache
+            Cache::forget('vendors:active:list');
+
+            return $vendor;
         });
     }
 
@@ -73,6 +79,13 @@ class VendorService
     {
         $vendor->update(['is_active' => ! $vendor->is_active]);
 
+        // Invalidate vendor cache
+        Cache::forget("vendors:{$vendor->id}:details");
+        Cache::forget('vendors:active:list');
+
+        // Invalidate product caches for this vendor
+        Cache::forget("products:public:vendor:{$vendor->id}:page:1");
+
         return $vendor->fresh('user');
     }
 
@@ -82,9 +95,17 @@ class VendorService
     public function delete(Vendor $vendor): void
     {
         DB::transaction(function () use ($vendor) {
+            $vendorId = $vendor->id;
             $vendor->user->tokens()->delete();
             $vendor->delete();
             $vendor->user->delete();
+
+            // Invalidate vendor cache
+            Cache::forget("vendors:{$vendorId}:details");
+            Cache::forget('vendors:active:list');
+
+            // Invalidate product caches for this vendor
+            Cache::forget("products:public:vendor:{$vendorId}:page:1");
         });
     }
 }

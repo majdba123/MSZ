@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                                         data-product-name="${esc(product.name)}"
                                         data-product-price="${product.price}"
                                         data-product-photo="${esc(product.first_photo_url || '')}"
-                                        onclick="handleAddToCart(this)"
+                                        onclick="handleAddToCartFromCard(this)"
                                         class="flex-1 btn-primary text-sm font-medium shadow-sm transition-all hover:shadow-md ${product.quantity <= 0 ? 'opacity-50 cursor-not-allowed' : ''}"
                                         ${product.quantity <= 0 ? 'disabled' : ''}>
                                     <span class="flex items-center justify-center gap-1.5">
@@ -609,6 +609,20 @@ document.addEventListener('DOMContentLoaded', async function () {
             console.error('addToCart function not available');
         }
     }
+
+    // Handle add to cart from product cards (global function)
+    window.handleAddToCartFromCard = function(button) {
+        const productId = parseInt(button.dataset.productId);
+        const productName = button.dataset.productName;
+        const productPrice = parseFloat(button.dataset.productPrice);
+        const productPhoto = button.dataset.productPhoto || '/images/placeholder.png';
+
+        if (typeof window.addToCart === 'function') {
+            window.addToCart(productId, productName, productPrice, productPhoto);
+        } else {
+            console.error('addToCart function not available');
+        }
+    };
 
     function esc(str) {
         const div = document.createElement('div');

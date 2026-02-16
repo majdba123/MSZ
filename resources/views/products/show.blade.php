@@ -310,9 +310,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
 
             localStorage.setItem('cart', JSON.stringify(cart));
+            window.dispatchEvent(new CustomEvent('cartUpdated'));
 
-            if (typeof updateCartBadge === 'function') updateCartBadge();
-            if (typeof window.updateCartBadge === 'function') window.updateCartBadge();
+            if (typeof window.updateCartBadge === 'function') window.updateCartBadge(true);
 
             showAlert('Product added to cart!', 'success');
         } catch (e) {

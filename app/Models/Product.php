@@ -23,6 +23,7 @@ class Product extends Model
      */
     protected $fillable = [
         'vendor_id',
+        'subcategory_id',
         'name',
         'description',
         'price',
@@ -65,5 +66,13 @@ class Product extends Model
     public function primaryPhoto(): ?ProductPhoto
     {
         return $this->photos()->where('is_primary', true)->first();
+    }
+
+    /**
+     * The subcategory that owns this product.
+     */
+    public function subcategory(): BelongsTo
+    {
+        return $this->belongsTo(Subcategory::class);
     }
 }

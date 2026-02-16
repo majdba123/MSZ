@@ -3,34 +3,39 @@
 @section('title', 'SyriaZone')
 
 @section('content')
-<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-    {{-- Hero Section --}}
-    <div class="mb-12 text-center">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-            Welcome to <span class="text-brand-600">SyriaZone</span>
-        </h1>
-        <p class="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
-            Discover amazing products from trusted vendors. Shop with confidence, quality guaranteed.
-        </p>
-    </div>
-
-    {{-- Featured Vendors Section --}}
-    <div class="mb-12">
-        <div class="mb-6 flex items-center justify-between">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900">Featured Vendors</h2>
-                <p class="mt-1 text-sm text-gray-500">Explore our trusted partners</p>
+{{-- Hero Banner - Amazon Style --}}
+<div class="bg-gray-100">
+    <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div class="relative h-64 overflow-hidden rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 sm:h-80 lg:h-96">
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-center text-white">
+                    <h1 class="text-4xl font-bold sm:text-5xl lg:text-6xl">SyriaZone</h1>
+                    <p class="mt-4 text-xl sm:text-2xl">Shop Everything You Need</p>
+                </div>
             </div>
-            <button id="prev-vendors" class="hidden rounded-lg border border-gray-300 p-2 text-gray-600 transition-colors hover:bg-gray-100 sm:block">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                </svg>
-            </button>
-            <button id="next-vendors" class="hidden rounded-lg border border-gray-300 p-2 text-gray-600 transition-colors hover:bg-gray-100 sm:block">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-            </button>
+        </div>
+    </div>
+</div>
+
+<div class="bg-gray-50">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+    {{-- Featured Vendors Section - Amazon Style --}}
+    <div id="vendors" class="mb-12 scroll-mt-20">
+        <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-2xl font-bold text-gray-900">Shop by Vendor</h2>
+            <div class="hidden gap-2 sm:flex">
+                <button id="prev-vendors" class="flex h-8 w-8 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-50">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                </button>
+                <button id="next-vendors" class="flex h-8 w-8 items-center justify-center rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-50">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                </button>
+            </div>
         </div>
         <div id="vendors-loading" class="flex justify-center py-8">
             <div class="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500"></div>
@@ -41,21 +46,16 @@
         <div id="vendors-empty" class="hidden text-center py-8 text-gray-500">No vendors available.</div>
     </div>
 
-    {{-- Products Section --}}
-    <div class="mb-8">
-        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Our Products</h1>
-                <p class="mt-1 text-sm text-gray-500">Discover amazing products from trusted vendors</p>
-            </div>
-
-            {{-- Filters --}}
-            <div class="flex flex-wrap items-center gap-3">
-                <select id="filter-vendor" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm shadow-sm transition-all focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20">
+    {{-- Products Section - Amazon Style --}}
+    <div id="products" class="mb-12 scroll-mt-20">
+        <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 class="text-2xl font-bold text-gray-900">Products</h2>
+            <div class="flex flex-wrap items-center gap-2">
+                <select id="filter-vendor" class="rounded border border-gray-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500">
                     <option value="">All Vendors</option>
                 </select>
-                <button id="apply-filters" class="btn-primary px-4 py-2 text-sm shadow-sm hover:shadow-md transition-shadow">Apply</button>
-                <button id="clear-filters" class="btn-secondary px-4 py-2 text-sm shadow-sm hover:shadow-md transition-shadow">Clear</button>
+                <button id="apply-filters" class="rounded bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">Apply</button>
+                <button id="clear-filters" class="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Clear</button>
             </div>
         </div>
 
@@ -64,8 +64,8 @@
             <div class="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500"></div>
         </div>
 
-        {{-- Products Grid --}}
-        <div id="products-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
+        {{-- Products Grid - Amazon Style --}}
+        <div id="products-grid" class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"></div>
 
         {{-- Empty State --}}
         <div id="products-empty" class="hidden text-center py-12">
@@ -203,8 +203,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     const checkoutBtn = document.getElementById('checkout-btn');
 
     // Initialize cart badge on page load
-    if (typeof updateCartBadge === 'function') {
-        updateCartBadge();
+    if (typeof window.updateCartBadge === 'function') {
+        window.updateCartBadge();
     }
 
     // Load vendors for filter and carousel
@@ -235,31 +235,22 @@ document.addEventListener('DOMContentLoaded', async function () {
             } else {
                 vendorsContainer.classList.remove('hidden');
                 vendorsCarousel.innerHTML = vendors.map(vendor => `
-                    <div class="flex-shrink-0 w-64 rounded-xl bg-white shadow-md ring-1 ring-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl hover:ring-brand-500/50">
-                        <div class="relative h-32 bg-gradient-to-br from-brand-100 to-brand-200">
+                    <div class="flex-shrink-0 w-56 rounded border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow">
+                        <div class="mb-3 h-32 bg-gray-100 rounded flex items-center justify-center overflow-hidden">
                             ${vendor.logo ? `
                                 <img src="${esc(vendor.logo)}" alt="${esc(vendor.store_name)}" class="h-full w-full object-cover">
                             ` : `
-                                <div class="flex h-full w-full items-center justify-center">
-                                    <svg class="h-16 w-16 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                </div>
+                                <svg class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
                             `}
                         </div>
-                        <div class="p-5">
-                            <h3 class="mb-2 text-lg font-bold text-gray-900 line-clamp-1">${esc(vendor.store_name)}</h3>
-                            <p class="mb-4 text-sm text-gray-600 line-clamp-2">${esc(vendor.description || 'No description available')}</p>
-                            <div class="flex gap-2">
-                                <a href="/vendors/${vendor.id}" class="flex-1 btn-secondary text-center text-sm font-medium transition-all hover:bg-gray-100">
-                                    View Profile
-                                </a>
-                                <button onclick="selectedVendorId = '${vendor.id}'; currentPage = 1; loadProducts();"
-                                        class="flex-1 btn-primary text-sm font-medium shadow-sm transition-all hover:shadow-md">
-                                    View Products
-                                </button>
-                            </div>
-                        </div>
+                        <h3 class="mb-1 text-sm font-semibold text-gray-900 line-clamp-1">${esc(vendor.store_name)}</h3>
+                        <p class="mb-3 text-xs text-gray-600 line-clamp-2">${esc(vendor.description || 'No description available')}</p>
+                        <button onclick="selectedVendorId = '${vendor.id}'; currentPage = 1; loadProducts();"
+                                class="w-full rounded bg-brand-500 px-3 py-2 text-xs font-medium text-white hover:bg-brand-600">
+                            View Products
+                        </button>
                     </div>
                 `).join('');
 
@@ -360,6 +351,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
+    // Helper function to dispatch cart update event
+    function dispatchCartUpdate() {
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
+    }
+
     // Cart functions - Make globally accessible
     window.addToCart = function(productId, productName, productPrice, productPhoto) {
         try {
@@ -379,9 +375,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
 
             localStorage.setItem('cart', JSON.stringify(cart));
+            dispatchCartUpdate();
             if (typeof updateCartDisplay === 'function') updateCartDisplay();
-            if (typeof updateCartBadge === 'function') updateCartBadge();
-            if (typeof window.updateCartBadge === 'function') window.updateCartBadge();
+            if (typeof window.updateCartBadge === 'function') window.updateCartBadge(true);
             showAlert('Product added to cart!', 'success');
         } catch (e) {
             console.error('Error adding to cart:', e);
@@ -393,8 +389,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         let cart = JSON.parse(localStorage.getItem('cart') || '[]');
         cart = cart.filter(item => item.id !== productId);
         localStorage.setItem('cart', JSON.stringify(cart));
-        updateCartDisplay();
-        updateCartBadge();
+        dispatchCartUpdate();
+        if (typeof updateCartDisplay === 'function') updateCartDisplay();
+        if (typeof window.updateCartBadge === 'function') window.updateCartBadge();
     };
 
     window.updateCartQuantity = function(productId, quantity) {
@@ -406,22 +403,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             } else {
                 item.quantity = quantity;
                 localStorage.setItem('cart', JSON.stringify(cart));
-                updateCartDisplay();
-                updateCartBadge();
-            }
-        }
-    };
-
-    function updateCartBadge() {
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        const badge = document.getElementById('cart-badge');
-        if (badge) {
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            if (totalItems > 0) {
-                badge.textContent = totalItems > 99 ? '99+' : totalItems;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
+                dispatchCartUpdate();
+                if (typeof updateCartDisplay === 'function') updateCartDisplay();
+                if (typeof window.updateCartBadge === 'function') window.updateCartBadge();
             }
         }
     }
@@ -530,42 +514,49 @@ document.addEventListener('DOMContentLoaded', async function () {
                 productsEmpty.classList.remove('hidden');
             } else {
                 productsGrid.innerHTML = data.map(product => `
-                    <div class="group relative overflow-hidden rounded-xl bg-white shadow-md ring-1 ring-gray-200 transition-all duration-300 hover:shadow-xl hover:ring-brand-500/50">
-                        <div class="relative overflow-hidden">
-                            <img src="${esc(product.first_photo_url || '/images/placeholder.png')}"
-                                 alt="${esc(product.name)}"
-                                 class="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-110">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                            ${product.vendor ? `<div class="absolute top-3 left-3 rounded-full bg-white/95 backdrop-blur-sm px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-lg">${esc(product.vendor.store_name)}</div>` : ''}
-                            ${product.quantity <= 0 ? `<div class="absolute top-3 right-3 rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">Out of Stock</div>` : ''}
+                    <div class="group relative rounded border border-gray-200 bg-white p-4 hover:shadow-lg transition-shadow">
+                        <div class="mb-3 aspect-square w-full overflow-hidden rounded bg-gray-100">
+                            <a href="/products/${product.id}">
+                                <img src="${esc(product.first_photo_url || '/images/placeholder.png')}"
+                                     alt="${esc(product.name)}"
+                                     class="h-full w-full object-cover">
+                            </a>
                         </div>
-                        <div class="p-5">
-                            <h3 class="mb-2 text-lg font-bold text-gray-900 line-clamp-2 transition-colors group-hover:text-brand-600">${esc(product.name)}</h3>
-                            <p class="mb-4 text-sm text-gray-600 line-clamp-2">${esc(product.description || 'No description available')}</p>
-                            <div class="mb-4 flex items-center justify-between border-t border-gray-100 pt-4">
-                                <div>
-                                    <span class="text-2xl font-bold text-brand-600">${parseFloat(product.price).toFixed(2)}</span>
-                                    <span class="text-sm text-gray-500"> SYP</span>
-                                </div>
-                                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">${product.quantity} available</span>
-                            </div>
-                            <div class="flex gap-2">
-                                <a href="/products/${product.id}" class="flex-1 btn-secondary text-center text-sm font-medium transition-all hover:bg-gray-100">View</a>
-                                <button data-product-id="${product.id}"
-                                        data-product-name="${esc(product.name)}"
-                                        data-product-price="${product.price}"
-                                        data-product-photo="${esc(product.first_photo_url || '')}"
-                                        onclick="handleAddToCartFromCard(this)"
-                                        class="flex-1 btn-primary text-sm font-medium shadow-sm transition-all hover:shadow-md ${product.quantity <= 0 ? 'opacity-50 cursor-not-allowed' : ''}"
-                                        ${product.quantity <= 0 ? 'disabled' : ''}>
-                                    <span class="flex items-center justify-center gap-1.5">
-                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <div class="space-y-2">
+                            ${product.vendor ? `
+                                <p class="text-xs text-gray-500">${esc(product.vendor.store_name)}</p>
+                            ` : ''}
+                            <a href="/products/${product.id}" class="block">
+                                <h3 class="text-sm font-normal text-gray-900 line-clamp-2 h-10 hover:text-brand-600">${esc(product.name)}</h3>
+                            </a>
+                            <div class="flex items-center gap-1">
+                                <div class="flex text-yellow-400">
+                                    ${Array(5).fill(0).map((_, i) => `
+                                        <svg class="h-4 w-4 ${i < 4 ? 'fill-current' : 'text-gray-300'}" viewBox="0 0 20 20">
+                                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
                                         </svg>
-                                        Add to Cart
-                                    </span>
-                                </button>
+                                    `).join('')}
+                                </div>
+                                <span class="text-xs text-gray-500">(123)</span>
                             </div>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-lg font-bold text-gray-900">${parseFloat(product.price).toFixed(2)}</span>
+                                <span class="text-sm text-gray-500">SYP</span>
+                            </div>
+                            ${product.quantity <= 0 ? `
+                                <p class="text-xs text-red-600 font-medium">Currently unavailable</p>
+                            ` : `
+                                <p class="text-xs text-green-600 font-medium">In Stock</p>
+                            `}
+                            <button data-product-id="${product.id}"
+                                    data-product-name="${esc(product.name)}"
+                                    data-product-price="${product.price}"
+                                    data-product-photo="${esc(product.first_photo_url || '')}"
+                                    onclick="handleAddToCartFromCard(this)"
+                                    class="w-full rounded bg-yellow-400 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-yellow-500 ${product.quantity <= 0 ? 'opacity-50 cursor-not-allowed' : ''}"
+                                    ${product.quantity <= 0 ? 'disabled' : ''}>
+                                Add to Cart
+                            </button>
                         </div>
                     </div>
                 `).join('');
@@ -576,13 +567,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                 productsPagination.innerHTML = `
                     <button ${meta.current_page === 1 ? 'disabled' : ''}
                             onclick="currentPage = ${meta.current_page - 1}; loadProducts();"
-                            class="rounded-lg border border-gray-300 px-4 py-2 text-sm ${meta.current_page === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}">
+                            class="rounded border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 ${meta.current_page === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
                         Previous
                     </button>
-                    <span class="text-sm text-gray-600">Page ${meta.current_page} of ${meta.last_page}</span>
+                    <span class="text-sm text-gray-700">Page ${meta.current_page} of ${meta.last_page}</span>
                     <button ${meta.current_page === meta.last_page ? 'disabled' : ''}
                             onclick="currentPage = ${meta.current_page + 1}; loadProducts();"
-                            class="rounded-lg border border-gray-300 px-4 py-2 text-sm ${meta.current_page === meta.last_page ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}">
+                            class="rounded border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 ${meta.current_page === meta.last_page ? 'opacity-50 cursor-not-allowed' : ''}">
                         Next
                     </button>
                 `;

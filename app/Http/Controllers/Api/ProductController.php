@@ -43,8 +43,8 @@ class ProductController extends Controller
             // Allow status and is_active filters for vendors
             $filters = $request->only(['status', 'is_active']);
         } else {
-            // Admin: can filter by vendor_id, status, and is_active
-            $filters = $request->only(['vendor_id', 'status', 'is_active']);
+            // Admin: can filter by vendor_id, subcategory_id, status, and is_active
+            $filters = $request->only(['vendor_id', 'subcategory_id', 'status', 'is_active']);
         }
 
         $products = $this->productService->list($vendor, 15, $filters);

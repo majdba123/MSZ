@@ -34,6 +34,11 @@ class ProductService
             $query->where('vendor_id', $filters['vendor_id']);
         }
 
+        // Filter by subcategory_id
+        if (isset($filters['subcategory_id']) && $filters['subcategory_id']) {
+            $query->where('subcategory_id', $filters['subcategory_id']);
+        }
+
         // Filter by status (product approval status)
         if (isset($filters['status']) && $filters['status'] !== '') {
             $query->where('status', $filters['status']);

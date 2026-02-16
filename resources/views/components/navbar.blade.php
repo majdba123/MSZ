@@ -8,14 +8,22 @@
 
         {{-- Navigation Links --}}
         <div class="flex items-center gap-3" id="nav-links">
+            <a href="{{ route('home') }}#products"
+               class="hidden rounded-md px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:border-brand-500 hover:text-white sm:block">
+                Products
+            </a>
+            <a href="{{ route('home') }}#vendors"
+               class="hidden rounded-md px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:border-brand-500 hover:text-white sm:block">
+                Vendors
+            </a>
             <button id="nav-cart"
-                    class="relative flex items-center justify-center rounded-lg border border-gray-600 p-2.5 text-gray-200 transition-all hover:border-brand-500 hover:bg-brand-500/10 hover:text-white"
+                    class="relative flex items-center gap-2 rounded-lg border border-gray-600 px-3 py-2.5 text-gray-200 transition-all hover:border-brand-500 hover:bg-brand-500/10 hover:text-white"
                     onclick="window.showCart && window.showCart()"
                     title="Shopping Cart">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg class="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
                 </svg>
-                <span id="cart-badge" class="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-brand-500 px-1.5 text-xs font-bold text-white shadow-lg transition-all"></span>
+                <span id="cart-badge" class="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 px-2 text-xs font-extrabold leading-none text-white shadow-lg ring-2 ring-white transition-all duration-300 ease-out hidden"></span>
             </button>
             <a href="{{ route('login') }}"
                id="nav-login"
@@ -59,22 +67,61 @@
         updateCartBadge();
     }
 
-    function updateCartBadge() {
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        const badge = document.getElementById('cart-badge');
-        if (badge) {
+    function updateCartBadge(animate = false) {
+        try {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const badge = document.getElementById('cart-badge');
+            if (!badge) return;
+
             const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
             if (totalItems > 0) {
                 badge.textContent = totalItems > 99 ? '99+' : totalItems;
+
+                // Adjust width for 2-digit numbers
+                if (totalItems >= 10) {
+                    badge.classList.add('min-w-[28px]');
+                } else {
+                    badge.classList.remove('min-w-[28px]');
+                }
+
                 badge.classList.remove('hidden');
+
+                // Add pulse animation when item is added
+                if (animate) {
+                    badge.classList.add('animate-pulse', 'scale-125');
+                    setTimeout(() => {
+                        badge.classList.remove('animate-pulse', 'scale-125');
+                    }, 600);
+                }
             } else {
                 badge.classList.add('hidden');
             }
+        } catch (e) {
+            console.error('Error updating cart badge:', e);
         }
     }
 
-    // Update cart badge when cart changes
-    setInterval(updateCartBadge, 500);
+    // Event-based cart updates (performance optimized)
+    function setupCartListener() {
+        // Listen for custom cart update events
+        window.addEventListener('cartUpdated', () => {
+            updateCartBadge(true);
+        });
+
+        // Listen for storage changes (for cross-tab updates)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'cart') {
+                updateCartBadge();
+            }
+        });
+
+        // Initial update
+        updateCartBadge();
+    }
+
+    // Initialize cart listener
+    setupCartListener();
 
     // Make updateCartBadge globally available
     window.updateCartBadge = updateCartBadge;

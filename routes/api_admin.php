@@ -23,6 +23,8 @@ Route::apiResource('products', ProductController::class);
 Route::patch('products/{product}/toggle-active', [ProductController::class, 'toggleActive'])->name('products.toggle-active');
 Route::patch('products/{product}/status', [ProductController::class, 'updateStatus'])->name('products.update-status');
 Route::patch('products/{product}/photos/{photo}/set-primary', [ProductController::class, 'setPrimaryPhoto'])->name('products.set-primary-photo');
+Route::apiResource('categories', \App\Http\Controllers\Api\Admin\CategoryController::class);
+Route::apiResource('subcategories', \App\Http\Controllers\Api\Admin\SubcategoryController::class);
 
 // Product Photos (separate API)
 Route::get('products/{product}/photos', [ProductPhotoController::class, 'index'])->name('products.photos.index');

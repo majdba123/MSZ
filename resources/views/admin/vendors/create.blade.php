@@ -55,6 +55,17 @@
                     </div>
                 </fieldset>
 
+                <div class="border-t border-gray-100"></div>
+
+                {{-- Allowed Categories --}}
+                <fieldset>
+                    <legend class="text-sm font-semibold text-gray-900">Allowed Categories</legend>
+                    <p class="mb-4 text-xs text-gray-500">Select which categories this vendor is allowed to sell products in.</p>
+                    <div id="categories-loading" class="py-4 text-center text-sm text-gray-400">Loading categories...</div>
+                    <div id="categories-checkboxes" class="hidden grid grid-cols-1 gap-3 sm:grid-cols-2"></div>
+                    <p class="form-error" id="category_ids-error"></p>
+                </fieldset>
+
                 {{-- Actions --}}
                 <div class="flex flex-col-reverse gap-2 border-t border-gray-100 pt-5 sm:flex-row sm:justify-end">
                     <a href="{{ route('admin.vendors.index') }}" class="btn-secondary">Cancel</a>
@@ -74,10 +85,37 @@
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('create-vendor-form');
 
+    loadAllCategories();
+
+    async function loadAllCategories() {
+        try {
+            const res = await window.axios.get('/api/admin/categories');
+            const categories = res.data.data || [];
+            const container = document.getElementById('categories-checkboxes');
+            container.innerHTML = categories.map(cat => `
+                <label class="flex items-center gap-3 rounded-lg border border-gray-200 p-3 cursor-pointer hover:border-brand-300 hover:bg-brand-50/50 transition-colors">
+                    <input type="checkbox" name="category_ids[]" value="${cat.id}" class="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 category-checkbox">
+                    <div class="flex-1 min-w-0">
+                        <span class="text-sm font-medium text-gray-900">${esc(cat.name)}</span>
+                        <span class="ml-2 text-xs text-emerald-600 font-semibold">${parseFloat(cat.commission || 0).toFixed(2)}%</span>
+                    </div>
+                </label>
+            `).join('');
+            document.getElementById('categories-loading').classList.add('hidden');
+            container.classList.remove('hidden');
+        } catch (e) {
+            document.getElementById('categories-loading').textContent = 'Failed to load categories.';
+        }
+    }
+
+    function esc(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
         clearErrors();
         toggleLoading(true);
+
+        const selectedCategories = [...document.querySelectorAll('.category-checkbox:checked')].map(cb => parseInt(cb.value));
 
         const payload = {
             name: form.name.value.trim(),
@@ -85,6 +123,7 @@ document.addEventListener('DOMContentLoaded', function () {
             national_id: form.national_id.value.trim(),
             password: form.password.value,
             store_name: form.store_name.value.trim(),
+            category_ids: selectedCategories,
         };
         if (form.email.value.trim()) payload.email = form.email.value.trim();
         if (form.address.value.trim()) payload.address = form.address.value.trim();

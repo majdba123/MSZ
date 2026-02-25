@@ -24,6 +24,7 @@ class StoreCategoryRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'logo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:2048'],
+            'commission' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ];
     }
 }

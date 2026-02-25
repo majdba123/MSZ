@@ -80,7 +80,7 @@
                 </div>
 
                 {{-- Products Grid --}}
-                <div id="products-grid" class="hidden grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+                <div id="products-grid" class="hidden grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"></div>
 
                 {{-- Pagination --}}
                 <div id="products-pagination" class="mt-6 hidden flex items-center justify-center gap-4"></div>
@@ -179,26 +179,25 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderProducts(products) {
         const grid = document.getElementById('products-grid');
         grid.innerHTML = products.map(product => {
-            const photo = product.first_photo_url || '/images/placeholder.png';
+            const photo = product.first_photo_url || '';
+            const statusColor = product.status === 'approved' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : product.status === 'rejected' ? 'bg-red-50 text-red-700 ring-red-200' : 'bg-amber-50 text-amber-700 ring-amber-200';
             return `
-                <div class="card">
-                    <div class="card-body">
-                        <div class="flex items-start gap-4">
-                            <div class="flex-shrink-0">
-                                <img src="${esc(photo)}" alt="${esc(product.name)}" class="h-20 w-20 rounded-lg object-cover">
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h4 class="text-base font-semibold text-gray-900 line-clamp-2">${esc(product.name)}</h4>
-                                <p class="mt-1 text-sm font-bold text-brand-600">${parseFloat(product.price || 0).toFixed(2)} SYP</p>
-                                <p class="mt-1 text-xs text-gray-500">Qty: ${product.quantity || 0}</p>
-                                <p class="mt-1 text-xs text-gray-500">Status: <span class="font-semibold ${product.status === 'approved' ? 'text-green-600' : product.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'}">${product.status || 'pending'}</span></p>
-                            </div>
-                        </div>
-                        <div class="mt-4 flex gap-2 border-t border-gray-100 pt-4">
-                            <a href="/admin/products/${product.id}" class="btn-secondary btn-sm flex-1">View Product</a>
-                        </div>
+                <a href="/admin/products/${product.id}" class="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-brand-300">
+                    <div class="aspect-[4/3] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                        ${photo
+                            ? `<img src="${esc(photo)}" alt="${esc(product.name)}" class="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105">`
+                            : `<div class="flex h-full w-full items-center justify-center"><svg class="h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg></div>`
+                        }
                     </div>
-                </div>
+                    <div class="p-4">
+                        <h4 class="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-brand-600 transition-colors">${esc(product.name)}</h4>
+                        <div class="mt-2 flex items-center justify-between">
+                            <p class="text-base font-bold text-brand-600">${parseFloat(product.price || 0).toFixed(2)} <span class="text-xs font-normal text-gray-400">SYP</span></p>
+                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${statusColor}">${(product.status || 'pending').charAt(0).toUpperCase() + (product.status || 'pending').slice(1)}</span>
+                        </div>
+                        <p class="mt-1.5 text-xs text-gray-500">Stock: <span class="font-medium text-gray-700">${product.quantity || 0}</span></p>
+                    </div>
+                </a>
             `;
         }).join('');
     }

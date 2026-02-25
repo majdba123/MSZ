@@ -15,11 +15,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->admin()->create([
-            'name' => 'Admin',
-            'phone_number' => '0935027218',
-            'national_id' => '0000000001',
-            'password' => 'password',
+        User::query()->updateOrCreate(
+            ['phone_number' => '0935027218'],
+            [
+                'name' => 'Admin',
+                'national_id' => '0000000001',
+                'type' => User::TYPE_ADMIN,
+                'email' => 'admin@msz-demo.test',
+                'password' => 'password',
+            ],
+        );
+
+        $this->call([
+            CategorySubcategorySeeder::class,
+            MarketplaceDemoSeeder::class,
         ]);
     }
 }

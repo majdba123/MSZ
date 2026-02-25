@@ -37,7 +37,12 @@
 document.addEventListener('DOMContentLoaded', async function () {
     const form = document.getElementById('create-form');
     const vendorSelect = document.getElementById('vendor_id');
+    const categorySelect = document.getElementById('category_id');
+    const subcategorySelect = document.getElementById('subcategory_id');
     const STORAGE_KEY = 'admin_product_create_form';
+    const baseApiPath = '/api/admin';
+    let savedCategoryId = '';
+    let savedSubcategoryId = '';
 
     // Restore form data from localStorage
     try {
@@ -45,6 +50,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (saved) {
             const data = JSON.parse(saved);
             if (vendorSelect) vendorSelect.value = data.vendor_id || '';
+            savedCategoryId = data.category_id || '';
+            savedSubcategoryId = data.subcategory_id || '';
             if (form.name) form.name.value = data.name || '';
             if (form.price) form.price.value = data.price || '';
             if (form.quantity) form.quantity.value = data.quantity || '';
@@ -62,6 +69,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         try {
             const data = {
                 vendor_id: vendorSelect?.value || '',
+                category_id: categorySelect?.value || '',
+                subcategory_id: subcategorySelect?.value || '',
                 name: form.name?.value || '',
                 price: form.price?.value || '',
                 quantity: form.quantity?.value || '',
@@ -76,6 +85,13 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Add event listeners to save on change
     if (vendorSelect) vendorSelect.addEventListener('change', saveFormData);
+    if (categorySelect) {
+        categorySelect.addEventListener('change', async function () {
+            await loadSubcategories(categorySelect.value);
+            saveFormData();
+        });
+    }
+    if (subcategorySelect) subcategorySelect.addEventListener('change', saveFormData);
     if (form.name) form.name.addEventListener('input', saveFormData);
     if (form.price) form.price.addEventListener('input', saveFormData);
     if (form.quantity) form.quantity.addEventListener('input', saveFormData);
@@ -96,6 +112,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         console.error('Failed to load vendors:', e);
     }
 
+    await loadCategories(savedCategoryId);
+    if (categorySelect?.value) {
+        await loadSubcategories(categorySelect.value, savedSubcategoryId);
+    }
+
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
         clearErrors();
@@ -103,6 +124,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const formData = new FormData();
         formData.append('vendor_id', vendorSelect.value);
+        formData.append('category_id', categorySelect.value);
+        formData.append('subcategory_id', subcategorySelect.value);
         formData.append('name', form.name.value.trim());
         formData.append('price', parseFloat(form.price.value) || 0);
         formData.append('quantity', parseInt(form.quantity.value) || 0);
@@ -184,6 +207,52 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
     function esc(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+    async function loadCategories(selectedCategoryId = '') {
+        if (!categorySelect) return;
+
+        try {
+            const res = await window.axios.get(`${baseApiPath}/categories`);
+            const categories = res.data.data || [];
+            categorySelect.innerHTML = '<option value="">Select category...</option>' +
+                categories.map(category => `<option value="${category.id}">${esc(category.name)}</option>`).join('');
+            if (selectedCategoryId) {
+                categorySelect.value = selectedCategoryId;
+            }
+        } catch (error) {
+            categorySelect.innerHTML = '<option value="">Failed to load categories</option>';
+            console.error('Failed to load categories:', error);
+        }
+    }
+
+    async function loadSubcategories(categoryId, selectedSubcategoryId = '') {
+        if (!subcategorySelect) return;
+
+        if (!categoryId) {
+            subcategorySelect.innerHTML = '<option value="">Select category first...</option>';
+            subcategorySelect.disabled = true;
+
+            return;
+        }
+
+        subcategorySelect.disabled = false;
+        subcategorySelect.innerHTML = '<option value="">Loading subcategories...</option>';
+
+        try {
+            const res = await window.axios.get(`${baseApiPath}/subcategories?category_id=${categoryId}`);
+            const subcategories = res.data.data || [];
+            subcategorySelect.innerHTML = '<option value="">Select subcategory...</option>' +
+                subcategories.map(subcategory => `<option value="${subcategory.id}">${esc(subcategory.name)}</option>`).join('');
+
+            if (selectedSubcategoryId) {
+                subcategorySelect.value = selectedSubcategoryId;
+            }
+        } catch (error) {
+            subcategorySelect.innerHTML = '<option value="">Failed to load subcategories</option>';
+            subcategorySelect.disabled = true;
+            console.error('Failed to load subcategories:', error);
+        }
+    }
 });
 </script>
 @endpush

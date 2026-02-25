@@ -60,6 +60,22 @@
                                     <span id="product-quantity" class="text-lg font-bold text-gray-900"></span>
                                 </div>
                             </div>
+                            <div class="rounded-xl border border-gray-100 bg-gray-50 p-3">
+                                <div class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+                                    <div>
+                                        <p class="text-xs uppercase tracking-wide text-gray-500">Category</p>
+                                        <p id="product-category" class="font-semibold text-gray-900">—</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs uppercase tracking-wide text-gray-500">Subcategory</p>
+                                        <p id="product-subcategory" class="font-semibold text-gray-900">—</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs uppercase tracking-wide text-gray-500">Commission</p>
+                                        <p id="product-commission" class="font-semibold text-emerald-600">—</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <button id="add-to-cart-btn" class="w-full rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 py-4 text-base font-bold text-white shadow-lg transition-all hover:from-brand-700 hover:to-brand-800 hover:shadow-xl active:scale-[0.98]" disabled>
                             <span class="flex items-center justify-center gap-2">
@@ -138,6 +154,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.getElementById('product-price').textContent = parseFloat(p.price || 0).toFixed(2);
         document.getElementById('product-quantity').textContent = (p.quantity || 0) + ' units';
         document.getElementById('product-description').textContent = p.description || 'No description provided.';
+        document.getElementById('product-category').textContent = p.category?.name || 'Unassigned';
+        document.getElementById('product-subcategory').textContent = p.subcategory?.name || 'Unassigned';
+        document.getElementById('product-commission').textContent = p.category?.commission ? parseFloat(p.category.commission).toFixed(2) + '%' : '—';
 
         // Vendor info
         if (p.vendor) {
@@ -181,7 +200,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             primaryPhotoContainer.innerHTML = `
                 <img src="${photoUrl}"
                      alt="${esc(p.name)}"
-                     class="h-full w-full object-cover transition-transform duration-500 hover:scale-110 cursor-zoom-in"
+                     class="h-full w-full object-contain bg-white transition-transform duration-500 hover:scale-105 cursor-zoom-in"
                      onclick="viewPhotoLarge('${photoUrl}')"
                      loading="eager">
             `;
@@ -210,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                                 class="group relative flex-shrink-0 aspect-square h-24 w-24 overflow-hidden rounded-xl border-2 transition-all ${isPrimary ? 'border-brand-500 ring-2 ring-brand-200 shadow-md' : 'border-gray-200 hover:border-brand-300'}">
                             <img src="${photoUrl}"
                                  alt="${esc(p.name)}"
-                                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                 class="h-full w-full bg-white object-contain transition-transform duration-300 group-hover:scale-105"
                                  loading="lazy">
                             ${isPrimary ? '<div class="absolute top-1 right-1 h-3 w-3 rounded-full bg-brand-500 ring-2 ring-white"></div>' : ''}
                         </button>
@@ -250,7 +269,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             primaryPhotoContainer.innerHTML = `
                 <img src="${fullUrl || url}"
                      alt="${esc(p.name)}"
-                     class="h-full w-full object-cover transition-transform duration-500 hover:scale-110 cursor-zoom-in"
+                     class="h-full w-full object-contain bg-white transition-transform duration-500 hover:scale-105 cursor-zoom-in"
                      onclick="viewPhotoLarge('${fullUrl || url}')"
                      loading="eager">
             `;

@@ -34,6 +34,10 @@ class StoreVendorRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:1000'],
             'address' => ['nullable', 'string', 'max:255'],
             'logo' => ['nullable', 'string', 'max:255'],
+
+            // Allowed categories
+            'category_ids' => ['nullable', 'array'],
+            'category_ids.*' => ['integer', 'exists:categories,id'],
         ];
     }
 

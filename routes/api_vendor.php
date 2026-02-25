@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\CategoryController;
+use App\Http\Controllers\Api\Admin\SubcategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductPhotoController;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +18,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::apiResource('products', ProductController::class);
 Route::patch('products/{product}/photos/{photo}/set-primary', [ProductController::class, 'setPrimaryPhoto'])->name('products.set-primary-photo');
+Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+Route::get('allowed-categories', [\App\Http\Controllers\Api\Vendor\VendorCategoryController::class, 'index'])->name('allowed-categories.index');
+
+// Vendor profile
+Route::get('profile', [\App\Http\Controllers\Api\Vendor\VendorProfileController::class, 'show'])->name('profile.show');
+Route::post('profile', [\App\Http\Controllers\Api\Vendor\VendorProfileController::class, 'update'])->name('profile.update');
+Route::get('subcategories', [SubcategoryController::class, 'index'])->name('subcategories.index');
 
 // Product Photos (separate API)
 Route::get('products/{product}/photos', [ProductPhotoController::class, 'index'])->name('products.photos.index');

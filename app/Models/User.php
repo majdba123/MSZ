@@ -33,6 +33,7 @@ class User extends Authenticatable
         'national_id',
         'type',
         'email',
+        'avatar',
         'password',
     ];
 

@@ -4,7 +4,7 @@
 @section('page-title', 'Product Details')
 
 @section('content')
-<div class="mx-auto max-w-4xl">
+<div class="mx-auto max-w-5xl">
     <nav class="mb-4 flex items-center gap-2 text-sm text-gray-500">
         <a href="{{ route('admin.products.index') }}" class="hover:text-gray-700">Products</a>
         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
@@ -21,7 +21,7 @@
 
     <div id="show-content" class="hidden space-y-5">
         {{-- Product Info Card --}}
-        <div class="card">
+        <div class="card overflow-hidden border border-gray-200/70 shadow-sm">
             <div class="card-body border-b border-gray-100">
                 <div class="flex items-center justify-between">
                     <div>
@@ -90,6 +90,18 @@
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Created</p>
                         <p class="mt-1 text-sm font-medium text-gray-900" id="product-created">—</p>
                     </div>
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Category</p>
+                        <p class="mt-1 text-sm font-semibold text-gray-900" id="product-category">—</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Subcategory</p>
+                        <p class="mt-1 text-sm font-semibold text-gray-900" id="product-subcategory">—</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Commission</p>
+                        <p class="mt-1 text-sm font-bold text-emerald-600" id="product-commission">—</p>
+                    </div>
                 </div>
 
                 <div class="mt-6 border-t border-gray-100 pt-6">
@@ -100,7 +112,7 @@
         </div>
 
         {{-- Primary Photo Card --}}
-        <div class="card">
+        <div class="card overflow-hidden border border-gray-200/70 shadow-sm">
             <div class="card-body border-b border-gray-100">
                 <h3 class="text-lg font-bold text-gray-900">Primary Photo</h3>
                 <p class="mt-0.5 text-sm text-gray-500">Main product image</p>
@@ -113,7 +125,7 @@
         </div>
 
         {{-- All Photos Card --}}
-        <div class="card">
+        <div class="card overflow-hidden border border-gray-200/70 shadow-sm">
             <div class="card-body border-b border-gray-100">
                 <h3 class="text-lg font-bold text-gray-900">All Product Photos</h3>
                 <p class="mt-0.5 text-sm text-gray-500" id="photo-count">0 photos</p>
@@ -140,6 +152,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.getElementById('product-quantity').textContent = p.quantity || 0;
         document.getElementById('product-description').textContent = p.description || 'No description provided.';
         document.getElementById('product-created').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString() : '—';
+        document.getElementById('product-category').textContent = p.category?.name || 'Unassigned';
+        document.getElementById('product-subcategory').textContent = p.subcategory?.name || 'Unassigned';
+        document.getElementById('product-commission').textContent = p.category?.commission ? parseFloat(p.category.commission).toFixed(2) + '%' : '—';
 
         const vendorName = p.vendor?.store_name || '—';
         const ownerName = p.vendor?.user?.name || '';
@@ -251,11 +266,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         const primaryPhotoContainer = document.getElementById('primary-photo-container');
         if (primaryPhoto) {
             primaryPhotoContainer.innerHTML = `
-                <div class="group relative max-w-md overflow-hidden rounded-xl border-2 border-blue-400 ring-2 ring-blue-200">
-                    <img src="${primaryPhoto.url}" class="h-auto w-full object-cover transition-transform group-hover:scale-105" alt="Primary product photo">
-                    <div class="absolute left-3 top-3 rounded bg-blue-500 px-2 py-1 text-xs font-semibold text-white">Primary Photo</div>
+                <div class="group relative w-full max-w-2xl overflow-hidden rounded-xl border border-brand-200 bg-gradient-to-br from-gray-50 to-gray-100 p-4 ring-1 ring-brand-100">
+                    <div class="aspect-[4/3] overflow-hidden rounded-lg bg-white shadow-inner">
+                        <img src="${primaryPhoto.url}" class="h-full w-full object-contain transition-transform group-hover:scale-105" alt="Primary product photo">
+                    </div>
+                    <div class="absolute left-6 top-6 rounded bg-brand-600 px-2 py-1 text-xs font-semibold text-white">Primary Photo</div>
                     <div class="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 transition-all group-hover:bg-black/50 group-hover:opacity-100">
-                        <button type="button" onclick="viewPhotoLarge('${primaryPhoto.url}')" title="View Large" class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg transition-all hover:bg-blue-600 group-hover:opacity-100">
+                        <button type="button" onclick="viewPhotoLarge('${primaryPhoto.url}')" title="View Large" class="flex h-10 w-10 items-center justify-center rounded-full bg-brand-600 text-white opacity-0 shadow-lg transition-all hover:bg-brand-700 group-hover:opacity-100">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
                         </button>
                     </div>
@@ -272,10 +289,10 @@ document.addEventListener('DOMContentLoaded', async function () {
             photosContainer.innerHTML = '<p class="col-span-full text-center text-sm text-gray-400 py-8">No additional photos available.</p>';
         } else {
             photosContainer.innerHTML = otherPhotos.map(photo => {
-                return `<div class="group relative aspect-square overflow-hidden rounded-lg border-2 border-gray-200 transition-colors">
-                    <img src="${photo.url}" class="h-full w-full object-cover transition-transform group-hover:scale-105" alt="">
+                return `<div class="group relative aspect-[4/3] overflow-hidden rounded-lg border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-2 transition-colors sm:aspect-square">
+                    <img src="${photo.url}" class="h-full w-full rounded-md bg-white object-contain transition-transform group-hover:scale-105" alt="">
                     <div class="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 transition-all group-hover:bg-black/50 group-hover:opacity-100">
-                        <button type="button" onclick="viewPhotoLarge('${photo.url}')" title="View Large" class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg transition-all hover:bg-blue-600 group-hover:opacity-100">
+                        <button type="button" onclick="viewPhotoLarge('${photo.url}')" title="View Large" class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white opacity-0 shadow-lg transition-all hover:bg-brand-700 group-hover:opacity-100">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/></svg>
                         </button>
                     </div>

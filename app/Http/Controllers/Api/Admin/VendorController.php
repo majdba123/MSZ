@@ -20,7 +20,7 @@ class VendorController extends Controller
     public function index(): JsonResponse
     {
         $vendors = Vendor::query()
-            ->with('user')
+            ->with(['user', 'categories'])
             ->latest()
             ->paginate(15);
 
@@ -38,7 +38,7 @@ class VendorController extends Controller
 
     public function show(Vendor $vendor): JsonResponse
     {
-        $vendor->load('user');
+        $vendor->load(['user', 'categories']);
 
         return response()->json([
             'message' => __('Vendor retrieved successfully.'),
@@ -52,7 +52,7 @@ class VendorController extends Controller
     public function store(StoreVendorRequest $request): JsonResponse
     {
         $vendor = $this->vendorService->create($request->validated());
-        $vendor->load('user');
+        $vendor->load(['user', 'categories']);
 
         return response()->json([
             'message' => __('Vendor created successfully.'),

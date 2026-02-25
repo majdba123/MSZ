@@ -37,6 +37,21 @@ Route::prefix('vendors')->as('vendors.')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Public Category Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('categories')->as('categories.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'index'])->name('public.index');
+    Route::get('/{category}', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'show'])->name('public.show');
+    Route::get('/{category}/subcategories', function (\App\Models\Category $category) {
+        return response()->json([
+            'data' => $category->subcategories()->select('id', 'name', 'image', 'category_id')->get(),
+        ]);
+    })->name('public.subcategories');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Authenticated Routes
 |--------------------------------------------------------------------------
 */

@@ -21,6 +21,12 @@
                         </div>
 
                         <div>
+                            <label for="commission" class="form-label">Commission (%) <span class="text-red-500">*</span></label>
+                            <input type="number" id="commission" name="commission" class="form-input" step="0.01" min="0" max="100" placeholder="e.g. 10.00" value="0">
+                            <p class="mt-1 text-xs text-gray-500">Percentage commission charged on products in this category (0–100).</p>
+                        </div>
+
+                        <div>
                             <label for="logo" class="form-label">Logo</label>
                             <div id="current-logo" class="mb-2"></div>
                             <input type="file" id="logo" name="logo" accept="image/*" class="form-input">
@@ -59,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const category = res.data.data;
 
             document.getElementById('name').value = category.name || '';
+            document.getElementById('commission').value = category.commission ?? 0;
             if (category.logo) {
                 currentLogo.innerHTML = `<img src="/storage/${category.logo}" alt="${category.name}" class="h-20 w-20 rounded-lg object-cover">`;
             }

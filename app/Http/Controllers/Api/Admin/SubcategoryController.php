@@ -23,6 +23,10 @@ class SubcategoryController extends Controller
             $query->where('name', 'like', '%'.$request->search.'%');
         }
 
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->integer('category_id'));
+        }
+
         $subcategories = $query->latest()->get();
 
         return response()->json([

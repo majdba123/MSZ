@@ -27,11 +27,18 @@ class ProductService
 
         $query->with(['photos' => function ($query) {
             $query->orderBy('is_primary', 'desc')->orderBy('sort_order');
-        }]);
+        }, 'subcategory.category']);
 
         // For admin: filter by vendor_id (only if not scoped to a vendor)
         if (! $vendor && isset($filters['vendor_id']) && $filters['vendor_id']) {
             $query->where('vendor_id', $filters['vendor_id']);
+        }
+
+        // Filter by category_id via product subcategory relation
+        if (isset($filters['category_id']) && $filters['category_id']) {
+            $query->whereHas('subcategory', function ($subcategoryQuery) use ($filters): void {
+                $subcategoryQuery->where('category_id', $filters['category_id']);
+            });
         }
 
         // Filter by subcategory_id
@@ -73,22 +80,23 @@ class ProductService
             ? (int) $filters['vendor_id']
             : null;
 
+        $categoryId = isset($filters['category_id']) && $filters['category_id'] !== '' && $filters['category_id'] !== null
+            ? (int) $filters['category_id']
+            : null;
+
         $page = request()->get('page', 1);
-        $cacheKey = $vendorId
-            ? "products:public:vendor:{$vendorId}:page:{$page}"
-            : "products:public:page:{$page}";
+        $cacheKey = "products:public:v:{$vendorId}:c:{$categoryId}:page:{$page}";
 
         try {
-            return Cache::remember($cacheKey, 1800, function () use ($perPage, $vendorId) {
-                return $this->fetchPublicProducts($perPage, $vendorId);
+            return Cache::remember($cacheKey, 1800, function () use ($perPage, $vendorId, $categoryId) {
+                return $this->fetchPublicProducts($perPage, $vendorId, $categoryId);
             });
         } catch (\Exception $e) {
-            // Fallback if cache fails
-            return $this->fetchPublicProducts($perPage, $vendorId);
+            return $this->fetchPublicProducts($perPage, $vendorId, $categoryId);
         }
     }
 
-    protected function fetchPublicProducts(int $perPage, ?int $vendorId): LengthAwarePaginator
+    protected function fetchPublicProducts(int $perPage, ?int $vendorId, ?int $categoryId = null): LengthAwarePaginator
     {
         $query = Product::query()
             ->where('is_active', true)
@@ -101,9 +109,14 @@ class ProductService
                 $query->orderBy('is_primary', 'desc')->orderBy('sort_order');
             }, 'vendor:id,store_name,user_id', 'vendor.user:id,name']);
 
-        // Filter by vendor_id if provided
         if ($vendorId) {
             $query->where('vendor_id', $vendorId);
+        }
+
+        if ($categoryId) {
+            $query->whereHas('subcategory', function ($q) use ($categoryId) {
+                $q->where('category_id', $categoryId);
+            });
         }
 
         return $query->latest('created_at')->paginate($perPage);
@@ -125,7 +138,7 @@ class ProductService
         // Invalidate cache
         $this->invalidateProductCache($product);
 
-        return $product->load($vendor ? 'photos' : ['vendor.user', 'photos']);
+        return $product->load($vendor ? ['photos', 'subcategory.category'] : ['vendor.user', 'photos', 'subcategory.category']);
     }
 
     public function update(Product $product, array $data): Product
@@ -135,7 +148,7 @@ class ProductService
         // Invalidate cache
         $this->invalidateProductCache($product);
 
-        return $product->fresh($product->vendor ? ['vendor.user', 'photos'] : 'photos');
+        return $product->fresh($product->vendor ? ['vendor.user', 'photos', 'subcategory.category'] : ['photos', 'subcategory.category']);
     }
 
     /**
@@ -166,7 +179,7 @@ class ProductService
         // Invalidate cache
         $this->invalidateProductCache($product);
 
-        return $product->fresh(['vendor.user', 'photos']);
+        return $product->fresh(['vendor.user', 'photos', 'subcategory.category']);
     }
 
     /**
@@ -179,7 +192,7 @@ class ProductService
         // Invalidate cache
         $this->invalidateProductCache($product);
 
-        return $product->fresh(['vendor.user', 'photos']);
+        return $product->fresh(['vendor.user', 'photos', 'subcategory.category']);
     }
 
     /**
@@ -201,7 +214,7 @@ class ProductService
         // Invalidate cache
         $this->invalidateProductCache($product);
 
-        return $product->fresh(['vendor.user', 'photos']);
+        return $product->fresh(['vendor.user', 'photos', 'subcategory.category']);
     }
 
     /**

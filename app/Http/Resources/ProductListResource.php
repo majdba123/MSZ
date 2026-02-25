@@ -22,6 +22,8 @@ class ProductListResource extends JsonResource
         $data = [
             'id' => $this->id,
             'vendor_id' => $this->vendor_id,
+            'category_id' => $this->subcategory?->category_id,
+            'subcategory_id' => $this->subcategory_id,
             'name' => $this->name,
             'description' => $this->description,
             'price' => $this->price,

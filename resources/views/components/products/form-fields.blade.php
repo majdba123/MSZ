@@ -28,6 +28,20 @@
 
     <div class="card-body space-y-5">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+                <label for="category_id" class="form-label">Category <span class="text-red-500">*</span></label>
+                <select id="category_id" name="category_id" class="form-input">
+                    <option value="">Select category...</option>
+                </select>
+                <p class="form-error" id="category_id-error"></p>
+            </div>
+            <div>
+                <label for="subcategory_id" class="form-label">Subcategory <span class="text-red-500">*</span></label>
+                <select id="subcategory_id" name="subcategory_id" class="form-input" disabled>
+                    <option value="">Select category first...</option>
+                </select>
+                <p class="form-error" id="subcategory_id-error"></p>
+            </div>
             <div class="sm:col-span-2">
                 <x-form.input name="name" label="Product Name" placeholder="Enter product name" :required="true" />
             </div>

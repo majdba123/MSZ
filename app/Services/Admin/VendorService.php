@@ -4,8 +4,10 @@ namespace App\Services\Admin;
 
 use App\Models\User;
 use App\Models\Vendor;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class VendorService
 {
@@ -34,7 +36,10 @@ class VendorService
                 'logo' => $data['logo'] ?? null,
             ]);
 
-            // Invalidate vendor cache
+            if (isset($data['category_ids'])) {
+                $vendor->categories()->sync($data['category_ids']);
+            }
+
             Cache::forget('vendors:active:list');
 
             return $vendor;
@@ -49,26 +54,42 @@ class VendorService
     public function update(Vendor $vendor, array $data): Vendor
     {
         return DB::transaction(function () use ($vendor, $data) {
-            // Update user fields if provided
             $userFields = array_filter(
                 array_intersect_key($data, array_flip(['name', 'email', 'password', 'phone_number', 'national_id'])),
                 fn ($value) => $value !== null,
             );
 
+            if (isset($data['avatar']) && $data['avatar'] instanceof UploadedFile) {
+                if ($vendor->user->avatar) {
+                    Storage::disk('public')->delete($vendor->user->avatar);
+                }
+                $userFields['avatar'] = $data['avatar']->store('avatars', 'public');
+            }
+
             if ($userFields) {
                 $vendor->user->update($userFields);
             }
 
-            // Update vendor fields
             $vendorFields = array_intersect_key($data, array_flip([
-                'store_name', 'description', 'address', 'logo', 'is_active',
+                'store_name', 'description', 'address', 'is_active',
             ]));
+
+            if (isset($data['logo']) && $data['logo'] instanceof UploadedFile) {
+                if ($vendor->logo) {
+                    Storage::disk('public')->delete($vendor->logo);
+                }
+                $vendorFields['logo'] = $data['logo']->store('vendors', 'public');
+            }
 
             if ($vendorFields) {
                 $vendor->update($vendorFields);
             }
 
-            return $vendor->fresh('user');
+            if (isset($data['category_ids'])) {
+                $vendor->categories()->sync($data['category_ids']);
+            }
+
+            return $vendor->fresh(['user', 'categories']);
         });
     }
 

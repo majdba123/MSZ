@@ -36,7 +36,11 @@
                     </div>
                     <div class="w-full">
                         <h2 id="category-name" class="text-2xl font-bold text-gray-900"></h2>
-                        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <div>
+                                <p class="text-xs font-medium text-gray-500">Commission</p>
+                                <p id="category-commission" class="mt-1 text-lg font-bold text-emerald-600"></p>
+                            </div>
                             <div>
                                 <p class="text-xs font-medium text-gray-500">Created At</p>
                                 <p id="category-created" class="mt-1 text-sm font-semibold text-gray-900"></p>
@@ -111,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Display category info
             document.getElementById('category-name').textContent = category.name;
+            document.getElementById('category-commission').textContent = parseFloat(category.commission || 0).toFixed(2) + '%';
             document.getElementById('category-created').textContent = new Date(category.created_at).toLocaleString();
             document.getElementById('category-updated').textContent = new Date(category.updated_at).toLocaleString();
             document.getElementById('edit-link').href = `/admin/categories/${category.id}/edit`;

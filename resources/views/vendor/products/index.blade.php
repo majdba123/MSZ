@@ -28,6 +28,18 @@
                     </select>
                 </div>
                 <div class="flex-1">
+                    <label for="filter-category" class="form-label">Filter by Category</label>
+                    <select id="filter-category" class="form-input">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label for="filter-subcategory" class="form-label">Filter by Subcategory</label>
+                    <select id="filter-subcategory" class="form-input" disabled>
+                        <option value="">Select category first...</option>
+                    </select>
+                </div>
+                <div class="flex-1">
                     <label for="filter-status" class="form-label">Filter by Active</label>
                     <select id="filter-status" class="form-input">
                         <option value="">All</option>
@@ -104,7 +116,10 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentPage = 1;
     let deleteId = null;
     const productStatusSelect = document.getElementById('filter-product-status');
+    const categorySelect = document.getElementById('filter-category');
+    const subcategorySelect = document.getElementById('filter-subcategory');
     const statusSelect = document.getElementById('filter-status');
+    loadCategories();
 
     loadProducts();
 
@@ -116,9 +131,15 @@ document.addEventListener('DOMContentLoaded', function () {
         currentPage = 1;
         loadProducts();
     });
+    categorySelect.addEventListener('change', async function () {
+        await loadSubcategories(categorySelect.value);
+    });
 
     document.getElementById('clear-filters').addEventListener('click', () => {
         productStatusSelect.value = '';
+        categorySelect.value = '';
+        subcategorySelect.innerHTML = '<option value="">Select category first...</option>';
+        subcategorySelect.disabled = true;
         statusSelect.value = '';
         currentPage = 1;
         loadProducts();
@@ -132,6 +153,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const params = new URLSearchParams({ page: currentPage });
             if (productStatusSelect && productStatusSelect.value) {
                 params.append('status', productStatusSelect.value);
+            }
+            if (categorySelect && categorySelect.value) {
+                params.append('category_id', categorySelect.value);
+            }
+            if (subcategorySelect && subcategorySelect.value) {
+                params.append('subcategory_id', subcategorySelect.value);
             }
             if (statusSelect && statusSelect.value !== '') {
                 params.append('is_active', statusSelect.value);
@@ -158,10 +185,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         grid.innerHTML = products.map(p => {
             const photoUrl = p.first_photo_url || null;
-            return `<div class="group card overflow-hidden transition-shadow hover:shadow-lg">
-                <div class="relative aspect-square overflow-hidden bg-gray-100">
+            return `<div class="group card overflow-hidden border border-gray-200/70 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
+                <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 sm:aspect-square">
                     ${photoUrl
-                        ? `<img src="${photoUrl}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" alt="${esc(p.name)}">`
+                        ? `<div class="flex h-full w-full items-center justify-center p-2">
+                            <img src="${photoUrl}" class="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105" alt="${esc(p.name)}">
+                        </div>`
                         : `<div class="flex h-full w-full items-center justify-center text-gray-300">
                             <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
                         </div>`
@@ -239,6 +268,40 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => b.classList.add('hidden'), 4000);
     }
     function esc(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+    async function loadCategories() {
+        try {
+            const res = await window.axios.get('/api/vendor/allowed-categories');
+            const categories = res.data.data || [];
+            categorySelect.innerHTML = '<option value="">All Categories</option>' +
+                categories.map(category => `<option value="${category.id}">${esc(category.name)}</option>`).join('');
+        } catch (error) {
+            console.error('Failed to load categories:', error);
+        }
+    }
+
+    async function loadSubcategories(categoryId) {
+        if (!categoryId) {
+            subcategorySelect.innerHTML = '<option value="">Select category first...</option>';
+            subcategorySelect.disabled = true;
+
+            return;
+        }
+
+        subcategorySelect.disabled = false;
+        subcategorySelect.innerHTML = '<option value="">Loading subcategories...</option>';
+
+        try {
+            const res = await window.axios.get('/api/vendor/subcategories?category_id=' + categoryId);
+            const subcategories = res.data.data || [];
+            subcategorySelect.innerHTML = '<option value="">All Subcategories</option>' +
+                subcategories.map(subcategory => `<option value="${subcategory.id}">${esc(subcategory.name)}</option>`).join('');
+        } catch (error) {
+            subcategorySelect.innerHTML = '<option value="">Failed to load subcategories</option>';
+            subcategorySelect.disabled = true;
+            console.error('Failed to load subcategories:', error);
+        }
+    }
 });
 </script>
 @endpush

@@ -31,20 +31,39 @@ Route::get('/register', function () {
     return view('auth.register');
 })->name('register');
 
+Route::get('/profile', function () {
+    return view('profile');
+})->name('profile');
+
 /*
 |--------------------------------------------------------------------------
-| Public Product Routes (for clients/users)
+| Public Listing Routes
 |--------------------------------------------------------------------------
 */
+Route::get('/products', function () {
+    return view('products.index');
+})->name('products.index');
+
 Route::get('/products/{id}', function (string $id) {
     return view('products.show', ['productId' => $id]);
 })->name('products.show');
 
-/*
-|--------------------------------------------------------------------------
-| Public Vendor Routes (for clients/users)
-|--------------------------------------------------------------------------
-*/
+Route::get('/categories', function () {
+    return view('categories.index');
+})->name('categories.index');
+
+Route::get('/categories/{id}', function (string $id) {
+    return view('categories.show', ['categoryId' => $id]);
+})->name('categories.show');
+
+Route::get('/subcategories/{id}', function (string $id) {
+    return view('subcategories.show', ['subcategoryId' => $id]);
+})->name('subcategories.show');
+
+Route::get('/vendors', function () {
+    return view('vendors.index');
+})->name('vendors.index');
+
 Route::get('/vendors/{id}', function (string $id) {
     return view('vendors.show', ['vendorId' => $id]);
 })->name('vendors.show');

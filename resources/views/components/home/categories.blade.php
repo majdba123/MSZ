@@ -1,15 +1,19 @@
-<section id="categories" class="scroll-mt-20 bg-white py-10 sm:py-14">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex items-end justify-between">
-            <div><h2 class="text-xl font-extrabold text-gray-900 sm:text-2xl">Shop by Category</h2><p class="mt-1 text-sm text-gray-500">Browse our curated collections</p></div>
-            <div class="flex gap-1.5">
-                <button onclick="document.getElementById('cats-track').scrollBy({left:-280,behavior:'smooth'})" class="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm hover:border-brand-300 hover:text-brand-600 hover:shadow"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg></button>
-                <button onclick="document.getElementById('cats-track').scrollBy({left:280,behavior:'smooth'})" class="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm hover:border-brand-300 hover:text-brand-600 hover:shadow"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg></button>
-            </div>
+{{-- ═══ Categories Section — Full grid with subcategories ═══ --}}
+<section id="categories" class="scroll-mt-20 bg-white py-14 dark:bg-gray-950 sm:py-20">
+    <div class="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
+        {{-- Header --}}
+        <div class="mb-10 text-center">
+            <span class="inline-block rounded-full bg-brand-50 px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">Shop by Category</span>
+            <h2 class="mt-4 text-2xl font-black text-gray-900 sm:text-3xl dark:text-white">Browse Our Collections</h2>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Find what you're looking for across our curated categories</p>
         </div>
+
         {{-- Skeleton --}}
-        <div id="cats-loading" class="mt-6 flex gap-4 overflow-hidden"><div class="skeleton h-44 w-40 flex-shrink-0 rounded-2xl"></div><div class="skeleton h-44 w-40 flex-shrink-0 rounded-2xl"></div><div class="skeleton h-44 w-40 flex-shrink-0 rounded-2xl"></div><div class="skeleton h-44 w-40 flex-shrink-0 rounded-2xl"></div><div class="skeleton h-44 w-40 flex-shrink-0 rounded-2xl"></div><div class="skeleton h-44 w-40 flex-shrink-0 rounded-2xl"></div></div>
-        {{-- Track --}}
-        <div id="cats-track" class="mt-6 flex gap-4 overflow-x-auto scroll-smooth pb-2" style="scrollbar-width:none;-ms-overflow-style:none;"></div>
+        <div id="cats-loading" class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div class="skeleton h-56 rounded-2xl"></div><div class="skeleton h-56 rounded-2xl"></div><div class="skeleton h-56 rounded-2xl"></div><div class="skeleton h-56 rounded-2xl"></div>
+        </div>
+
+        {{-- Categories Grid --}}
+        <div id="cats-grid" class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"></div>
     </div>
 </section>

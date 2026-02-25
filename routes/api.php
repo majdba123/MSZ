@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->as('auth.')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('register');
     Route::post('/login', [AuthController::class, 'login'])->name('login');
-    Route::post('/XSRF-TOKEN', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
 });
 
 /*
@@ -50,6 +50,17 @@ Route::prefix('categories')->as('categories.')->group(function () {
     })->name('public.subcategories');
 });
 
+Route::prefix('subcategories')->as('subcategories.')->group(function () {
+    Route::get('/{subcategory}', function (\App\Models\Subcategory $subcategory) {
+        $subcategory->load('category');
+
+        return response()->json([
+            'message' => __('Subcategory retrieved successfully.'),
+            'data' => $subcategory,
+        ]);
+    })->name('public.show');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Authenticated Routes
@@ -57,6 +68,8 @@ Route::prefix('categories')->as('categories.')->group(function () {
 */
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
-        return $request->user();
+        return new \App\Http\Resources\Auth\UserResource($request->user());
     })->name('user');
+
+    Route::post('/profile', [\App\Http\Controllers\Api\ProfileController::class, 'update'])->name('profile.update');
 });

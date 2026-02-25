@@ -66,16 +66,18 @@ class ProductController extends Controller
     public function publicIndex(Request $request): JsonResponse
     {
         try {
-            $filters = $request->only(['vendor_id', 'category_id']);
+            $filters = $request->only(['vendor_id', 'category_id', 'subcategory_id', 'per_page']);
             $vendorId = $filters['vendor_id'] ?? null;
             $categoryId = $filters['category_id'] ?? null;
+            $subcategoryId = $filters['subcategory_id'] ?? null;
+            $perPage = min((int) ($filters['per_page'] ?? 15), 50);
             $page = $request->get('page', 1);
 
-            $cacheKey = "products:public:list:v:{$vendorId}:c:{$categoryId}:page:{$page}";
+            $cacheKey = "products:public:list:v:{$vendorId}:c:{$categoryId}:s:{$subcategoryId}:pp:{$perPage}:page:{$page}";
 
             try {
-                $response = Cache::remember($cacheKey, 1800, function () use ($filters) {
-                    $products = $this->productService->listPublic(15, $filters);
+                $response = Cache::remember($cacheKey, 1800, function () use ($filters, $perPage) {
+                    $products = $this->productService->listPublic($perPage, $filters);
 
                     return [
                         'data' => ProductListResource::collection($products),
@@ -89,7 +91,7 @@ class ProductController extends Controller
                 });
             } catch (\Exception $cacheException) {
                 // Fallback if cache fails
-                $products = $this->productService->listPublic(15, $filters);
+                $products = $this->productService->listPublic($perPage, $filters);
                 $response = [
                     'data' => ProductListResource::collection($products),
                     'meta' => [

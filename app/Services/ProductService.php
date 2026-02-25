@@ -84,19 +84,23 @@ class ProductService
             ? (int) $filters['category_id']
             : null;
 
+        $subcategoryId = isset($filters['subcategory_id']) && $filters['subcategory_id'] !== '' && $filters['subcategory_id'] !== null
+            ? (int) $filters['subcategory_id']
+            : null;
+
         $page = request()->get('page', 1);
-        $cacheKey = "products:public:v:{$vendorId}:c:{$categoryId}:page:{$page}";
+        $cacheKey = "products:public:v:{$vendorId}:c:{$categoryId}:s:{$subcategoryId}:pp:{$perPage}:page:{$page}";
 
         try {
-            return Cache::remember($cacheKey, 1800, function () use ($perPage, $vendorId, $categoryId) {
-                return $this->fetchPublicProducts($perPage, $vendorId, $categoryId);
+            return Cache::remember($cacheKey, 1800, function () use ($perPage, $vendorId, $categoryId, $subcategoryId) {
+                return $this->fetchPublicProducts($perPage, $vendorId, $categoryId, $subcategoryId);
             });
         } catch (\Exception $e) {
-            return $this->fetchPublicProducts($perPage, $vendorId, $categoryId);
+            return $this->fetchPublicProducts($perPage, $vendorId, $categoryId, $subcategoryId);
         }
     }
 
-    protected function fetchPublicProducts(int $perPage, ?int $vendorId, ?int $categoryId = null): LengthAwarePaginator
+    protected function fetchPublicProducts(int $perPage, ?int $vendorId, ?int $categoryId = null, ?int $subcategoryId = null): LengthAwarePaginator
     {
         $query = Product::query()
             ->where('is_active', true)
@@ -113,7 +117,9 @@ class ProductService
             $query->where('vendor_id', $vendorId);
         }
 
-        if ($categoryId) {
+        if ($subcategoryId) {
+            $query->where('subcategory_id', $subcategoryId);
+        } elseif ($categoryId) {
             $query->whereHas('subcategory', function ($q) use ($categoryId) {
                 $q->where('category_id', $categoryId);
             });

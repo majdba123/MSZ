@@ -135,6 +135,37 @@
                         <a href="{{ route('products.index') }}" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-600 dark:bg-white dark:text-gray-900 dark:hover:bg-brand-500 dark:hover:text-white">Browse Products</a>
                     </div>
                 </div>
+
+                <div class="mt-6 rounded-2xl border border-gray-200/80 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+                    <div class="mb-5 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Order History</h3>
+                            <p id="orders-count" class="text-xs text-gray-400 dark:text-gray-500">Loading...</p>
+                        </div>
+                        <p class="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">Payment: Cash only</p>
+                    </div>
+
+                    <div id="orders-loading" class="space-y-3">
+                        <div class="skeleton h-20 rounded-xl"></div>
+                        <div class="skeleton h-20 rounded-xl"></div>
+                        <div class="skeleton h-20 rounded-xl"></div>
+                    </div>
+
+                    <div id="orders-list" class="space-y-3"></div>
+
+                    <div id="orders-empty" class="hidden py-10 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-200 dark:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h11.25m-11.25 4.5h11.25m-11.25 4.5h11.25M3.75 6.75h.008v.008H3.75V6.75zm0 4.5h.008v.008H3.75v-.008zm0 4.5h.008v.008H3.75v-.008z"/></svg>
+                        <p class="mt-3 text-sm font-bold text-gray-500 dark:text-gray-400">No orders yet</p>
+                    </div>
+
+                    <div id="orders-pagination" class="mt-5 hidden items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
+                        <p id="orders-page-info" class="text-xs text-gray-500 dark:text-gray-400"></p>
+                        <div class="flex gap-2">
+                            <button id="orders-prev" class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Prev</button>
+                            <button id="orders-next" class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Next</button>
+                        </div>
+                    </div>
+                </div>
             </div>{{-- end right column --}}
             </div>{{-- end grid --}}
         </div>
@@ -170,8 +201,21 @@ document.addEventListener('DOMContentLoaded', async function () {
     $('profile-loading').classList.add('hidden');
     $('profile-content').classList.remove('hidden');
     loadFavourites();
+    let currentOrdersPage = 1;
+    loadOrderHistory();
 
     let pendingAvatar = null;
+
+    $('orders-prev').addEventListener('click', () => {
+        if (currentOrdersPage > 1) {
+            currentOrdersPage -= 1;
+            loadOrderHistory();
+        }
+    });
+    $('orders-next').addEventListener('click', () => {
+        currentOrdersPage += 1;
+        loadOrderHistory();
+    });
 
     function fillForm(u) {
         $('p-name').value = u.name || '';
@@ -253,6 +297,104 @@ document.addEventListener('DOMContentLoaded', async function () {
             $('fav-empty').classList.remove('hidden');
             $('fav-count').textContent = '0 products';
         }
+    }
+
+    async function loadOrderHistory() {
+        try {
+            const res = await window.axios.get('/api/orders?page=' + currentOrdersPage);
+            const orders = res.data.data || [];
+            const meta = res.data.meta || {};
+
+            $('orders-loading').classList.add('hidden');
+            $('orders-count').textContent = (meta.total || orders.length) + ' order' + ((meta.total || orders.length) !== 1 ? 's' : '');
+
+            if (!orders.length) {
+                $('orders-list').innerHTML = '';
+                $('orders-empty').classList.remove('hidden');
+                $('orders-pagination').classList.add('hidden');
+                return;
+            }
+
+            $('orders-empty').classList.add('hidden');
+            $('orders-list').innerHTML = orders.map(renderOrderCard).join('');
+
+            if ((meta.last_page || 1) > 1) {
+                $('orders-pagination').classList.remove('hidden');
+                $('orders-pagination').classList.add('flex');
+                $('orders-page-info').textContent = `Page ${meta.current_page} of ${meta.last_page}`;
+                $('orders-prev').disabled = meta.current_page <= 1;
+                $('orders-next').disabled = meta.current_page >= meta.last_page;
+            } else {
+                $('orders-pagination').classList.add('hidden');
+                $('orders-pagination').classList.remove('flex');
+            }
+        } catch (e) {
+            $('orders-loading').classList.add('hidden');
+            $('orders-empty').classList.remove('hidden');
+            $('orders-count').textContent = '0 orders';
+        }
+    }
+
+    function renderOrderCard(order) {
+        const date = order.created_at ? new Date(order.created_at).toLocaleDateString() : '—';
+        const coupon = order.coupon;
+        const statusBadge = orderStatusBadge(order.status);
+        const itemsHtml = (order.items || []).map(item => {
+            const original = parseFloat(item.original_unit_price || 0).toLocaleString();
+            const unit = parseFloat(item.unit_price || 0).toLocaleString();
+            const total = parseFloat(item.line_total || 0).toLocaleString();
+            const discountPart = item.has_discount
+                ? `<p class="text-[11px] text-emerald-600 dark:text-emerald-400">Discount ${parseFloat(item.applied_discount_percentage || 0)}% · Saved ${parseFloat(item.discount_amount || 0).toLocaleString()} SYP</p>`
+                : '';
+
+            return `<div class="rounded-lg border border-gray-100 p-2.5 dark:border-gray-800">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <p class="truncate text-xs font-bold text-gray-900 dark:text-white">${escH(item.product_name)}</p>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">Qty ${item.quantity} · ${unit} SYP each</p>
+                        ${item.has_discount ? `<p class="text-[11px] text-gray-400 line-through">Original ${original} SYP</p>` : ''}
+                        ${discountPart}
+                    </div>
+                    <p class="shrink-0 text-xs font-black text-gray-800 dark:text-gray-100">${total} SYP</p>
+                </div>
+            </div>`;
+        }).join('');
+
+        return `<div class="rounded-xl border border-gray-200/80 p-4 dark:border-gray-800">
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <p class="text-xs font-bold text-gray-900 dark:text-white">${escH(order.order_number)}</p>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400">${date} · ${escH(order.vendor?.store_name || 'Unknown vendor')}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${statusBadge}
+                    <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">${escH(order.payment_way || 'cash')}</span>
+                </div>
+            </div>
+
+            <div class="space-y-2">${itemsHtml}</div>
+
+            <div class="mt-3 border-t border-gray-100 pt-3 text-xs dark:border-gray-800">
+                <div class="flex items-center justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>${parseFloat(order.subtotal_amount || 0).toLocaleString()} SYP</span></div>
+                <div class="mt-1 flex items-center justify-between text-gray-500 dark:text-gray-400"><span>Coupon</span><span>${coupon ? escH(coupon.code) : '—'}</span></div>
+                <div class="mt-1 flex items-center justify-between text-gray-500 dark:text-gray-400"><span>Coupon Discount</span><span>- ${parseFloat(order.coupon_discount_amount || 0).toLocaleString()} SYP</span></div>
+                <div class="mt-2 flex items-center justify-between text-sm font-black text-gray-900 dark:text-white"><span>Total</span><span>${parseFloat(order.total_amount || 0).toLocaleString()} SYP</span></div>
+                <div class="mt-3">
+                    <a href="/orders/${order.id}" class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">View Details</a>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function orderStatusBadge(status) {
+        const normalized = String(status || '').toLowerCase();
+        const map = {
+            pending: 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+            confirmed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
+            cancelled: 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'
+        };
+
+        return `<span class="rounded-full px-2 py-0.5 text-[10px] font-bold ${map[normalized] || map.pending}">${escH(normalized || 'pending')}</span>`;
     }
 
     window.removeFav = async function(productId, cardEl) {

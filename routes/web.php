@@ -35,6 +35,12 @@ Route::get('/profile', function () {
     return view('profile');
 })->name('profile');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/orders/{id}', function (string $id) {
+        return view('orders.show', ['orderId' => $id]);
+    })->name('orders.show');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Public Listing Routes
@@ -94,6 +100,14 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'vendor'])->group(fu
     Route::get('/discounts', function () {
         return view('vendor.products.index', ['discountOnly' => true]);
     })->name('discounts.index');
+
+    Route::get('/orders', function () {
+        return view('vendor.orders.index');
+    })->name('orders.index');
+
+    Route::get('/orders/{id}', function (string $id) {
+        return view('vendor.orders.show', ['orderId' => $id]);
+    })->name('orders.show');
 
     Route::get('/products/create', function () {
         return view('vendor.products.create');
@@ -163,6 +177,14 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'admin'])->group(funct
         return view('admin.coupons.index');
     })->name('coupons.index');
 
+    Route::get('/orders', function () {
+        return view('admin.orders.index');
+    })->name('orders.index');
+
+    Route::get('/orders/{id}', function (string $id) {
+        return view('admin.orders.show', ['orderId' => $id]);
+    })->name('orders.show');
+
     Route::get('/products/create', function () {
         return view('admin.products.create');
     })->name('products.create');
@@ -183,6 +205,10 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'admin'])->group(funct
     Route::get('/users/create', function () {
         return view('admin.users.create');
     })->name('users.create');
+
+    Route::get('/users/{id}', function (string $id) {
+        return view('admin.users.show', ['userId' => $id]);
+    })->name('users.show');
 
     Route::get('/users/{id}/edit', function (string $id) {
         return view('admin.users.edit', ['userId' => $id]);

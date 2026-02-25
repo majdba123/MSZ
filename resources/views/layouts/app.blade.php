@@ -196,8 +196,67 @@
             if(total)total.innerHTML=t.toLocaleString()+' <span class="text-sm font-normal text-gray-400">SYP</span>';
         };
 
+        window.checkoutCart = async function(){
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            if (!cart.length) {
+                toast('Your cart is empty.');
+                return;
+            }
+
+            if (!window.Auth || !window.Auth.isAuthenticated()) {
+                window.location.href = '/login';
+                return;
+            }
+
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const originalLabel = checkoutBtn ? checkoutBtn.innerHTML : '';
+
+            if (checkoutBtn) {
+                checkoutBtn.disabled = true;
+                checkoutBtn.innerHTML = 'Processing...';
+            }
+
+            try {
+                const couponInput = document.getElementById('cart-coupon-code');
+                const couponCode = couponInput ? String(couponInput.value || '').trim().toUpperCase() : '';
+                const payload = {
+                    items: cart.map(item => ({
+                        product_id: item.id,
+                        quantity: item.quantity || 1,
+                    })),
+                    coupon_code: couponCode || null,
+                    payment_way: 'cash',
+                };
+
+                const response = await window.axios.post('/api/orders/checkout', payload);
+                localStorage.removeItem('cart');
+                if (couponInput) couponInput.value = '';
+                window.dispatchEvent(new CustomEvent('cartUpdated'));
+                window._refreshCartDisplay && window._refreshCartDisplay();
+                window.closeCartModal && window.closeCartModal();
+
+                toast(response.data?.message || 'Checkout completed successfully.');
+            } catch (error) {
+                const message = error.response?.data?.message || 'Checkout failed. Please try again.';
+                toast(message);
+            } finally {
+                if (checkoutBtn) {
+                    checkoutBtn.disabled = false;
+                    checkoutBtn.innerHTML = originalLabel;
+                }
+            }
+        };
+
         window.showCart = function(){window._refreshCartDisplay();const m=document.getElementById('cart-modal');if(m){m.classList.remove('hidden');document.body.style.overflow='hidden';}};
         window.closeCartModal = function(){const m=document.getElementById('cart-modal');if(m){m.classList.add('hidden');document.body.style.overflow='';}};
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkoutBtn = document.getElementById('checkout-btn');
+            if (checkoutBtn) {
+                checkoutBtn.addEventListener('click', function () {
+                    window.checkoutCart && window.checkoutCart();
+                });
+            }
+        });
     })();
     </script>
 

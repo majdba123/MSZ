@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::apiResource('vendors', VendorController::class);
 Route::patch('vendors/{vendor}/toggle-active', [VendorController::class, 'toggleActive'])->name('vendors.toggle-active');
 Route::apiResource('users', UserController::class);
+Route::get('users/{user}/favourites', [UserController::class, 'favourites'])->name('users.favourites');
 Route::apiResource('products', ProductController::class);
 Route::patch('products/{product}/toggle-active', [ProductController::class, 'toggleActive'])->name('products.toggle-active');
 Route::patch('products/{product}/status', [ProductController::class, 'updateStatus'])->name('products.update-status');
@@ -26,6 +27,8 @@ Route::patch('products/{product}/photos/{photo}/set-primary', [ProductController
 Route::apiResource('categories', \App\Http\Controllers\Api\Admin\CategoryController::class);
 Route::apiResource('subcategories', \App\Http\Controllers\Api\Admin\SubcategoryController::class);
 Route::apiResource('coupons', \App\Http\Controllers\Api\Admin\CouponController::class);
+Route::get('orders', [\App\Http\Controllers\Api\Admin\OrderController::class, 'index'])->name('orders.index');
+Route::get('orders/{orderId}', [\App\Http\Controllers\Api\Admin\OrderController::class, 'show'])->name('orders.show');
 
 // Product Photos (separate API)
 Route::get('products/{product}/photos', [ProductPhotoController::class, 'index'])->name('products.photos.index');

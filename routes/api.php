@@ -83,4 +83,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{product}', [\App\Http\Controllers\Api\FavouriteController::class, 'toggle'])->name('toggle');
         Route::delete('/{product}', [\App\Http\Controllers\Api\FavouriteController::class, 'destroy'])->name('destroy');
     });
+
+    Route::get('/orders', [\App\Http\Controllers\Api\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{orderId}', [\App\Http\Controllers\Api\OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/checkout', [\App\Http\Controllers\Api\OrderController::class, 'store'])->name('orders.checkout');
 });

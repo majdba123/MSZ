@@ -52,6 +52,14 @@ class Vendor extends Model
     }
 
     /**
+     * Orders assigned to this vendor.
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
      * Categories this vendor is allowed to sell in.
      */
     public function categories(): BelongsToMany

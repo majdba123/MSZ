@@ -24,6 +24,12 @@
         </div>
         {{-- Footer --}}
         <div class="border-t border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-800 dark:bg-gray-800/50">
+            <div class="mb-3">
+                <label for="cart-coupon-code" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Coupon Code (Optional)</label>
+                <input id="cart-coupon-code" type="text" placeholder="Enter coupon code"
+                    class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none transition-colors focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+            </div>
+            <p class="mb-3 text-xs font-medium text-gray-500 dark:text-gray-400">Payment way: <span class="font-bold text-gray-700 dark:text-gray-200">Cash only</span></p>
             <div class="flex items-center justify-between">
                 <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Subtotal</span>
                 <span id="cart-total" class="text-xl font-black text-gray-900 dark:text-white">0.00 <span class="text-sm font-normal text-gray-400">SYP</span></span>

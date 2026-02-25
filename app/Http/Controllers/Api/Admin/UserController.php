@@ -47,6 +47,46 @@ class UserController extends Controller
     }
 
     /**
+     * List a specific user's favourite products (admin view).
+     */
+    public function favourites(User $user): JsonResponse
+    {
+        $products = $user->favouriteProducts()
+            ->with([
+                'photos' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort_order')->limit(1),
+                'vendor:id,store_name',
+                'subcategory:id,name,category_id',
+                'subcategory.category:id,name',
+            ])
+            ->select(['products.id', 'products.name', 'products.price', 'products.vendor_id', 'products.subcategory_id', 'products.quantity'])
+            ->latest('favourites.created_at')
+            ->get();
+
+        $mapped = $products->map(function ($product) {
+            $photo = $product->photos->first();
+
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'quantity' => $product->quantity,
+                'first_photo_url' => $photo ? asset('storage/'.$photo->path) : null,
+                'vendor' => $product->vendor ? ['id' => $product->vendor->id, 'store_name' => $product->vendor->store_name] : null,
+                'subcategory' => $product->subcategory ? [
+                    'id' => $product->subcategory->id,
+                    'name' => $product->subcategory->name,
+                    'category' => $product->subcategory->category ? ['id' => $product->subcategory->category->id, 'name' => $product->subcategory->category->name] : null,
+                ] : null,
+            ];
+        });
+
+        return response()->json([
+            'message' => __('User favourites retrieved successfully.'),
+            'data' => $mapped,
+        ]);
+    }
+
+    /**
      * Create a new user.
      */
     public function store(StoreUserRequest $request): JsonResponse

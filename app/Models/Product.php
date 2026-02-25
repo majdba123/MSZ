@@ -102,6 +102,14 @@ class Product extends Model
         return $this->belongsToMany(User::class, 'favourites')->withTimestamps();
     }
 
+    /**
+     * Order items containing this product.
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
     public function hasActiveDiscount(): bool
     {
         if (

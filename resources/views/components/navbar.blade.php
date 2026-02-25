@@ -53,8 +53,10 @@
                 </button>
 
                 {{-- Guest Buttons (hidden when authenticated) --}}
-                <a href="{{ route('login') }}" id="nav-login" class="hidden rounded-xl px-3.5 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 sm:inline-flex dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">Sign In</a>
-                <a href="{{ route('register') }}" id="nav-register" class="hidden rounded-xl bg-brand-500 px-4 py-2 text-sm font-bold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600 hover:shadow-md hover:shadow-brand-500/30 sm:inline-flex">Register</a>
+                <div id="nav-guest" class="hidden items-center gap-1.5 sm:flex">
+                    <a href="{{ route('login') }}" class="rounded-xl px-3.5 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">Sign In</a>
+                    <a href="{{ route('register') }}" class="rounded-xl bg-brand-500 px-4 py-2 text-sm font-bold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600 hover:shadow-md hover:shadow-brand-500/30">Register</a>
+                </div>
 
                 {{-- Profile Dropdown (shown when authenticated) --}}
                 <div id="profile-wrap" class="relative hidden">
@@ -223,8 +225,8 @@ function updateNavbar() {
     const user = isAuth ? window.Auth.getUser() : null;
 
     if (isAuth && user) {
-        el('nav-login')?.classList.add('hidden');
-        el('nav-register')?.classList.add('hidden');
+        el('nav-guest')?.classList.add('hidden');
+        el('nav-guest')?.classList.remove('sm:flex');
         el('profile-wrap')?.classList.remove('hidden');
         el('mobile-guest-footer')?.classList.add('hidden');
         el('mobile-auth-footer')?.classList.remove('hidden');
@@ -267,16 +269,16 @@ function updateNavbar() {
             if (mobDash) { mobDash.href = '{{ url("/vendor/dashboard") }}'; mobDash.classList.remove('hidden'); }
         }
     } else if (isAuth) {
-        el('nav-login')?.classList.add('hidden');
-        el('nav-register')?.classList.add('hidden');
+        el('nav-guest')?.classList.add('hidden');
+        el('nav-guest')?.classList.remove('sm:flex');
         el('profile-wrap')?.classList.remove('hidden');
         el('mobile-guest-footer')?.classList.add('hidden');
         el('mobile-auth-footer')?.classList.remove('hidden');
 
         fetchAndSetUser();
     } else {
-        el('nav-login')?.classList.remove('hidden');
-        el('nav-register')?.classList.remove('hidden');
+        el('nav-guest')?.classList.remove('hidden');
+        el('nav-guest')?.classList.add('sm:flex');
         el('profile-wrap')?.classList.add('hidden');
         el('mobile-guest-footer')?.classList.remove('hidden');
         el('mobile-auth-footer')?.classList.add('hidden');

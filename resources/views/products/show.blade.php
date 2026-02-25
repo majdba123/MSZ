@@ -3,372 +3,185 @@
 @section('title', 'Product Details — SyriaZone')
 
 @section('content')
-<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-    <nav class="mb-6 flex items-center gap-2 text-sm text-gray-500">
-        <a href="{{ route('home') }}" class="hover:text-gray-700 transition-colors">Home</a>
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
-        <span class="text-gray-900 font-medium">Product Details</span>
-    </nav>
-
-    <div id="show-loading" class="py-16 text-center">
-        <div class="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500"></div>
-        <p class="mt-4 text-sm font-medium text-gray-500">Loading product details...</p>
+<div class="bg-white dark:bg-gray-950">
+    <div class="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+        <div class="mx-auto max-w-screen-2xl px-4 py-3 sm:px-6 lg:px-8">
+            <nav class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <a href="{{ route('home') }}" class="hover:text-brand-600 dark:hover:text-brand-400">Home</a>
+                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                <a href="{{ route('products.index') }}" class="hover:text-brand-600 dark:hover:text-brand-400">Products</a>
+                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                <span class="font-medium text-gray-900 dark:text-white" id="bc-name">Details</span>
+            </nav>
+        </div>
     </div>
 
-    <div id="show-content" class="hidden">
-        <div class="grid gap-8 lg:grid-cols-3">
-            {{-- Left Column: Images --}}
-            <div class="lg:col-span-2 space-y-6">
-                {{-- Primary Photo --}}
-                <div class="overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-gray-200/50">
-                    <div id="primary-photo-container" class="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100">
-                        <p class="absolute inset-0 flex items-center justify-center text-gray-400">No primary photo available.</p>
+    <div class="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
+        <div id="show-loading" class="py-16 text-center">
+            <div class="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500 dark:border-gray-700"></div>
+            <p class="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">Loading product details...</p>
+        </div>
+
+        <div id="show-content" class="hidden">
+            <div class="grid gap-8 lg:grid-cols-3">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="overflow-hidden rounded-2xl border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-900">
+                        <div id="primary-photo-container" class="relative aspect-square bg-gray-50 dark:bg-gray-800">
+                            <p class="absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-500">No photo available.</p>
+                        </div>
+                    </div>
+                    <div class="rounded-2xl border border-gray-200/80 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+                        <div class="mb-4 flex items-center justify-between">
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Gallery</h3>
+                            <span id="photo-count" class="text-xs text-gray-400 dark:text-gray-500"></span>
+                        </div>
+                        <div id="product-photos" class="flex gap-3 overflow-x-auto pb-2 hide-scrollbar"></div>
                     </div>
                 </div>
 
-                {{-- Scrollable Photo Gallery --}}
-                <div class="rounded-2xl bg-white p-6 shadow-xl ring-1 ring-gray-200/50">
-                    <div class="mb-4 flex items-center justify-between">
-                        <h3 class="text-lg font-bold text-gray-900">Product Gallery</h3>
-                        <span id="photo-count" class="text-sm text-gray-500"></span>
-                    </div>
-                    <div id="product-photos" class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100" style="scrollbar-width: thin;">
-                        <!-- Photos will be inserted here -->
-                    </div>
-                </div>
-            </div>
-
-            {{-- Right Column: Product Info --}}
-            <div class="lg:col-span-1">
-                <div class="sticky top-6 space-y-6">
-                    {{-- Product Title & Vendor --}}
-                    <div class="rounded-2xl bg-white p-6 shadow-xl ring-1 ring-gray-200/50">
-                        <h1 id="product-name" class="mb-3 text-3xl font-bold text-gray-900 leading-tight"></h1>
-                        <div class="mb-6 flex items-center gap-2 border-b border-gray-100 pb-6">
-                            <span class="text-sm text-gray-500">Sold by</span>
-                            <a id="vendor-link" href="#" class="text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors"></a>
-                        </div>
-                        <div class="mb-6 flex items-baseline gap-2 border-b border-gray-100 pb-6">
-                            <span id="product-price" class="text-4xl font-bold text-brand-600"></span>
-                            <span class="text-xl text-gray-500">SYP</span>
-                        </div>
-                        <div class="mb-6 space-y-4">
-                            <div>
+                <div class="lg:col-span-1">
+                    <div class="sticky top-20 space-y-5">
+                        <div class="rounded-2xl border border-gray-200/80 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+                            <h1 id="product-name" class="mb-3 text-2xl font-black leading-tight text-gray-900 dark:text-white"></h1>
+                            <div class="mb-5 flex items-center gap-2 border-b border-gray-100 pb-5 dark:border-gray-800">
+                                <span class="text-xs text-gray-400 dark:text-gray-500">Sold by</span>
+                                <a id="vendor-link" href="#" class="text-sm font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"></a>
+                            </div>
+                            <div class="mb-5 flex items-baseline gap-2 border-b border-gray-100 pb-5 dark:border-gray-800">
+                                <span id="product-price" class="text-3xl font-black text-gray-900 dark:text-white"></span>
+                                <span class="text-sm text-gray-400">SYP</span>
+                            </div>
+                            <div class="mb-5 space-y-3">
                                 <p id="product-availability" class="mb-2"></p>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium text-gray-700">Available Quantity:</span>
-                                    <span id="product-quantity" class="text-lg font-bold text-gray-900"></span>
+                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Available:</span>
+                                    <span id="product-quantity" class="text-sm font-bold text-gray-900 dark:text-white"></span>
+                                </div>
+                                <div class="rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/50">
+                                    <div class="grid grid-cols-3 gap-2 text-center">
+                                        <div>
+                                            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Category</p>
+                                            <p id="product-category" class="mt-0.5 text-xs font-bold text-gray-900 dark:text-white">—</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Subcategory</p>
+                                            <p id="product-subcategory" class="mt-0.5 text-xs font-bold text-gray-900 dark:text-white">—</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Commission</p>
+                                            <p id="product-commission" class="mt-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">—</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                                <div class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
-                                    <div>
-                                        <p class="text-xs uppercase tracking-wide text-gray-500">Category</p>
-                                        <p id="product-category" class="font-semibold text-gray-900">—</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs uppercase tracking-wide text-gray-500">Subcategory</p>
-                                        <p id="product-subcategory" class="font-semibold text-gray-900">—</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs uppercase tracking-wide text-gray-500">Commission</p>
-                                        <p id="product-commission" class="font-semibold text-emerald-600">—</p>
-                                    </div>
-                                </div>
+                            <div class="flex gap-3">
+                                <button id="add-to-cart-btn" class="flex-1 rounded-xl bg-gray-900 py-3.5 text-sm font-bold text-white transition-all hover:bg-brand-600 active:scale-[.97] dark:bg-white dark:text-gray-900 dark:hover:bg-brand-500 dark:hover:text-white" disabled>
+                                    <span class="flex items-center justify-center gap-2">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
+                                        Add to Cart
+                                    </span>
+                                </button>
+                                <button id="fav-detail-btn" onclick="window.toggleFav({{ $productId ?? 0 }},this)" class="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl border border-gray-200 transition-all hover:scale-105 dark:border-gray-700 text-gray-400 dark:text-gray-500" data-fav-btn="{{ $productId ?? 0 }}">
+                                    <svg class="h-6 w-6" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+                                </button>
                             </div>
                         </div>
-                        <button id="add-to-cart-btn" class="w-full rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 py-4 text-base font-bold text-white shadow-lg transition-all hover:from-brand-700 hover:to-brand-800 hover:shadow-xl active:scale-[0.98]" disabled>
-                            <span class="flex items-center justify-center gap-2">
-                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                Add to Cart
-                            </span>
-                        </button>
-                    </div>
-
-                    {{-- Description --}}
-                    <div class="rounded-2xl bg-white p-6 shadow-xl ring-1 ring-gray-200/50">
-                        <h3 class="mb-4 text-lg font-bold text-gray-900">Description</h3>
-                        <p id="product-description" class="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap"></p>
+                        <div class="rounded-2xl border border-gray-200/80 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+                            <h3 class="mb-3 text-base font-bold text-gray-900 dark:text-white">Description</h3>
+                            <p id="product-description" class="whitespace-pre-wrap text-sm leading-relaxed text-gray-600 dark:text-gray-400"></p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="product-error" class="hidden text-center py-12">
-        <div class="mx-auto max-w-md">
-            <svg class="mx-auto h-16 w-16 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <p class="mt-4 text-lg font-medium text-gray-900">Product not found</p>
-            <p class="mt-2 text-sm text-gray-500">The product you're looking for doesn't exist or has been removed.</p>
-            <a href="{{ route('home') }}" class="mt-6 inline-block rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-brand-700">Back to Products</a>
+        <div id="product-error" class="hidden py-16 text-center">
+            <svg class="mx-auto h-16 w-16 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+            <p class="mt-4 text-base font-bold text-gray-900 dark:text-white">Product not found</p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">The product you're looking for doesn't exist or has been removed.</p>
+            <a href="{{ route('products.index') }}" class="mt-6 inline-flex items-center gap-2 rounded-xl bg-gray-900 px-6 py-3 text-sm font-bold text-white hover:bg-brand-600 dark:bg-white dark:text-gray-900 dark:hover:bg-brand-500 dark:hover:text-white">Back to Products</a>
         </div>
     </div>
 </div>
-
-<style>
-.scrollbar-thin::-webkit-scrollbar {
-    height: 8px;
-}
-.scrollbar-thin::-webkit-scrollbar-track {
-    background: #f3f4f6;
-    border-radius: 4px;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 4px;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
-}
-</style>
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', async function () {
     const productId = {{ $productId ?? 'null' }};
-    const showLoading = document.getElementById('show-loading');
-    const showContent = document.getElementById('show-content');
-    const productError = document.getElementById('product-error');
+    const $ = id => document.getElementById(id);
+    function esc(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
-    if (!productId) {
-        showLoading.classList.add('hidden');
-        productError.classList.remove('hidden');
-        return;
-    }
-
-    let currentPhotoPage = 1;
-    const photosPerPage = 6;
+    if (!productId) { $('show-loading').classList.add('hidden'); $('product-error').classList.remove('hidden'); return; }
 
     try {
-        const response = await window.axios.get(`/api/products/${productId}`);
-        const p = response.data.data;
-
+        const res = await window.axios.get(`/api/products/${productId}`);
+        const p = res.data.data;
         const photos = p.photos || [];
 
-        document.getElementById('product-name').textContent = p.name || '—';
-        document.getElementById('product-price').textContent = parseFloat(p.price || 0).toFixed(2);
-        document.getElementById('product-quantity').textContent = (p.quantity || 0) + ' units';
-        document.getElementById('product-description').textContent = p.description || 'No description provided.';
-        document.getElementById('product-category').textContent = p.category?.name || 'Unassigned';
-        document.getElementById('product-subcategory').textContent = p.subcategory?.name || 'Unassigned';
-        document.getElementById('product-commission').textContent = p.category?.commission ? parseFloat(p.category.commission).toFixed(2) + '%' : '—';
+        $('product-name').textContent = p.name || '—';
+        $('bc-name').textContent = p.name || 'Details';
+        $('product-price').textContent = parseFloat(p.price || 0).toLocaleString();
+        $('product-quantity').textContent = (p.quantity || 0) + ' units';
+        $('product-description').textContent = p.description || 'No description provided.';
+        $('product-category').textContent = p.category?.name || '—';
+        $('product-subcategory').textContent = p.subcategory?.name || '—';
+        $('product-commission').textContent = p.category?.commission ? parseFloat(p.category.commission).toFixed(2) + '%' : '—';
 
-        // Vendor info
-        if (p.vendor) {
-            const vendorLink = document.getElementById('vendor-link');
-            vendorLink.textContent = p.vendor.store_name || '—';
-            vendorLink.href = `/vendors/${p.vendor.id}`;
-        }
+        if (p.vendor) { const vl = $('vendor-link'); vl.textContent = p.vendor.store_name || '—'; vl.href = `/vendors/${p.vendor.id}`; }
 
-        // Availability
-        const availabilityBadge = p.quantity > 0
-            ? '<span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1.5 text-sm font-semibold text-emerald-700"><span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>In Stock</span>'
-            : '<span class="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1.5 text-sm font-semibold text-red-700"><span class="h-2 w-2 rounded-full bg-red-500"></span>Out of Stock</span>';
-        document.getElementById('product-availability').innerHTML = availabilityBadge;
+        const inStock = p.quantity > 0;
+        $('product-availability').innerHTML = inStock
+            ? '<span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>In Stock</span>'
+            : '<span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600 dark:bg-red-500/10 dark:text-red-400"><span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>Out of Stock</span>';
 
-        // Add to cart button
-        const addToCartBtn = document.getElementById('add-to-cart-btn');
-        if (p.quantity > 0) {
-            addToCartBtn.disabled = false;
-            addToCartBtn.onclick = () => {
-                const primaryPhoto = photos.find(photo => photo.is_primary === true) || photos[0];
-                const photoUrl = primaryPhoto ? (primaryPhoto.url || `/storage/${primaryPhoto.path}`) : '';
-
-                if (typeof window.addToCart === 'function') {
-                    window.addToCart(p.id, p.name, p.price, photoUrl);
-                } else {
-                    console.error('addToCart function not available');
-                    alert('Product added to cart!');
-                }
+        const btn = $('add-to-cart-btn');
+        if (inStock) {
+            btn.disabled = false;
+            btn.onclick = () => {
+                const primary = photos.find(ph => ph.is_primary) || photos[0];
+                const url = primary ? (primary.url || `/storage/${primary.path}`) : '';
+                window.addToCart(p.id, p.name, p.price, url);
             };
         } else {
-            addToCartBtn.innerHTML = '<span>Out of Stock</span>';
-            addToCartBtn.disabled = true;
-            addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.innerHTML = '<span class="flex items-center justify-center gap-2"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>Out of Stock</span>';
+            btn.disabled = true;
+            btn.classList.replace('bg-gray-900', 'bg-gray-200');
+            btn.classList.add('cursor-not-allowed');
+            btn.classList.replace('dark:bg-white', 'dark:bg-gray-800');
+            btn.classList.replace('dark:text-gray-900', 'dark:text-gray-500');
         }
 
-        // Display primary photo
-        const primaryPhoto = photos.find(photo => photo.is_primary === true) || photos[0];
-        const primaryPhotoContainer = document.getElementById('primary-photo-container');
-        if (primaryPhoto) {
-            const photoUrl = primaryPhoto.url || `/storage/${primaryPhoto.path}`;
-            primaryPhotoContainer.innerHTML = `
-                <img src="${photoUrl}"
-                     alt="${esc(p.name)}"
-                     class="h-full w-full object-contain bg-white transition-transform duration-500 hover:scale-105 cursor-zoom-in"
-                     onclick="viewPhotoLarge('${photoUrl}')"
-                     loading="eager">
-            `;
+        const primary = photos.find(ph => ph.is_primary) || photos[0];
+        if (primary) {
+            const url = primary.url || `/storage/${primary.path}`;
+            $('primary-photo-container').innerHTML = `<img src="${url}" alt="${esc(p.name)}" class="h-full w-full object-contain p-4 transition-transform duration-500 hover:scale-105 cursor-zoom-in" onclick="window._viewLarge(this.src)" loading="eager">`;
         }
 
-        // Display photos with pagination
-        function renderPhotoGallery() {
-            const photosContainer = document.getElementById('product-photos');
-            const photoCount = document.getElementById('photo-count');
-            const totalPages = Math.ceil(photos.length / photosPerPage);
-            const startIndex = (currentPhotoPage - 1) * photosPerPage;
-            const endIndex = startIndex + photosPerPage;
-            const currentPhotos = photos.slice(startIndex, endIndex);
+        $('photo-count').textContent = photos.length + ' photo' + (photos.length !== 1 ? 's' : '');
+        $('product-photos').innerHTML = photos.length ? photos.map(ph => {
+            const url = ph.url || `/storage/${ph.path}`;
+            return `<button onclick="window._setPrimary('${esc(url)}')" class="group relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 ${ph.is_primary ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-200 hover:border-brand-300 dark:border-gray-700 dark:hover:border-brand-500'} transition-all"><img src="${url}" class="h-full w-full object-contain bg-white p-1 dark:bg-gray-800" loading="lazy" alt=""><div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors"></div></button>`;
+        }).join('') : '<p class="py-4 text-xs text-gray-400 dark:text-gray-500">No photos available.</p>';
 
-            photoCount.textContent = `${photos.length} photo${photos.length !== 1 ? 's' : ''}`;
-
-            if (photos.length === 0) {
-                photosContainer.innerHTML = '<p class="text-center text-sm text-gray-400 py-4">No photos available.</p>';
-            } else {
-                photosContainer.innerHTML = currentPhotos.map((photo, index) => {
-                    const photoUrl = photo.url || `/storage/${photo.path}`;
-                    const isPrimary = photo.is_primary === true;
-                    return `
-                        <button type="button"
-                                onclick="setPrimaryImage('${photoUrl}', '${photo.url || `/storage/${photo.path}`}')"
-                                class="group relative flex-shrink-0 aspect-square h-24 w-24 overflow-hidden rounded-xl border-2 transition-all ${isPrimary ? 'border-brand-500 ring-2 ring-brand-200 shadow-md' : 'border-gray-200 hover:border-brand-300'}">
-                            <img src="${photoUrl}"
-                                 alt="${esc(p.name)}"
-                                 class="h-full w-full bg-white object-contain transition-transform duration-300 group-hover:scale-105"
-                                 loading="lazy">
-                            ${isPrimary ? '<div class="absolute top-1 right-1 h-3 w-3 rounded-full bg-brand-500 ring-2 ring-white"></div>' : ''}
-                        </button>
-                    `;
-                }).join('');
-
-                // Add pagination if needed
-                if (totalPages > 1) {
-                    const pagination = document.createElement('div');
-                    pagination.className = 'mt-4 flex items-center justify-center gap-2';
-                    pagination.innerHTML = `
-                        <button ${currentPhotoPage === 1 ? 'disabled' : ''}
-                                onclick="currentPhotoPage = ${currentPhotoPage - 1}; renderPhotoGallery();"
-                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium transition-colors ${currentPhotoPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}"
-                                ${currentPhotoPage === 1 ? 'disabled' : ''}>
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                            </svg>
-                        </button>
-                        <span class="text-sm text-gray-600">Page ${currentPhotoPage} of ${totalPages}</span>
-                        <button ${currentPhotoPage === totalPages ? 'disabled' : ''}
-                                onclick="currentPhotoPage = ${currentPhotoPage + 1}; renderPhotoGallery();"
-                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium transition-colors ${currentPhotoPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}"
-                                ${currentPhotoPage === totalPages ? 'disabled' : ''}>
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                            </svg>
-                        </button>
-                    `;
-                    photosContainer.parentElement.appendChild(pagination);
-                }
-            }
-        }
-
-        window.setPrimaryImage = function (url, fullUrl) {
-            const primaryPhotoContainer = document.getElementById('primary-photo-container');
-            primaryPhotoContainer.innerHTML = `
-                <img src="${fullUrl || url}"
-                     alt="${esc(p.name)}"
-                     class="h-full w-full object-contain bg-white transition-transform duration-500 hover:scale-105 cursor-zoom-in"
-                     onclick="viewPhotoLarge('${fullUrl || url}')"
-                     loading="eager">
-            `;
-            renderPhotoGallery();
+        window._setPrimary = function(url) {
+            $('primary-photo-container').innerHTML = `<img src="${url}" alt="${esc(p.name)}" class="h-full w-full object-contain p-4 transition-transform duration-500 hover:scale-105 cursor-zoom-in" onclick="window._viewLarge(this.src)" loading="eager">`;
+        };
+        window._viewLarge = function(url) {
+            const m = document.createElement('div');
+            m.className = 'fixed inset-0 z-[80] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4';
+            m.innerHTML = `<div class="relative max-h-[90vh] max-w-[90vw]"><img src="${url}" class="max-h-[90vh] max-w-[90vw] rounded-xl object-contain" alt=""><button onclick="this.closest('.fixed').remove()" class="absolute -right-2 -top-2 flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-900 shadow-xl hover:scale-110 transition-transform"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button></div>`;
+            m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+            document.addEventListener('keydown', function h(e) { if (e.key === 'Escape') { m.remove(); document.removeEventListener('keydown', h); } });
+            document.body.appendChild(m);
         };
 
-        renderPhotoGallery();
-
-        window.viewPhotoLarge = function (url) {
-            const existingModal = document.getElementById('photo-modal');
-            if (existingModal) existingModal.remove();
-
-            const modal = document.createElement('div');
-            modal.id = 'photo-modal';
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4';
-            modal.innerHTML = `
-                <div class="relative max-h-[90vh] max-w-[90vw]">
-                    <img src="${url}" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl" alt="Product photo">
-                    <button type="button" onclick="document.getElementById('photo-modal')?.remove()" class="absolute right-2 top-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-gray-900 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:scale-110" title="Close">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                </div>
-            `;
-            const closeModal = () => modal.remove();
-            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-            const escapeHandler = (e) => { if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', escapeHandler); } };
-            document.addEventListener('keydown', escapeHandler);
-            document.body.appendChild(modal);
-        };
-
-        window.currentPhotoPage = currentPhotoPage;
-        window.renderPhotoGallery = renderPhotoGallery;
-
-        document.getElementById('show-loading').classList.add('hidden');
-        document.getElementById('show-content').classList.remove('hidden');
-    } catch (error) {
-        console.error('Failed to load product:', error);
-        showLoading.classList.add('hidden');
-        productError.classList.remove('hidden');
-    }
-
-    window.addToCart = function(productId, productName, productPrice, productPhoto) {
-        try {
-            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const existingItem = cart.find(item => item.id === productId);
-
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({
-                    id: productId,
-                    name: productName,
-                    price: parseFloat(productPrice),
-                    photo: productPhoto || '/images/placeholder.png',
-                    quantity: 1
-                });
-            }
-
-            localStorage.setItem('cart', JSON.stringify(cart));
-            window.dispatchEvent(new CustomEvent('cartUpdated'));
-
-            if (typeof window.updateCartBadge === 'function') window.updateCartBadge(true);
-
-            showAlert('Product added to cart!', 'success');
-        } catch (e) {
-            console.error('Error adding to cart:', e);
-            showAlert('Failed to add product to cart', 'error');
-        }
-    };
-
-    function showAlert(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.className = `fixed top-20 right-4 z-50 flex items-center gap-3 rounded-lg bg-white px-4 py-3 shadow-xl ring-1 ring-gray-200 animate-in slide-in-from-right`;
-        toast.innerHTML = `
-            <div class="flex h-8 w-8 items-center justify-center rounded-full ${type === 'success' ? 'bg-emerald-100' : 'bg-red-100'}">
-                ${type === 'success' ? `
-                    <svg class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                ` : `
-                    <svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                `}
-            </div>
-            <p class="font-medium text-gray-900">${esc(message)}</p>
-        `;
-        document.body.appendChild(toast);
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(100%)';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
-
-    function esc(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
+        $('show-loading').classList.add('hidden');
+        $('show-content').classList.remove('hidden');
+    } catch (e) {
+        console.error('Failed to load product:', e);
+        $('show-loading').classList.add('hidden');
+        $('product-error').classList.remove('hidden');
     }
 });
 </script>

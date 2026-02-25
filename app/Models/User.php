@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -83,5 +84,13 @@ class User extends Authenticatable
     public function vendor(): HasOne
     {
         return $this->hasOne(Vendor::class);
+    }
+
+    /**
+     * Products this user has added to favourites.
+     */
+    public function favouriteProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'favourites')->withTimestamps();
     }
 }

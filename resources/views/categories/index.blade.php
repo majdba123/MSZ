@@ -38,8 +38,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             return `
             <div class="cat-card overflow-hidden rounded-2xl border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-900">
                 <a href="/categories/${cat.id}" class="flex items-center gap-4 p-5">
-                    <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 ring-1 ring-brand-200/50 dark:from-brand-500/10 dark:to-brand-500/5 dark:ring-brand-500/20">
-                        ${logo ? `<img src="${esc(logo)}" class="h-full w-full rounded-2xl object-cover" alt="">` : `<svg class="h-7 w-7 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581"/></svg>`}
+                    <div class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 ring-1 ring-brand-200/50 dark:from-brand-500/10 dark:to-brand-500/5 dark:ring-brand-500/20">
+                        ${logo ? `<img src="${esc(logo)}" class="h-full w-full rounded-2xl object-cover" alt="">` : `<svg class="h-8 w-8 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581"/></svg>`}
                     </div>
                     <div class="min-w-0 flex-1">
                         <h2 class="text-base font-bold text-gray-900 dark:text-white">${esc(cat.name)}</h2>

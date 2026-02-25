@@ -13,10 +13,6 @@ use Illuminate\Support\Facades\Storage;
 class ProductService
 {
     /**
-     * Get paginated products with first photo (optimized for list).
-     * For admin: lists all products with optional filters.
-     * For vendor: pass vendor to scope to their products.
-     *
      * @param  array<string, mixed>  $filters
      */
     public function list(?Vendor $vendor = null, int $perPage = 15, array $filters = []): LengthAwarePaginator
@@ -25,79 +21,54 @@ class ProductService
             ? $vendor->products()
             : Product::query();
 
-        $query->with(['photos' => function ($query) {
-            $query->orderBy('is_primary', 'desc')->orderBy('sort_order');
-        }, 'subcategory.category']);
+        $query->with([
+            'photos' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort_order')->limit(3),
+            'subcategory:id,name,category_id',
+            'subcategory.category:id,name,commission',
+        ]);
 
-        // For admin: filter by vendor_id (only if not scoped to a vendor)
-        if (! $vendor && isset($filters['vendor_id']) && $filters['vendor_id']) {
+        if (! $vendor && ! empty($filters['vendor_id'])) {
             $query->where('vendor_id', $filters['vendor_id']);
         }
 
-        // Filter by category_id via product subcategory relation
-        if (isset($filters['category_id']) && $filters['category_id']) {
-            $query->whereHas('subcategory', function ($subcategoryQuery) use ($filters): void {
-                $subcategoryQuery->where('category_id', $filters['category_id']);
-            });
+        if (! empty($filters['category_id'])) {
+            $query->whereHas('subcategory', fn ($q) => $q->where('category_id', $filters['category_id']));
         }
 
-        // Filter by subcategory_id
-        if (isset($filters['subcategory_id']) && $filters['subcategory_id']) {
+        if (! empty($filters['subcategory_id'])) {
             $query->where('subcategory_id', $filters['subcategory_id']);
         }
 
-        // Filter by status (product approval status)
         if (isset($filters['status']) && $filters['status'] !== '') {
             $query->where('status', $filters['status']);
         }
 
-        // Filter by active status
         if (isset($filters['is_active']) && $filters['is_active'] !== '') {
             $query->where('is_active', filter_var($filters['is_active'], FILTER_VALIDATE_BOOLEAN));
         }
 
-        // For admin: eager load vendor relationship
         if (! $vendor) {
-            $query->with('vendor.user');
+            $query->with('vendor:id,store_name,user_id', 'vendor.user:id,name');
         }
 
-        return $query->latest('created_at')->paginate($perPage);
+        return $query->latest('products.created_at')->paginate($perPage);
     }
 
     /**
-     * Get paginated public products (for clients/users).
-     * Only shows products that:
-     * - Vendor is active
-     * - Product is active
-     * - Quantity > 0
-     * - Status is approved
-     *
      * @param  array<string, mixed>  $filters
      */
     public function listPublic(int $perPage = 15, array $filters = []): LengthAwarePaginator
     {
-        $vendorId = isset($filters['vendor_id']) && $filters['vendor_id'] !== '' && $filters['vendor_id'] !== null
-            ? (int) $filters['vendor_id']
-            : null;
+        $vendorId = ! empty($filters['vendor_id']) ? (int) $filters['vendor_id'] : null;
+        $categoryId = ! empty($filters['category_id']) ? (int) $filters['category_id'] : null;
+        $subcategoryId = ! empty($filters['subcategory_id']) ? (int) $filters['subcategory_id'] : null;
+        $page = (int) request()->get('page', 1);
 
-        $categoryId = isset($filters['category_id']) && $filters['category_id'] !== '' && $filters['category_id'] !== null
-            ? (int) $filters['category_id']
-            : null;
+        $cacheKey = "pub_products:v{$vendorId}:c{$categoryId}:s{$subcategoryId}:pp{$perPage}:p{$page}";
 
-        $subcategoryId = isset($filters['subcategory_id']) && $filters['subcategory_id'] !== '' && $filters['subcategory_id'] !== null
-            ? (int) $filters['subcategory_id']
-            : null;
-
-        $page = request()->get('page', 1);
-        $cacheKey = "products:public:v:{$vendorId}:c:{$categoryId}:s:{$subcategoryId}:pp:{$perPage}:page:{$page}";
-
-        try {
-            return Cache::remember($cacheKey, 1800, function () use ($perPage, $vendorId, $categoryId, $subcategoryId) {
-                return $this->fetchPublicProducts($perPage, $vendorId, $categoryId, $subcategoryId);
-            });
-        } catch (\Exception $e) {
+        return $this->cachedOrFetch(['products'], $cacheKey, 900, function () use ($perPage, $vendorId, $categoryId, $subcategoryId) {
             return $this->fetchPublicProducts($perPage, $vendorId, $categoryId, $subcategoryId);
-        }
+        });
     }
 
     protected function fetchPublicProducts(int $perPage, ?int $vendorId, ?int $categoryId = null, ?int $subcategoryId = null): LengthAwarePaginator
@@ -106,12 +77,12 @@ class ProductService
             ->where('is_active', true)
             ->where('status', Product::STATUS_APPROVED)
             ->where('quantity', '>', 0)
-            ->whereHas('vendor', function ($q) {
-                $q->where('is_active', true);
-            })
-            ->with(['photos' => function ($query) {
-                $query->orderBy('is_primary', 'desc')->orderBy('sort_order');
-            }, 'vendor:id,store_name,user_id', 'vendor.user:id,name']);
+            ->whereHas('vendor', fn ($q) => $q->where('is_active', true))
+            ->with([
+                'photos' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort_order')->limit(1),
+                'vendor:id,store_name,user_id',
+                'vendor.user:id,name',
+            ]);
 
         if ($vendorId) {
             $query->where('vendor_id', $vendorId);
@@ -120,29 +91,23 @@ class ProductService
         if ($subcategoryId) {
             $query->where('subcategory_id', $subcategoryId);
         } elseif ($categoryId) {
-            $query->whereHas('subcategory', function ($q) use ($categoryId) {
-                $q->where('category_id', $categoryId);
-            });
+            $query->whereHas('subcategory', fn ($q) => $q->where('category_id', $categoryId));
         }
 
-        return $query->latest('created_at')->paginate($perPage);
+        return $query->latest('products.created_at')->paginate($perPage);
     }
 
     public function create(?Vendor $vendor, array $data): Product
     {
-        // Set default status to pending if not provided
         if (! isset($data['status'])) {
             $data['status'] = Product::STATUS_PENDING;
         }
 
-        if ($vendor) {
-            $product = $vendor->products()->create($data);
-        } else {
-            $product = Product::query()->create($data);
-        }
+        $product = $vendor
+            ? $vendor->products()->create($data)
+            : Product::query()->create($data);
 
-        // Invalidate cache
-        $this->invalidateProductCache($product);
+        $this->flushProductCache();
 
         return $product->load($vendor ? ['photos', 'subcategory.category'] : ['vendor.user', 'photos', 'subcategory.category']);
     }
@@ -150,100 +115,66 @@ class ProductService
     public function update(Product $product, array $data): Product
     {
         $product->update($data);
-
-        // Invalidate cache
-        $this->invalidateProductCache($product);
+        $this->flushProductCache();
 
         return $product->fresh($product->vendor ? ['vendor.user', 'photos', 'subcategory.category'] : ['photos', 'subcategory.category']);
     }
 
-    /**
-     * Delete a product and its photos from storage.
-     */
     public function delete(Product $product): void
     {
-        $vendorId = $product->vendor_id;
-
-        // Delete all photos from storage
         foreach ($product->photos as $photo) {
             Storage::disk('public')->delete($photo->path);
         }
 
         $product->delete();
-
-        // Invalidate cache
-        $this->invalidateProductCache($product, $vendorId);
+        $this->flushProductCache();
     }
 
-    /**
-     * Toggle product active status.
-     */
     public function toggleActive(Product $product): Product
     {
         $product->update(['is_active' => ! $product->is_active]);
-
-        // Invalidate cache
-        $this->invalidateProductCache($product);
+        $this->flushProductCache();
 
         return $product->fresh(['vendor.user', 'photos', 'subcategory.category']);
     }
 
-    /**
-     * Update product status (admin only).
-     */
     public function updateStatus(Product $product, string $status): Product
     {
         $product->update(['status' => $status]);
-
-        // Invalidate cache
-        $this->invalidateProductCache($product);
+        $this->flushProductCache();
 
         return $product->fresh(['vendor.user', 'photos', 'subcategory.category']);
     }
 
-    /**
-     * Set primary photo for a product.
-     */
     public function setPrimaryPhoto(Product $product, ProductPhoto $photo): Product
     {
-        // Ensure photo belongs to product
         if ($photo->product_id !== $product->id) {
             throw new \InvalidArgumentException('Photo does not belong to this product.');
         }
 
-        // Unset all other primary photos for this product
         $product->photos()->where('is_primary', true)->update(['is_primary' => false]);
-
-        // Set this photo as primary
         $photo->update(['is_primary' => true]);
-
-        // Invalidate cache
-        $this->invalidateProductCache($product);
+        $this->flushProductCache();
 
         return $product->fresh(['vendor.user', 'photos', 'subcategory.category']);
     }
 
     /**
-     * Store multiple photos for a product.
-     *
      * @param  array<int, UploadedFile>  $files
      * @return array<int, ProductPhoto>
      */
     public function addPhotos(Product $product, array $files): array
     {
         $maxOrder = $product->photos()->max('sort_order') ?? 0;
-        $photos = [];
-
-        // Check if there's already a primary photo
         $hasPrimary = $product->photos()->where('is_primary', true)->exists();
+        $photos = [];
 
         foreach ($files as $index => $file) {
             $path = $file->store('products/'.$product->id, 'public');
-
             $photos[] = $product->photos()->create([
                 'path' => $path,
                 'sort_order' => ++$maxOrder,
-                'is_primary' => ! $hasPrimary && $index === 0, // Set first photo as primary if none exists
+                'is_primary' => ! $hasPrimary && $index === 0,
             ]);
 
             if (! $hasPrimary && $index === 0) {
@@ -251,47 +182,32 @@ class ProductService
             }
         }
 
-        // Invalidate cache
-        $this->invalidateProductCache($product);
+        $this->flushProductCache();
 
         return $photos;
     }
 
-    /**
-     * Remove a single photo by ID.
-     */
     public function removePhoto(ProductPhoto $photo): void
     {
-        $product = $photo->product;
         Storage::disk('public')->delete($photo->path);
         $photo->delete();
-
-        // Invalidate cache
-        $this->invalidateProductCache($product);
+        $this->flushProductCache();
     }
 
     /**
-     * Remove multiple photos by IDs (scoped to a product).
-     *
      * @param  array<int, int>  $photoIds
      */
     public function removePhotos(Product $product, array $photoIds): int
     {
-        // Get photos to delete
         $photos = $product->photos()->whereIn('id', $photoIds)->get();
-
-        // Check if any of the photos being deleted is primary
         $deletedPrimary = $photos->where('is_primary', true)->isNotEmpty();
 
-        // Delete photos and their files
         foreach ($photos as $photo) {
             Storage::disk('public')->delete($photo->path);
             $photo->delete();
         }
 
-        // If the primary photo was among the deleted ones, set the first remaining photo as primary
         if ($deletedPrimary) {
-            // Refresh product to get updated photos list
             $product->refresh();
             $firstRemaining = $product->photos()->orderBy('sort_order')->first();
             if ($firstRemaining instanceof ProductPhoto) {
@@ -299,36 +215,34 @@ class ProductService
             }
         }
 
-        // Invalidate cache
-        $this->invalidateProductCache($product);
+        $this->flushProductCache();
 
         return $photos->count();
     }
 
     /**
-     * Invalidate product-related cache.
+     * Flush all product-related caches using Redis tags.
      */
-    protected function invalidateProductCache(Product $product, ?int $vendorId = null): void
+    protected function flushProductCache(): void
     {
-        $vendorId = $vendorId ?? $product->vendor_id;
-
-        // Clear all paginated product caches (public) - clear first 10 pages
-        for ($i = 1; $i <= 10; $i++) {
-            Cache::forget("products:public:list:page:{$i}");
-            Cache::forget("products:public:vendor:{$vendorId}:page:{$i}");
-            Cache::forget("products:public:page:{$i}");
+        try {
+            Cache::tags(['products'])->flush();
+        } catch (\Exception $e) {
+            // Silently fail if cache driver doesn't support tags
         }
+    }
 
-        // Clear product detail cache
-        Cache::forget("products:public:{$product->id}:details");
-        Cache::forget("products:{$product->id}:details");
-
-        // Clear vendor cache if vendor exists
-        if ($vendorId) {
-            Cache::forget("vendors:{$vendorId}:details");
+    /**
+     * Cache helper using tags with fallback.
+     *
+     * @param  array<int, string>  $tags
+     */
+    protected function cachedOrFetch(array $tags, string $key, int $ttl, \Closure $callback): mixed
+    {
+        try {
+            return Cache::tags($tags)->remember($key, $ttl, $callback);
+        } catch (\Exception $e) {
+            return $callback();
         }
-
-        // Clear vendor list cache
-        Cache::forget('vendors:active:list');
     }
 }

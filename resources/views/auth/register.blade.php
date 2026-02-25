@@ -121,6 +121,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const response = await window.axios.post('/api/auth/register', payload);
 
             window.Auth.setToken(response.data.data.token);
+            if (response.data.data.user) {
+                window.Auth.setUser(response.data.data.user);
+            }
             showAlert('register-success', 'Account created successfully! Redirecting...');
 
             setTimeout(() => {

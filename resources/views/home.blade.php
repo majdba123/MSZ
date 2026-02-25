@@ -43,8 +43,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                 return `
                 <a href="/categories/${cat.id}" class="cat-card group overflow-hidden rounded-2xl border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-900" style="opacity:0;transform:translateY(20px);transition:opacity .5s ease ${i*.06}s,transform .5s ease ${i*.06}s;">
                     <div class="flex items-center gap-4 p-4 sm:p-5">
-                        <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 ring-1 ring-brand-200/50 transition-transform duration-300 group-hover:scale-110 sm:h-16 sm:w-16 dark:from-brand-500/10 dark:to-brand-500/5 dark:ring-brand-500/20">
-                            ${logo ? `<img src="${esc(logo)}" alt="" class="h-full w-full rounded-2xl object-cover">` : `<svg class="h-7 w-7 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/></svg>`}
+                        <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 ring-1 ring-brand-200/50 transition-transform duration-300 group-hover:scale-110 sm:h-20 sm:w-20 dark:from-brand-500/10 dark:to-brand-500/5 dark:ring-brand-500/20">
+                            ${logo ? `<img src="${esc(logo)}" alt="" class="h-full w-full rounded-2xl object-cover">` : `<svg class="h-8 w-8 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/></svg>`}
                         </div>
                         <div class="min-w-0 flex-1">
                             <h3 class="text-sm font-bold text-gray-900 group-hover:text-brand-600 sm:text-base dark:text-white dark:group-hover:text-brand-400">${esc(cat.name)}</h3>
@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (!track || !subs.length) return;
         track.innerHTML = subs.map(s => `
             <a href="/subcategories/${s.id}" class="group flex w-44 shrink-0 items-center gap-3 rounded-2xl border border-gray-200/80 bg-white p-3.5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-brand-200 sm:w-48 dark:border-gray-800 dark:bg-gray-800/50 dark:hover:border-brand-500">
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100 ring-1 ring-gray-200/50 dark:bg-gray-700 dark:ring-gray-600">
-                    ${s.image ? `<img src="/storage/${esc(s.image)}" class="h-full w-full object-cover" alt="">` : `<svg class="h-5 w-5 text-gray-300 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159"/></svg>`}
+                <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-100 ring-1 ring-gray-200/50 dark:bg-gray-700 dark:ring-gray-600">
+                    ${s.image ? `<img src="/storage/${esc(s.image)}" class="h-full w-full object-cover" alt="">` : `<svg class="h-6 w-6 text-gray-300 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159"/></svg>`}
                 </div>
                 <div class="min-w-0">
                     <p class="truncate text-sm font-bold text-gray-700 group-hover:text-brand-600 dark:text-gray-300 dark:group-hover:text-brand-400">${esc(s.name)}</p>
@@ -120,12 +120,16 @@ document.addEventListener('DOMContentLoaded', async function () {
                 if (!grid) return;
                 grid.innerHTML = data.map((p, i) => {
                     const photo = p.first_photo_url || '', inStock = p.quantity > 0;
+                    const isFav = window._favIds && window._favIds.has(p.id);
                     return `
                     <div class="product-card overflow-hidden rounded-2xl border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-900" style="opacity:0;transform:translateY(16px);transition:opacity .4s ease ${i*.05}s,transform .4s ease ${i*.05}s;">
-                        <a href="/products/${p.id}"><div class="relative aspect-[4/5] overflow-hidden bg-gray-50 dark:bg-gray-800">
-                            ${photo ? `<img src="${esc(photo)}" alt="${esc(p.name)}" class="h-full w-full object-contain p-4 transition-transform duration-500 hover:scale-105" loading="lazy">` : `<div class="flex h-full items-center justify-center"><svg class="h-12 w-12 text-gray-200 dark:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159"/></svg></div>`}
-                            ${!inStock ? '<div class="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-gray-900/70"><span class="rounded-full bg-red-100 px-3 py-1 text-[11px] font-bold text-red-600 dark:bg-red-500/10 dark:text-red-400">Sold Out</span></div>' : ''}
-                        </div></a>
+                        <div class="relative">
+                            <a href="/products/${p.id}"><div class="relative aspect-[4/5] overflow-hidden bg-gray-50 dark:bg-gray-800">
+                                ${photo ? `<img src="${esc(photo)}" alt="${esc(p.name)}" class="h-full w-full object-contain p-4 transition-transform duration-500 hover:scale-105" loading="lazy">` : `<div class="flex h-full items-center justify-center"><svg class="h-12 w-12 text-gray-200 dark:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159"/></svg></div>`}
+                                ${!inStock ? '<div class="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-gray-900/70"><span class="rounded-full bg-red-100 px-3 py-1 text-[11px] font-bold text-red-600 dark:bg-red-500/10 dark:text-red-400">Sold Out</span></div>' : ''}
+                            </div></a>
+                            <button data-fav-btn="${p.id}" onclick="event.stopPropagation();window.toggleFav(${p.id},this)" class="absolute right-2.5 top-2.5 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-all hover:scale-110 dark:bg-gray-900/90 ${isFav?'text-red-500':'text-gray-400 dark:text-gray-500'}"><svg class="h-5 w-5" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="${isFav?'currentColor':'none'}"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg></button>
+                        </div>
                         <div class="p-3 sm:p-4">
                             ${p.vendor ? `<p class="mb-1 truncate text-[11px] font-medium text-gray-400 dark:text-gray-500">${esc(p.vendor.store_name)}</p>` : ''}
                             <a href="/products/${p.id}"><h3 class="line-clamp-2 text-sm font-bold leading-snug text-gray-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400">${esc(p.name)}</h3></a>
@@ -144,8 +148,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // ═══ INIT ═══
-    await Promise.all([loadCategories(), loadVendors()]);
-    loadProducts();
+    await Promise.all([loadCategories(), loadVendors(), loadProducts()]);
 });
 </script>
 @endpush

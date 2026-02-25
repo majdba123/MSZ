@@ -3,7 +3,7 @@
 @section('title', 'Vendor Details — SyriaZone')
 
 @section('content')
-<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+<div class="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
     <nav class="mb-6 flex items-center gap-2 text-sm text-gray-500">
         <a href="{{ route('home') }}" class="hover:text-gray-700 transition-colors">Home</a>
         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>

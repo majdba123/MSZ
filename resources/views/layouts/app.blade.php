@@ -7,7 +7,8 @@
     <title>@yield('title', 'SyriaZone')</title>
     <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
     <link rel="dns-prefetch" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900&display=swap" rel="stylesheet" />
+    <link rel="preload" href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900&display=swap" rel="stylesheet"></noscript>
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#030712" media="(prefers-color-scheme: dark)">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -92,6 +93,66 @@
             </div>
         </div>
     </footer>
+
+    {{-- ═══ Global Favourites Logic ═══ --}}
+    <script>
+    (function(){
+        window._favIds = new Set();
+        window._favLoaded = false;
+
+        window.loadFavIds = async function() {
+            if (!window.Auth || !window.Auth.isAuthenticated()) return;
+            try {
+                const res = await window.axios.get('/api/favourites/ids');
+                window._favIds = new Set(res.data.data || []);
+                window._favLoaded = true;
+                document.querySelectorAll('[data-fav-btn]').forEach(btn => {
+                    const id = parseInt(btn.dataset.favBtn);
+                    updateFavBtn(btn, window._favIds.has(id));
+                });
+            } catch(e) {}
+        };
+
+        window.toggleFav = async function(productId, btn) {
+            if (!window.Auth || !window.Auth.isAuthenticated()) {
+                window.location.href = '/login';
+                return;
+            }
+            try {
+                const res = await window.axios.post('/api/favourites/' + productId);
+                const isFav = res.data.favourited;
+                if (isFav) window._favIds.add(productId); else window._favIds.delete(productId);
+                document.querySelectorAll('[data-fav-btn="' + productId + '"]').forEach(b => updateFavBtn(b, isFav));
+                favToast(isFav ? 'Added to favourites' : 'Removed from favourites');
+            } catch(e) {}
+        };
+
+        function updateFavBtn(btn, isFav) {
+            const svg = btn.querySelector('svg');
+            if (!svg) return;
+            if (isFav) {
+                svg.setAttribute('fill', 'currentColor');
+                btn.classList.add('text-red-500');
+                btn.classList.remove('text-gray-400', 'dark:text-gray-500');
+            } else {
+                svg.setAttribute('fill', 'none');
+                btn.classList.remove('text-red-500');
+                btn.classList.add('text-gray-400', 'dark:text-gray-500');
+            }
+        }
+
+        function favToast(msg) {
+            const t = document.createElement('div');
+            t.className = 'fixed bottom-6 left-6 z-[80] flex items-center gap-3 rounded-2xl bg-gray-900 px-6 py-4 text-sm font-medium text-white shadow-2xl dark:bg-white dark:text-gray-900';
+            t.style.animation = 'fadeInUp .3s cubic-bezier(.22,1,.36,1)';
+            t.innerHTML = '<svg class="h-5 w-5 text-red-400 dark:text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>' + msg;
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => window.loadFavIds());
+    })();
+    </script>
 
     {{-- ═══ Global Cart Logic ═══ --}}
     <script>

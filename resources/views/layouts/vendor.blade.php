@@ -158,7 +158,7 @@
 
             try {
                 const response = await window.axios.get('/api/user');
-                const user = response.data;
+                const user = response.data.data || response.data;
 
                 if (user.type !== 2) {
                     window.Auth.removeToken();
@@ -166,9 +166,12 @@
                     return;
                 }
 
+                window.Auth.setUser(user);
                 document.getElementById('vendor-name').textContent = user.name;
                 const avatarEl = document.getElementById('vendor-avatar');
-                if (user.avatar) {
+                if (user.avatar_url) {
+                    avatarEl.innerHTML = `<img src="${user.avatar_url}" alt="" class="h-full w-full rounded-full object-cover">`;
+                } else if (user.avatar) {
                     avatarEl.innerHTML = `<img src="/storage/${user.avatar}" alt="" class="h-full w-full rounded-full object-cover">`;
                 } else {
                     avatarEl.textContent = (user.name || 'V').charAt(0).toUpperCase();

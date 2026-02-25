@@ -163,14 +163,16 @@ document.addEventListener('DOMContentLoaded', async function () {
                                      loading="lazy">
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                                 ${product.quantity <= 0 ? `<div class="absolute top-3 right-3 rounded-full bg-red-500 px-3 py-1.5 text-xs font-bold text-white shadow-xl">Out of Stock</div>` : ''}
+                                ${product.has_active_discount ? `<div class="absolute top-3 left-3 rounded-full bg-red-500 px-3 py-1.5 text-xs font-bold text-white shadow-xl">-${parseFloat(product.discount_percentage || 0).toFixed(0)}%</div>` : ''}
                             </div>
                             <div class="p-6">
                                 <h3 class="mb-2 text-lg font-bold text-gray-900 line-clamp-2 transition-colors group-hover:text-brand-600">${esc(product.name)}</h3>
                                 <p class="mb-4 text-sm text-gray-600 line-clamp-2 leading-relaxed">${esc(product.description || 'No description available')}</p>
                                 <div class="mb-4 flex items-center justify-between border-t border-gray-100 pt-4">
                                     <div>
-                                        <span class="text-2xl font-bold text-brand-600">${parseFloat(product.price).toFixed(2)}</span>
+                                        <span class="text-2xl font-bold ${product.has_active_discount ? 'text-red-600' : 'text-brand-600'}">${parseFloat(product.has_active_discount ? product.discounted_price : product.price).toFixed(2)}</span>
                                         <span class="text-sm text-gray-500"> SYP</span>
+                                        ${product.has_active_discount ? `<span class="ml-2 text-xs text-gray-400 line-through">${parseFloat(product.price).toFixed(2)} SYP</span>` : ''}
                                     </div>
                                     <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">${product.quantity} available</span>
                                 </div>
@@ -178,7 +180,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                                     <a href="/products/${product.id}" class="flex-1 btn-secondary text-center text-sm font-semibold transition-all hover:bg-gray-100">View</a>
                                     <button data-product-id="${product.id}"
                                             data-product-name="${esc(product.name)}"
-                                            data-product-price="${product.price}"
+                                            data-product-price="${product.has_active_discount ? product.discounted_price : product.price}"
                                             data-product-photo="${esc(product.first_photo_url || '')}"
                                             onclick="handleAddToCartFromCard(this)"
                                             class="flex-1 btn-primary text-sm font-semibold shadow-md transition-all hover:shadow-lg ${product.quantity <= 0 ? 'opacity-50 cursor-not-allowed' : ''}"

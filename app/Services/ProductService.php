@@ -47,6 +47,27 @@ class ProductService
             $query->where('is_active', filter_var($filters['is_active'], FILTER_VALIDATE_BOOLEAN));
         }
 
+        if (isset($filters['has_discount']) && $filters['has_discount'] !== '') {
+            $wantDiscount = filter_var($filters['has_discount'], FILTER_VALIDATE_BOOLEAN);
+            $query->where(function ($builder) use ($wantDiscount) {
+                $activeDiscountQuery = fn ($q) => $q
+                    ->where('discount_is_active', true)
+                    ->where('discount_percentage', '>', 0)
+                    ->where('discount_status', Product::DISCOUNT_STATUS_ACTIVE);
+
+                if ($wantDiscount) {
+                    $activeDiscountQuery($builder);
+                } else {
+                    $builder->where(function ($negativeQuery) {
+                        $negativeQuery->where('discount_is_active', false)
+                            ->orWhereNull('discount_percentage')
+                            ->orWhere('discount_percentage', '<=', 0)
+                            ->orWhere('discount_status', '!=', Product::DISCOUNT_STATUS_ACTIVE);
+                    });
+                }
+            });
+        }
+
         if (! $vendor) {
             $query->with('vendor:id,store_name,user_id', 'vendor.user:id,name');
         }
@@ -62,17 +83,25 @@ class ProductService
         $vendorId = ! empty($filters['vendor_id']) ? (int) $filters['vendor_id'] : null;
         $categoryId = ! empty($filters['category_id']) ? (int) $filters['category_id'] : null;
         $subcategoryId = ! empty($filters['subcategory_id']) ? (int) $filters['subcategory_id'] : null;
+        $hasDiscount = isset($filters['has_discount']) && $filters['has_discount'] !== ''
+            ? filter_var($filters['has_discount'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+            : null;
         $page = (int) request()->get('page', 1);
 
-        $cacheKey = "pub_products:v{$vendorId}:c{$categoryId}:s{$subcategoryId}:pp{$perPage}:p{$page}";
+        $cacheKey = "pub_products:v{$vendorId}:c{$categoryId}:s{$subcategoryId}:d{$hasDiscount}:pp{$perPage}:p{$page}";
 
-        return $this->cachedOrFetch(['products'], $cacheKey, 900, function () use ($perPage, $vendorId, $categoryId, $subcategoryId) {
-            return $this->fetchPublicProducts($perPage, $vendorId, $categoryId, $subcategoryId);
+        return $this->cachedOrFetch(['products'], $cacheKey, 900, function () use ($perPage, $vendorId, $categoryId, $subcategoryId, $hasDiscount) {
+            return $this->fetchPublicProducts($perPage, $vendorId, $categoryId, $subcategoryId, $hasDiscount);
         });
     }
 
-    protected function fetchPublicProducts(int $perPage, ?int $vendorId, ?int $categoryId = null, ?int $subcategoryId = null): LengthAwarePaginator
-    {
+    protected function fetchPublicProducts(
+        int $perPage,
+        ?int $vendorId,
+        ?int $categoryId = null,
+        ?int $subcategoryId = null,
+        ?bool $hasDiscount = null
+    ): LengthAwarePaginator {
         $query = Product::query()
             ->where('is_active', true)
             ->where('status', Product::STATUS_APPROVED)
@@ -92,6 +121,21 @@ class ProductService
             $query->where('subcategory_id', $subcategoryId);
         } elseif ($categoryId) {
             $query->whereHas('subcategory', fn ($q) => $q->where('category_id', $categoryId));
+        }
+
+        if ($hasDiscount !== null) {
+            if ($hasDiscount) {
+                $query->where('discount_is_active', true)
+                    ->where('discount_percentage', '>', 0)
+                    ->where('discount_status', Product::DISCOUNT_STATUS_ACTIVE);
+            } else {
+                $query->where(function ($negativeQuery) {
+                    $negativeQuery->where('discount_is_active', false)
+                        ->orWhereNull('discount_percentage')
+                        ->orWhere('discount_percentage', '<=', 0)
+                        ->orWhere('discount_status', '!=', Product::DISCOUNT_STATUS_ACTIVE);
+                });
+            }
         }
 
         return $query->latest('products.created_at')->paginate($perPage);

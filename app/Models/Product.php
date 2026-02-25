@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,12 @@ class Product extends Model
 
     public const STATUS_REJECTED = 'rejected';
 
+    public const DISCOUNT_STATUS_PENDING = 'pending';
+
+    public const DISCOUNT_STATUS_ACTIVE = 'active';
+
+    public const DISCOUNT_STATUS_EXPIRED = 'expired';
+
     /**
      * @var list<string>
      */
@@ -28,8 +35,13 @@ class Product extends Model
         'name',
         'description',
         'price',
+        'discount_percentage',
         'quantity',
         'is_active',
+        'discount_is_active',
+        'discount_starts_at',
+        'discount_ends_at',
+        'discount_status',
         'status',
     ];
 
@@ -40,8 +52,13 @@ class Product extends Model
     {
         return [
             'price' => 'decimal:2',
+            'discount_percentage' => 'decimal:2',
             'quantity' => 'integer',
             'is_active' => 'boolean',
+            'discount_is_active' => 'boolean',
+            'discount_starts_at' => 'datetime',
+            'discount_ends_at' => 'datetime',
+            'discount_status' => 'string',
         ];
     }
 
@@ -83,5 +100,65 @@ class Product extends Model
     public function favouritedBy(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'favourites')->withTimestamps();
+    }
+
+    public function hasActiveDiscount(): bool
+    {
+        if (
+            ! $this->discount_is_active ||
+            ! $this->discount_percentage ||
+            $this->discount_percentage <= 0 ||
+            $this->discount_status !== self::DISCOUNT_STATUS_ACTIVE
+        ) {
+            return false;
+        }
+
+        $today = Carbon::today();
+        if ($this->discount_starts_at && $this->discount_starts_at->toDateString() > $today->toDateString()) {
+            return false;
+        }
+
+        if ($this->discount_ends_at && $this->discount_ends_at->toDateString() < $today->toDateString()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function resolveDiscountStatus(
+        bool $isEnabled,
+        ?float $percentage,
+        ?string $startsAt,
+        ?string $endsAt
+    ): string {
+        if (! $isEnabled || ! $percentage || $percentage <= 0) {
+            return self::DISCOUNT_STATUS_PENDING;
+        }
+
+        $today = Carbon::today();
+        $start = $startsAt ? Carbon::parse($startsAt) : null;
+        $end = $endsAt ? Carbon::parse($endsAt) : null;
+
+        if ($end && $end->toDateString() < $today->toDateString()) {
+            return self::DISCOUNT_STATUS_EXPIRED;
+        }
+
+        if (! $start || $start->toDateString() <= $today->toDateString()) {
+            return self::DISCOUNT_STATUS_ACTIVE;
+        }
+
+        return self::DISCOUNT_STATUS_PENDING;
+    }
+
+    public function getDiscountedPrice(): float
+    {
+        $price = (float) $this->price;
+        if (! $this->hasActiveDiscount()) {
+            return $price;
+        }
+
+        $discounted = $price - ($price * ((float) $this->discount_percentage / 100));
+
+        return max(round($discounted, 2), 0);
     }
 }

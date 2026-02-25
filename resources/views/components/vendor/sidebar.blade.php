@@ -47,6 +47,19 @@
             @endif
         </a>
 
+        {{-- Discounts --}}
+        <a href="{{ route('vendor.discounts.index') }}"
+           class="mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150
+                  {{ str_starts_with($currentRoute, 'vendor.discounts') ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200' }}">
+            <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 14.25l6-6m-5.25 0h.008v.008H9.75V8.25zm4.5 7.5h.008v.008h-.008v-.008zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Discounts
+            @if(str_starts_with($currentRoute, 'vendor.discounts'))
+                <span class="ml-auto h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+            @endif
+        </a>
+
         {{-- Orders (placeholder for future) --}}
         <a href="#"
            class="mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-gray-200 transition-all duration-150">

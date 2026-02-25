@@ -25,6 +25,7 @@
                 <select id="f-vendor" class="h-10 rounded-xl border border-gray-200 bg-white px-3 pr-8 text-sm font-medium text-gray-700 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"><option value="">All Stores</option></select>
                 <select id="f-category" class="h-10 rounded-xl border border-gray-200 bg-white px-3 pr-8 text-sm font-medium text-gray-700 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"><option value="">All Categories</option></select>
                 <select id="f-subcategory" class="h-10 rounded-xl border border-gray-200 bg-white px-3 pr-8 text-sm font-medium text-gray-700 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"><option value="">All Subcategories</option></select>
+                <select id="f-discount" class="h-10 rounded-xl border border-gray-200 bg-white px-3 pr-8 text-sm font-medium text-gray-700 shadow-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"><option value="">All Discounts</option><option value="1">Discounted</option><option value="0">No Discount</option></select>
                 <button id="btn-apply" class="h-10 rounded-xl bg-brand-500 px-5 text-sm font-bold text-white shadow-sm hover:bg-brand-600 active:scale-[.97]">Apply</button>
                 <button id="btn-clear" class="h-10 rounded-xl px-3 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800">Clear</button>
             </div>
@@ -45,9 +46,9 @@
 <script>
 document.addEventListener('DOMContentLoaded', async function() {
     const $ = id => document.getElementById(id);
-    let page = 1, vId = '', cId = '', sId = '';
+    let page = 1, vId = '', cId = '', sId = '', dFilter = '';
     const params = new URLSearchParams(window.location.search);
-    vId = params.get('vendor_id') || ''; cId = params.get('category_id') || ''; sId = params.get('subcategory_id') || '';
+    vId = params.get('vendor_id') || ''; cId = params.get('category_id') || ''; sId = params.get('subcategory_id') || ''; dFilter = params.get('has_discount') || '';
     let allCats = [];
 
     async function init() {
@@ -57,6 +58,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         $('f-vendor').innerHTML = '<option value="">All Stores</option>' + (vRes.data.data || []).map(v => `<option value="${v.id}">${esc(v.store_name)}</option>`).join('');
         if (cId) { $('f-category').value = cId; populateSubs(cId); }
         if (vId) $('f-vendor').value = vId;
+        if (dFilter) $('f-discount').value = dFilter;
         if (sId) setTimeout(() => $('f-subcategory').value = sId, 100);
         load();
     }
@@ -71,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     async function load() {
         $('loading').classList.remove('hidden'); $('grid').innerHTML = ''; $('empty').classList.add('hidden'); $('pagination').innerHTML = '';
-        const p = new URLSearchParams({ page }); if (vId) p.append('vendor_id', vId); if (sId) p.append('subcategory_id', sId); else if (cId) p.append('category_id', cId);
+        const p = new URLSearchParams({ page }); if (vId) p.append('vendor_id', vId); if (sId) p.append('subcategory_id', sId); else if (cId) p.append('category_id', cId); if (dFilter !== '') p.append('has_discount', dFilter);
         try {
             const res = await axios.get('/api/products?' + p.toString());
             const { data, meta } = res.data;
@@ -92,13 +94,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <a href="/products/${p.id}"><div class="relative aspect-[4/5] overflow-hidden bg-gray-50 dark:bg-gray-800">
                     ${photo ? `<img src="${esc(photo)}" alt="${esc(p.name)}" class="h-full w-full object-contain p-4 transition-transform duration-500 hover:scale-105" loading="lazy">` : `<div class="flex h-full items-center justify-center"><svg class="h-12 w-12 text-gray-200 dark:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159"/></svg></div>`}
                     ${!inStock ? '<div class="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-gray-900/70"><span class="rounded-full bg-red-100 px-3 py-1 text-[11px] font-bold text-red-600 dark:bg-red-500/10 dark:text-red-400">Sold Out</span></div>' : ''}
+                    ${p.has_active_discount ? `<div class="absolute left-2.5 top-2.5 z-10 rounded-full bg-red-500 px-2.5 py-1 text-[10px] font-bold text-white shadow-sm">-${parseFloat(p.discount_percentage || 0).toFixed(0)}%</div>` : ''}
                 </div></a>
                 <button data-fav-btn="${p.id}" onclick="event.stopPropagation();window.toggleFav(${p.id},this)" class="absolute right-2.5 top-2.5 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-all hover:scale-110 dark:bg-gray-900/90 ${isFav?'text-red-500':'text-gray-400 dark:text-gray-500'}"><svg class="h-5 w-5" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="${isFav?'currentColor':'none'}"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg></button>
             </div>
             <div class="p-3 sm:p-4">
                 ${p.vendor ? `<p class="mb-1 truncate text-[11px] font-medium text-gray-400 dark:text-gray-500">${esc(p.vendor.store_name)}</p>` : ''}
                 <a href="/products/${p.id}"><h3 class="line-clamp-2 text-sm font-bold leading-snug text-gray-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400">${esc(p.name)}</h3></a>
-                <div class="mt-2 flex items-baseline gap-1"><span class="text-lg font-black text-gray-900 dark:text-white">${parseFloat(p.price).toLocaleString()}</span><span class="text-[11px] text-gray-400">SYP</span></div>
+                <div class="mt-2 flex items-baseline gap-1">
+                    <span class="text-lg font-black ${p.has_active_discount ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}">${parseFloat(p.has_active_discount ? p.discounted_price : p.price).toLocaleString()}</span><span class="text-[11px] text-gray-400">SYP</span>
+                    ${p.has_active_discount ? `<span class="text-[11px] text-gray-400 line-through">${parseFloat(p.price).toLocaleString()} SYP</span>` : ''}
+                </div>
                 <button onclick="window.addToCart&&window.addToCart(${p.id},'${esc(p.name)}',${p.price},'${esc(photo)}')" class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold ${inStock ? 'bg-gray-900 text-white hover:bg-brand-600 dark:bg-white dark:text-gray-900 dark:hover:bg-brand-500 dark:hover:text-white active:scale-[.97]' : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'}" ${!inStock?'disabled':''}>
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
                     ${inStock ? 'Add to Cart' : 'Sold Out'}
@@ -117,8 +123,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     function getR(c,l){if(l<=7)return Array.from({length:l},(_,i)=>i+1);const p=[1];if(c>3)p.push('...');for(let i=Math.max(2,c-1);i<=Math.min(l-1,c+1);i++)p.push(i);if(c<l-2)p.push('...');p.push(l);return p;}
 
     window.goP = function(p) { page=p; load(); window.scrollTo({top:0,behavior:'smooth'}); };
-    $('btn-apply').addEventListener('click', () => { page=1; vId=$('f-vendor').value; cId=$('f-category').value; sId=$('f-subcategory').value; load(); });
-    $('btn-clear').addEventListener('click', () => { $('f-vendor').value=''; $('f-category').value=''; $('f-subcategory').innerHTML='<option value="">All Subcategories</option>'; vId=''; cId=''; sId=''; page=1; load(); });
+    $('btn-apply').addEventListener('click', () => { page=1; vId=$('f-vendor').value; cId=$('f-category').value; sId=$('f-subcategory').value; dFilter=$('f-discount').value; load(); });
+    $('btn-clear').addEventListener('click', () => { $('f-vendor').value=''; $('f-category').value=''; $('f-subcategory').innerHTML='<option value="">All Subcategories</option>'; $('f-discount').value=''; vId=''; cId=''; sId=''; dFilter=''; page=1; load(); });
 
     function esc(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
     init();

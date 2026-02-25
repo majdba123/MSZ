@@ -15,6 +15,14 @@ class ProductListResource extends JsonResource
     public function toArray(Request $request): array
     {
         $photos = $this->whenLoaded('photos') ? $this->photos : collect();
+        $price = (float) $this->price;
+        $hasActiveDiscount = method_exists($this->resource, 'hasActiveDiscount')
+            ? $this->resource->hasActiveDiscount()
+            : false;
+        $discountedPrice = method_exists($this->resource, 'getDiscountedPrice')
+            ? $this->resource->getDiscountedPrice()
+            : $price;
+        $discountAmount = max($price - $discountedPrice, 0);
 
         // Use primary photo if available, otherwise use first photo
         $displayPhoto = $photos->where('is_primary', true)->first() ?? $photos->first();
@@ -27,6 +35,14 @@ class ProductListResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'price' => $this->price,
+            'discount_percentage' => $this->discount_percentage,
+            'discount_is_active' => $this->discount_is_active,
+            'discount_starts_at' => $this->discount_starts_at,
+            'discount_ends_at' => $this->discount_ends_at,
+            'discount_status' => $this->discount_status,
+            'has_active_discount' => $hasActiveDiscount,
+            'discounted_price' => number_format($discountedPrice, 2, '.', ''),
+            'discount_amount' => number_format($discountAmount, 2, '.', ''),
             'quantity' => $this->quantity,
             'is_active' => $this->is_active,
             'status' => $this->status,

@@ -158,13 +158,15 @@
 
             try {
                 const response = await window.axios.get('/api/user');
-                const user = response.data;
+                const user = response.data.data || response.data;
 
                 if (user.type !== 1) {
+                    window.Auth.removeToken();
                     window.location.href = '{{ route("login") }}';
                     return;
                 }
 
+                window.Auth.setUser(user);
                 document.getElementById('admin-name').textContent = user.name;
                 document.getElementById('admin-avatar').textContent = (user.name || 'A').charAt(0).toUpperCase();
                 document.getElementById('admin-loading').classList.add('hidden');

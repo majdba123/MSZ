@@ -102,6 +102,22 @@
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Commission</p>
                         <p class="mt-1 text-sm font-bold text-emerald-600" id="product-commission">—</p>
                     </div>
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Discount Status</p>
+                        <p class="mt-1" id="product-discount-status">—</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Discount Value</p>
+                        <p class="mt-1 text-sm font-semibold text-red-600" id="product-discount-value">—</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Discount Start</p>
+                        <p class="mt-1 text-sm font-medium text-gray-900" id="product-discount-start">—</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Discount End</p>
+                        <p class="mt-1 text-sm font-medium text-gray-900" id="product-discount-end">—</p>
+                    </div>
                 </div>
 
                 <div class="mt-6 border-t border-gray-100 pt-6">
@@ -155,6 +171,10 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.getElementById('product-category').textContent = p.category?.name || 'Unassigned';
         document.getElementById('product-subcategory').textContent = p.subcategory?.name || 'Unassigned';
         document.getElementById('product-commission').textContent = p.category?.commission ? parseFloat(p.category.commission).toFixed(2) + '%' : '—';
+        document.getElementById('product-discount-value').textContent = p.discount_percentage ? parseFloat(p.discount_percentage).toFixed(2) + '%' : 'No discount';
+        document.getElementById('product-discount-start').textContent = formatDateOnly(p.discount_starts_at);
+        document.getElementById('product-discount-end').textContent = formatDateOnly(p.discount_ends_at);
+        updateDiscountStatusDisplay(p.discount_status);
 
         const vendorName = p.vendor?.store_name || '—';
         const ownerName = p.vendor?.user?.name || '';
@@ -245,6 +265,19 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
             document.getElementById('product-approval-status').innerHTML = approvalStatusBadge;
         }
+
+        function updateDiscountStatusDisplay(status) {
+            const el = document.getElementById('product-discount-status');
+            if (status === 'active') {
+                el.innerHTML = '<span class="badge badge-success">Active</span>';
+                return;
+            }
+            if (status === 'expired') {
+                el.innerHTML = '<span class="badge badge-danger">Expired</span>';
+                return;
+            }
+            el.innerHTML = '<span class="badge badge-warning">Pending</span>';
+        }
         
         function showAlert(id, msg) {
             const el = document.getElementById(id);
@@ -254,6 +287,20 @@ document.addEventListener('DOMContentLoaded', async function () {
                 el.classList.remove('hidden');
                 setTimeout(() => el.classList.add('hidden'), 5000);
             }
+        }
+
+        function formatDateOnly(value) {
+            if (!value) {
+                return '—';
+            }
+
+            const normalized = typeof value === 'string' ? value.replace(' ', 'T') : value;
+            const date = new Date(normalized);
+            if (Number.isNaN(date.getTime())) {
+                return String(value).slice(0, 10);
+            }
+
+            return date.toLocaleDateString();
         }
 
         document.getElementById('edit-link').href = '/admin/products/' + productId + '/edit';

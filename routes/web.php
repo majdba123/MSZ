@@ -91,6 +91,10 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'vendor'])->group(fu
         return view('vendor.products.index');
     })->name('products.index');
 
+    Route::get('/discounts', function () {
+        return view('vendor.products.index', ['discountOnly' => true]);
+    })->name('discounts.index');
+
     Route::get('/products/create', function () {
         return view('vendor.products.create');
     })->name('products.create');
@@ -150,6 +154,14 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'admin'])->group(funct
     Route::get('/products', function () {
         return view('admin.products.index');
     })->name('products.index');
+
+    Route::get('/discounts', function () {
+        return view('admin.products.index', ['discountOnly' => true]);
+    })->name('discounts.index');
+
+    Route::get('/coupons', function () {
+        return view('admin.coupons.index');
+    })->name('coupons.index');
 
     Route::get('/products/create', function () {
         return view('admin.products.create');

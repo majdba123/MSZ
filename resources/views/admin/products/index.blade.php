@@ -1,4 +1,5 @@
 @extends('layouts.admin')
+@php($discountOnly = $discountOnly ?? false)
 
 @section('title', 'Products — SyriaZone Admin')
 @section('page-title', 'Products')
@@ -51,6 +52,14 @@
                         <option value="">All</option>
                         <option value="1">Active</option>
                         <option value="0">Inactive</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label for="filter-discount" class="form-label">Filter by Discount</label>
+                    <select id="filter-discount" class="form-input">
+                        <option value="">All</option>
+                        <option value="1">With Discount</option>
+                        <option value="0">Without Discount</option>
                     </select>
                 </div>
                 <div class="flex gap-2">
@@ -126,6 +135,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     const categorySelect = document.getElementById('filter-category');
     const subcategorySelect = document.getElementById('filter-subcategory');
     const statusSelect = document.getElementById('filter-status');
+    const discountSelect = document.getElementById('filter-discount');
+    const defaultDiscountOnly = {{ $discountOnly ? 'true' : 'false' }};
+
+    if (defaultDiscountOnly && discountSelect) {
+        discountSelect.value = '1';
+    }
 
     // Load vendors for filter
     try {
@@ -159,6 +174,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         subcategorySelect.innerHTML = '<option value="">Select category first...</option>';
         subcategorySelect.disabled = true;
         statusSelect.value = '';
+        discountSelect.value = defaultDiscountOnly ? '1' : '';
         currentPage = 1;
         loadProducts();
     });
@@ -185,6 +201,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
             if (statusSelect && statusSelect.value !== '') {
                 params.append('is_active', statusSelect.value);
+            }
+            if (discountSelect && discountSelect.value !== '') {
+                params.append('has_discount', discountSelect.value);
             }
 
             const res = await window.axios.get('/api/admin/products?' + params.toString());
@@ -224,13 +243,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                             ${p.is_active ? 'Active' : 'Inactive'}
                         </button>
                     </div>
+                    ${p.has_active_discount ? `<div class="absolute left-2 top-2 rounded-full bg-red-500 px-2.5 py-1 text-[10px] font-bold text-white shadow-lg">-${parseFloat(p.discount_percentage || 0).toFixed(0)}%</div>` : ''}
                 </div>
                 <div class="card-body">
                     <h3 class="text-base font-semibold text-gray-900 line-clamp-1">${esc(p.name)}</h3>
                     <p class="mt-1 text-xs text-gray-500 line-clamp-2">${esc(p.description || 'No description')}</p>
                     <div class="mt-3 flex items-center justify-between">
                         <div>
-                            <p class="text-lg font-bold text-gray-900">$${parseFloat(p.price || 0).toFixed(2)}</p>
+                            ${p.has_active_discount
+                                ? `<p class="text-lg font-bold text-red-600">$${parseFloat(p.discounted_price || p.price || 0).toFixed(2)}</p><p class="text-xs text-gray-400 line-through">$${parseFloat(p.price || 0).toFixed(2)}</p>`
+                                : `<p class="text-lg font-bold text-gray-900">$${parseFloat(p.price || 0).toFixed(2)}</p>`
+                            }
                             <p class="text-xs text-gray-500">Qty: ${p.quantity}</p>
                         </div>
                     </div>

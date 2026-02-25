@@ -49,7 +49,29 @@
                             </div>
                             <div class="mb-5 flex items-baseline gap-2 border-b border-gray-100 pb-5 dark:border-gray-800">
                                 <span id="product-price" class="text-3xl font-black text-gray-900 dark:text-white"></span>
+                                <span id="product-price-original" class="hidden text-sm text-gray-400 line-through"></span>
                                 <span class="text-sm text-gray-400">SYP</span>
+                            </div>
+                            <div class="mb-5 rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/50">
+                                <p class="mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Discount Details</p>
+                                <div class="grid grid-cols-2 gap-2 text-center">
+                                    <div>
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Status</p>
+                                        <p id="product-discount-status" class="mt-0.5 text-xs font-bold text-gray-900 dark:text-white">—</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Value</p>
+                                        <p id="product-discount-value" class="mt-0.5 text-xs font-bold text-red-600 dark:text-red-400">—</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Starts</p>
+                                        <p id="product-discount-start" class="mt-0.5 text-xs font-bold text-gray-900 dark:text-white">—</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Ends</p>
+                                        <p id="product-discount-end" class="mt-0.5 text-xs font-bold text-gray-900 dark:text-white">—</p>
+                                    </div>
+                                </div>
                             </div>
                             <div class="mb-5 space-y-3">
                                 <p id="product-availability" class="mb-2"></p>
@@ -121,12 +143,28 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         $('product-name').textContent = p.name || '—';
         $('bc-name').textContent = p.name || 'Details';
-        $('product-price').textContent = parseFloat(p.price || 0).toLocaleString();
+        const hasDiscount = !!p.has_active_discount;
+        const effectivePrice = parseFloat(hasDiscount ? p.discounted_price : p.price || 0);
+        $('product-price').textContent = effectivePrice.toLocaleString();
+        $('product-price').className = hasDiscount
+            ? 'text-3xl font-black text-red-600 dark:text-red-400'
+            : 'text-3xl font-black text-gray-900 dark:text-white';
+        if (hasDiscount) {
+            $('product-price-original').classList.remove('hidden');
+            $('product-price-original').textContent = parseFloat(p.price || 0).toLocaleString() + ' SYP';
+        } else {
+            $('product-price-original').classList.add('hidden');
+            $('product-price-original').textContent = '';
+        }
         $('product-quantity').textContent = (p.quantity || 0) + ' units';
         $('product-description').textContent = p.description || 'No description provided.';
         $('product-category').textContent = p.category?.name || '—';
         $('product-subcategory').textContent = p.subcategory?.name || '—';
         $('product-commission').textContent = p.category?.commission ? parseFloat(p.category.commission).toFixed(2) + '%' : '—';
+        $('product-discount-status').textContent = formatDiscountStatus(p.discount_status);
+        $('product-discount-value').textContent = p.discount_percentage ? `${parseFloat(p.discount_percentage).toFixed(2)}%` : 'No discount';
+        $('product-discount-start').textContent = formatDateOnly(p.discount_starts_at);
+        $('product-discount-end').textContent = formatDateOnly(p.discount_ends_at);
 
         if (p.vendor) { const vl = $('vendor-link'); vl.textContent = p.vendor.store_name || '—'; vl.href = `/vendors/${p.vendor.id}`; }
 
@@ -141,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             btn.onclick = () => {
                 const primary = photos.find(ph => ph.is_primary) || photos[0];
                 const url = primary ? (primary.url || `/storage/${primary.path}`) : '';
-                window.addToCart(p.id, p.name, p.price, url);
+                window.addToCart(p.id, p.name, hasDiscount ? p.discounted_price : p.price, url);
             };
         } else {
             btn.innerHTML = '<span class="flex items-center justify-center gap-2"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>Out of Stock</span>';
@@ -182,6 +220,28 @@ document.addEventListener('DOMContentLoaded', async function () {
         console.error('Failed to load product:', e);
         $('show-loading').classList.add('hidden');
         $('product-error').classList.remove('hidden');
+    }
+
+    function formatDateOnly(value) {
+        if (!value) {
+            return '—';
+        }
+
+        const normalized = typeof value === 'string' ? value.replace(' ', 'T') : value;
+        const date = new Date(normalized);
+        if (Number.isNaN(date.getTime())) {
+            return String(value).slice(0, 10);
+        }
+
+        return date.toLocaleDateString();
+    }
+
+    function formatDiscountStatus(status) {
+        if (status === 'active') return 'Active';
+        if (status === 'pending') return 'Pending';
+        if (status === 'expired') return 'Expired';
+
+        return '—';
     }
 });
 </script>

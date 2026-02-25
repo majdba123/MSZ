@@ -34,7 +34,18 @@
                             <x-form.input name="name" label="Product Name" placeholder="Enter product name" :required="true" />
                         </div>
                         <x-form.input name="price" label="Price ($)" type="number" placeholder="0.00" :required="true" />
+                        <x-form.input name="discount_percentage" label="Discount (%)" type="number" placeholder="Optional" />
                         <x-form.input name="quantity" label="Quantity" type="number" placeholder="0" :required="true" />
+                        <div>
+                            <label for="discount_starts_at" class="form-label">Discount Start</label>
+                            <input id="discount_starts_at" name="discount_starts_at" type="date" class="form-input">
+                            <p class="form-error" id="discount_starts_at-error"></p>
+                        </div>
+                        <div>
+                            <label for="discount_ends_at" class="form-label">Discount End</label>
+                            <input id="discount_ends_at" name="discount_ends_at" type="date" class="form-input">
+                            <p class="form-error" id="discount_ends_at-error"></p>
+                        </div>
                         <div>
                             <label for="category_id" class="form-label">Category <span class="text-red-500">*</span></label>
                             <select id="category_id" name="category_id" class="form-input">
@@ -362,11 +373,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         form.name.value = p.name || '';
         form.price.value = p.price || '';
+        form.discount_percentage.value = p.discount_percentage || '';
         form.quantity.value = p.quantity || 0;
         categorySelect.value = p.category_id || '';
         await loadSubcategories(categorySelect.value, p.subcategory_id || '');
         form.description.value = p.description || '';
         document.getElementById('is_active').checked = p.is_active;
+        document.getElementById('discount_starts_at').value = toDateInput(p.discount_starts_at);
+        document.getElementById('discount_ends_at').value = toDateInput(p.discount_ends_at);
         existingPhotos = p.photos || [];
 
         renderExistingPhotos();
@@ -390,10 +404,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         formData.append('subcategory_id', subcategorySelect.value);
         formData.append('name', form.name.value.trim());
         formData.append('price', parseFloat(form.price.value));
+        if (form.discount_percentage.value !== '') formData.append('discount_percentage', parseFloat(form.discount_percentage.value));
         formData.append('quantity', parseInt(form.quantity.value));
         const desc = form.description.value.trim();
         if (desc) formData.append('description', desc);
         formData.append('is_active', document.getElementById('is_active').checked ? '1' : '0');
+        if (document.getElementById('discount_starts_at').value) formData.append('discount_starts_at', document.getElementById('discount_starts_at').value);
+        if (document.getElementById('discount_ends_at').value) formData.append('discount_ends_at', document.getElementById('discount_ends_at').value);
 
         // Note: Photo changes (removal, upload, primary) are handled separately via "Save Photo Changes" button
 
@@ -497,6 +514,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     function esc(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+    function toDateInput(value) {
+        if (!value) return '';
+        const date = new Date(value);
+        const pad = n => String(n).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
 });
 </script>
 @endpush

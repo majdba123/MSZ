@@ -60,6 +60,19 @@
             @endif
         </a>
 
+        {{-- Coupons --}}
+        <a href="{{ route('admin.coupons.index') }}"
+           class="mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150
+                  {{ str_starts_with($currentRoute, 'admin.coupons') ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200' }}">
+            <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6.75V6A2.25 2.25 0 0014.25 3.75h-4.5A2.25 2.25 0 007.5 6v.75m9 0V18A2.25 2.25 0 0114.25 20.25h-4.5A2.25 2.25 0 017.5 18V6.75m9 0h-9"/>
+            </svg>
+            Coupons
+            @if(str_starts_with($currentRoute, 'admin.coupons'))
+                <span class="ml-auto h-1.5 w-1.5 rounded-full bg-brand-400"></span>
+            @endif
+        </a>
+
         {{-- Categories --}}
         <a href="{{ route('admin.categories.index') }}"
            class="mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 | Auth Routes (Public)
 |--------------------------------------------------------------------------
 */
-Route::prefix('auth')->as('auth.')->group(function () {
+Route::prefix('auth')->as('auth.')->middleware('web')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('register');
     Route::post('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');

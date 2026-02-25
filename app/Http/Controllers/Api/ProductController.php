@@ -42,10 +42,10 @@ class ProductController extends Controller
                 abort(403, __('Vendor profile not found.'));
             }
             // Allow status and is_active filters for vendors
-            $filters = $request->only(['category_id', 'subcategory_id', 'status', 'is_active']);
+            $filters = $request->only(['category_id', 'subcategory_id', 'status', 'is_active', 'has_discount']);
         } else {
             // Admin: can filter by vendor_id, subcategory_id, status, and is_active
-            $filters = $request->only(['vendor_id', 'category_id', 'subcategory_id', 'status', 'is_active']);
+            $filters = $request->only(['vendor_id', 'category_id', 'subcategory_id', 'status', 'is_active', 'has_discount']);
         }
 
         $products = $this->productService->list($vendor, 15, $filters);
@@ -64,7 +64,7 @@ class ProductController extends Controller
 
     public function publicIndex(Request $request): JsonResponse
     {
-        $filters = $request->only(['vendor_id', 'category_id', 'subcategory_id', 'per_page']);
+        $filters = $request->only(['vendor_id', 'category_id', 'subcategory_id', 'has_discount', 'per_page']);
         $perPage = min((int) ($filters['per_page'] ?? 15), 50);
         $filters['per_page'] = $perPage;
 
@@ -181,6 +181,17 @@ class ProductController extends Controller
         if (isset($validated['is_active'])) {
             $validated['is_active'] = filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
         }
+        if (isset($validated['discount_percentage']) && (float) $validated['discount_percentage'] <= 0) {
+            $validated['discount_percentage'] = null;
+        }
+        $discountPercentage = isset($validated['discount_percentage']) ? (float) $validated['discount_percentage'] : null;
+        $validated['discount_is_active'] = $discountPercentage !== null && $discountPercentage > 0;
+        $validated['discount_status'] = Product::resolveDiscountStatus(
+            $validated['discount_is_active'],
+            $discountPercentage,
+            $validated['discount_starts_at'] ?? null,
+            $validated['discount_ends_at'] ?? null,
+        );
 
         $photos = $request->file('photos', []);
         unset($validated['photos']);
@@ -239,6 +250,20 @@ class ProductController extends Controller
         if (isset($validated['is_active'])) {
             $validated['is_active'] = filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
         }
+        if (array_key_exists('discount_percentage', $validated) && (float) $validated['discount_percentage'] <= 0) {
+            $validated['discount_percentage'] = null;
+        }
+        $effectiveDiscountPercentage = array_key_exists('discount_percentage', $validated)
+            ? (float) ($validated['discount_percentage'] ?? 0)
+            : (float) ($product->discount_percentage ?? 0);
+        $validated['discount_is_active'] = $effectiveDiscountPercentage > 0;
+        $autoDiscountStatus = Product::resolveDiscountStatus(
+            $validated['discount_is_active'],
+            $effectiveDiscountPercentage,
+            $validated['discount_starts_at'] ?? optional($product->discount_starts_at)->toDateTimeString(),
+            $validated['discount_ends_at'] ?? optional($product->discount_ends_at)->toDateTimeString(),
+        );
+        $validated['discount_status'] = $autoDiscountStatus;
 
         // Only admin can update status
         if (isset($validated['status'])) {

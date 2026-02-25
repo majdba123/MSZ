@@ -22,8 +22,11 @@ class UpdateProductRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
             'price' => ['sometimes', 'required', 'numeric', 'min:0'],
+            'discount_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'quantity' => ['sometimes', 'required', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
+            'discount_starts_at' => ['nullable', 'date'],
+            'discount_ends_at' => ['nullable', 'date', 'after_or_equal:discount_starts_at'],
             'primary_photo_id' => ['nullable', 'integer', 'exists:product_photos,id'],
         ];
     }

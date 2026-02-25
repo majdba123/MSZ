@@ -23,8 +23,11 @@ class StoreProductRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
             'price' => ['required', 'numeric', 'min:0'],
+            'discount_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'quantity' => ['required', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean', 'nullable'],
+            'discount_starts_at' => ['nullable', 'date'],
+            'discount_ends_at' => ['nullable', 'date', 'after_or_equal:discount_starts_at'],
             'photos' => ['nullable', 'array', 'max:10'],
             'photos.*' => ['required', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
         ];
@@ -41,5 +44,6 @@ class StoreProductRequest extends FormRequest
                 'is_active' => filter_var($this->input('is_active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
             ]);
         }
+
     }
 }

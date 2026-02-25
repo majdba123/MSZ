@@ -56,6 +56,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (form.price) form.price.value = data.price || '';
             if (form.quantity) form.quantity.value = data.quantity || '';
             if (form.description) form.description.value = data.description || '';
+            if (form.discount_percentage) form.discount_percentage.value = data.discount_percentage || '';
+            if (document.getElementById('discount_starts_at')) document.getElementById('discount_starts_at').value = data.discount_starts_at || '';
+            if (document.getElementById('discount_ends_at')) document.getElementById('discount_ends_at').value = data.discount_ends_at || '';
             if (document.getElementById('is_active')) {
                 document.getElementById('is_active').checked = data.is_active || false;
             }
@@ -75,6 +78,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                 price: form.price?.value || '',
                 quantity: form.quantity?.value || '',
                 description: form.description?.value || '',
+                discount_percentage: form.discount_percentage?.value || '',
+                discount_starts_at: document.getElementById('discount_starts_at')?.value || '',
+                discount_ends_at: document.getElementById('discount_ends_at')?.value || '',
                 is_active: document.getElementById('is_active')?.checked || false,
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -96,6 +102,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (form.price) form.price.addEventListener('input', saveFormData);
     if (form.quantity) form.quantity.addEventListener('input', saveFormData);
     if (form.description) form.description.addEventListener('input', saveFormData);
+    if (form.discount_percentage) form.discount_percentage.addEventListener('input', saveFormData);
+    document.getElementById('discount_starts_at')?.addEventListener('change', saveFormData);
+    document.getElementById('discount_ends_at')?.addEventListener('change', saveFormData);
     const isActiveCheckbox = document.getElementById('is_active');
     if (isActiveCheckbox) isActiveCheckbox.addEventListener('change', saveFormData);
 
@@ -128,10 +137,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         formData.append('subcategory_id', subcategorySelect.value);
         formData.append('name', form.name.value.trim());
         formData.append('price', parseFloat(form.price.value) || 0);
+        if (form.discount_percentage.value !== '') formData.append('discount_percentage', parseFloat(form.discount_percentage.value) || 0);
         formData.append('quantity', parseInt(form.quantity.value) || 0);
         formData.append('is_active', document.getElementById('is_active').checked ? '1' : '0');
         const desc = form.description.value.trim();
         if (desc) formData.append('description', desc);
+        if (document.getElementById('discount_starts_at').value) formData.append('discount_starts_at', document.getElementById('discount_starts_at').value);
+        if (document.getElementById('discount_ends_at').value) formData.append('discount_ends_at', document.getElementById('discount_ends_at').value);
 
         const selectedFiles = window.getSelectedPhotos ? window.getSelectedPhotos() : [];
         selectedFiles.forEach(f => formData.append('photos[]', f));

@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\ProductPhotoController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\VendorController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProductPhotoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,6 +25,7 @@ Route::patch('products/{product}/status', [ProductController::class, 'updateStat
 Route::patch('products/{product}/photos/{photo}/set-primary', [ProductController::class, 'setPrimaryPhoto'])->name('products.set-primary-photo');
 Route::apiResource('categories', \App\Http\Controllers\Api\Admin\CategoryController::class);
 Route::apiResource('subcategories', \App\Http\Controllers\Api\Admin\SubcategoryController::class);
+Route::apiResource('coupons', \App\Http\Controllers\Api\Admin\CouponController::class);
 
 // Product Photos (separate API)
 Route::get('products/{product}/photos', [ProductPhotoController::class, 'index'])->name('products.photos.index');

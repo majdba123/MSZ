@@ -46,7 +46,22 @@
                 <x-form.input name="name" label="Product Name" placeholder="Enter product name" :required="true" />
             </div>
             <x-form.input name="price" label="Price ($)" type="number" placeholder="0.00" :required="true" />
+            <div>
+                <label for="discount_percentage" class="form-label">Discount (%)</label>
+                <input id="discount_percentage" name="discount_percentage" type="number" step="0.01" min="0" max="100" class="form-input" placeholder="Optional">
+                <p class="form-error" id="discount_percentage-error"></p>
+            </div>
             <x-form.input name="quantity" label="Quantity" type="number" placeholder="0" :required="true" />
+            <div>
+                <label for="discount_starts_at" class="form-label">Discount Start</label>
+                <input id="discount_starts_at" name="discount_starts_at" type="date" class="form-input">
+                <p class="form-error" id="discount_starts_at-error"></p>
+            </div>
+            <div>
+                <label for="discount_ends_at" class="form-label">Discount End</label>
+                <input id="discount_ends_at" name="discount_ends_at" type="date" class="form-input">
+                <p class="form-error" id="discount_ends_at-error"></p>
+            </div>
         </div>
 
         <div>
@@ -65,6 +80,7 @@
                 <span class="toggle-slider"></span>
             </label>
         </div>
+
     </div>
 </div>
 

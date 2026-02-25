@@ -143,19 +143,33 @@ class Product extends Model
             return self::DISCOUNT_STATUS_PENDING;
         }
 
-        $today = Carbon::today();
-        $start = $startsAt ? Carbon::parse($startsAt) : null;
-        $end = $endsAt ? Carbon::parse($endsAt) : null;
+        $today = Carbon::today()->toDateString();
+        $start = self::normalizeDateString($startsAt);
+        $end = self::normalizeDateString($endsAt);
 
-        if ($end && $end->toDateString() < $today->toDateString()) {
+        if ($end && $end < $today) {
             return self::DISCOUNT_STATUS_EXPIRED;
         }
 
-        if (! $start || $start->toDateString() <= $today->toDateString()) {
+        if (! $start || $start <= $today) {
             return self::DISCOUNT_STATUS_ACTIVE;
         }
 
         return self::DISCOUNT_STATUS_PENDING;
+    }
+
+    private static function normalizeDateString(?string $value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        $candidate = trim($value);
+        if (strlen($candidate) >= 10 && preg_match('/^\d{4}-\d{2}-\d{2}/', $candidate) === 1) {
+            return substr($candidate, 0, 10);
+        }
+
+        return Carbon::parse($candidate)->toDateString();
     }
 
     public function getDiscountedPrice(): float

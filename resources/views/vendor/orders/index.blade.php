@@ -5,22 +5,28 @@
 
 @section('content')
 <div class="space-y-4">
-    <div class="card p-4">
+    <div class="overflow-hidden rounded-3xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="bg-gradient-to-r from-emerald-500/15 via-emerald-400/5 to-transparent px-5 py-4 dark:from-emerald-500/20 dark:via-emerald-400/10">
+            <h2 class="text-base font-black text-gray-900 dark:text-white">Orders Filters</h2>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Filter your store orders by product, status, category and subcategory.</p>
+        </div>
+        <div class="p-4">
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <input id="f-product" type="text" placeholder="Product name" class="rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800">
-            <select id="f-status" class="rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800">
+            <input id="f-product" type="text" placeholder="Product name" class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+            <select id="f-status" class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                 <option value="">All Statuses</option>
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
                 <option value="cancelled">Cancelled</option>
             </select>
-            <select id="f-category" class="rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800">
+            <select id="f-category" class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                 <option value="">All Categories</option>
             </select>
-            <select id="f-subcategory" class="rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800">
+            <select id="f-subcategory" class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                 <option value="">All Subcategories</option>
             </select>
-            <button id="f-reset" class="rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Reset</button>
+            <button id="f-reset" class="rounded-xl border border-gray-200 px-3 py-2 text-sm font-bold text-gray-700 transition-all hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-500/40 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300">Reset</button>
+        </div>
         </div>
     </div>
 
@@ -142,23 +148,29 @@ document.addEventListener('DOMContentLoaded', function () {
         const date = order.created_at ? new Date(order.created_at).toLocaleDateString() : '—';
         const items = (order.items || []).slice(0, 3).map(i => `<li class="text-xs text-gray-500 dark:text-gray-400">${esc(i.product_name)} · Qty ${i.quantity}</li>`).join('');
         const extraItems = (order.items || []).length > 3 ? `<li class="text-xs font-semibold text-gray-400">+ ${(order.items || []).length - 3} more items</li>` : '';
-        return `<div class="card p-4">
-            <div class="flex flex-wrap items-start justify-between gap-2">
+        return `<article class="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+            <div class="flex flex-wrap items-start justify-between gap-2 border-b border-gray-100 bg-gray-50/80 px-4 py-3 dark:border-gray-800 dark:bg-gray-800/40">
                 <div>
-                    <p class="text-sm font-bold text-gray-900 dark:text-white">${esc(order.order_number || ('Order #' + order.id))}</p>
+                    <p><span class="inline-flex rounded-lg bg-gray-900 px-2.5 py-1 text-xs font-black text-white shadow-sm dark:bg-white dark:text-gray-900">${esc(order.order_number || ('Order #' + order.id))}</span></p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">${date} · ${esc(order.user?.name || 'Unknown user')}</p>
                 </div>
-                ${statusBadge(order.status)}
+                <div class="flex items-center gap-2">${statusBadge(order.status)} ${paymentBadge(order.payment_way)}</div>
             </div>
-            <ul class="mt-2 space-y-1">${items || '<li class="text-xs text-gray-400">No items.</li>'}${extraItems}</ul>
-            <div class="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                <span>Total: <strong class="text-gray-800 dark:text-gray-100">${Number.parseFloat(order.total_amount || 0).toLocaleString()} SYP</strong></span>
-                <div class="flex items-center gap-2">
-                    <span>${paymentBadge(order.payment_way)}</span>
-                    <a href="/vendor/orders/${order.id}" class="rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">View Details</a>
+            <div class="p-4">
+                <ul class="space-y-1.5">${items || '<li class="text-xs text-gray-400">No items.</li>'}${extraItems}</ul>
+                <div class="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+                    <div class="rounded-lg border border-gray-100 bg-gray-50 px-2.5 py-2 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-gray-400">Order ID</p><p class="mt-0.5 font-semibold text-gray-800 dark:text-gray-200">${order.id ?? '—'}</p></div>
+                    <div class="rounded-lg border border-gray-100 bg-gray-50 px-2.5 py-2 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-gray-400">Items</p><p class="mt-0.5 font-semibold text-gray-800 dark:text-gray-200">${order.items_count ?? (order.items || []).length}</p></div>
+                    <div class="rounded-lg border border-gray-100 bg-gray-50 px-2.5 py-2 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-gray-400">Total</p><p class="mt-0.5 font-semibold text-gray-800 dark:text-gray-200">${Number.parseFloat(order.total_amount || 0).toLocaleString()} SYP</p></div>
+                </div>
+                <div class="mt-3 flex justify-end">
+                    <a href="/vendor/orders/${order.id}" class="inline-flex items-center gap-1 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-700 transition-all hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-emerald-500/40 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300">
+                        View Details
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
                 </div>
             </div>
-        </div>`;
+        </article>`;
     }
 
     function toggleLoading(show) {

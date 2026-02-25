@@ -529,7 +529,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     function esc(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
     function toDateInput(value) {
         if (!value) return '';
+        if (typeof value === 'string') {
+            const matched = value.match(/^\d{4}-\d{2}-\d{2}/);
+            if (matched) return matched[0];
+        }
         const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
         const pad = n => String(n).padStart(2, '0');
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
     }

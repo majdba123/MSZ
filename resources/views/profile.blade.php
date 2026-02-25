@@ -360,11 +360,11 @@ document.addEventListener('DOMContentLoaded', async function () {
             </div>`;
         }).join('');
 
-        return `<div class="rounded-xl border border-gray-200/80 p-4 dark:border-gray-800">
-            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        return `<article class="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 bg-gray-50/80 px-4 py-3 dark:border-gray-800 dark:bg-gray-800/40">
                 <div>
-                    <p class="text-xs font-bold text-gray-900 dark:text-white">${escH(order.order_number)}</p>
-                    <p class="text-[11px] text-gray-500 dark:text-gray-400">${date} · ${escH(order.vendor?.store_name || 'Unknown vendor')}</p>
+                    <p><span class="inline-flex rounded-lg bg-gray-900 px-2.5 py-1 text-[11px] font-black text-white shadow-sm dark:bg-white dark:text-gray-900">${escH(order.order_number || ('Order #' + order.id))}</span></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">${date} · ${escH(order.vendor?.store_name || 'Unknown vendor')}</p>
                 </div>
                 <div class="flex items-center gap-2">
                     ${statusBadge}
@@ -372,18 +372,25 @@ document.addEventListener('DOMContentLoaded', async function () {
                 </div>
             </div>
 
-            <div class="space-y-2">${itemsHtml}</div>
+            <div class="p-4">
+                <div class="space-y-2">${itemsHtml}</div>
 
-            <div class="mt-3 border-t border-gray-100 pt-3 text-xs dark:border-gray-800">
-                <div class="flex items-center justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>${parseFloat(order.subtotal_amount || 0).toLocaleString()} SYP</span></div>
-                <div class="mt-1 flex items-center justify-between text-gray-500 dark:text-gray-400"><span>Coupon</span><span>${coupon ? escH(coupon.code) : '—'}</span></div>
-                <div class="mt-1 flex items-center justify-between text-gray-500 dark:text-gray-400"><span>Coupon Discount</span><span>- ${parseFloat(order.coupon_discount_amount || 0).toLocaleString()} SYP</span></div>
-                <div class="mt-2 flex items-center justify-between text-sm font-black text-gray-900 dark:text-white"><span>Total</span><span>${parseFloat(order.total_amount || 0).toLocaleString()} SYP</span></div>
-                <div class="mt-3">
-                    <a href="/orders/${order.id}" class="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">View Details</a>
+                <div class="mt-3 grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="rounded-lg border border-gray-100 bg-gray-50 px-2.5 py-2 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-gray-400">Order ID</p><p class="mt-0.5 font-semibold text-gray-800 dark:text-gray-200">${order.id ?? '—'}</p></div>
+                    <div class="rounded-lg border border-gray-100 bg-gray-50 px-2.5 py-2 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-gray-400">Items</p><p class="mt-0.5 font-semibold text-gray-800 dark:text-gray-200">${order.items_count ?? (order.items || []).length}</p></div>
+                    <div class="rounded-lg border border-gray-100 bg-gray-50 px-2.5 py-2 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-gray-400">Subtotal</p><p class="mt-0.5 font-semibold text-gray-800 dark:text-gray-200">${parseFloat(order.subtotal_amount || 0).toLocaleString()} SYP</p></div>
+                    <div class="rounded-lg border border-gray-100 bg-gray-50 px-2.5 py-2 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-gray-400">Coupon</p><p class="mt-0.5 font-semibold text-gray-800 dark:text-gray-200">${coupon ? escH(coupon.code) : '—'}</p></div>
+                </div>
+
+                <div class="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 text-sm dark:border-gray-800">
+                    <p class="font-black text-gray-900 dark:text-white">Total: ${parseFloat(order.total_amount || 0).toLocaleString()} SYP</p>
+                    <a href="/orders/${order.id}" class="inline-flex items-center gap-1 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-700 transition-all hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-brand-500/40 dark:hover:bg-brand-500/10 dark:hover:text-brand-300">
+                        View Details
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
                 </div>
             </div>
-        </div>`;
+        </article>`;
     }
 
     function orderStatusBadge(status) {

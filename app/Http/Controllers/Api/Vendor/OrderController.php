@@ -4,11 +4,16 @@ namespace App\Http\Controllers\Api\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        protected NotificationService $notificationService,
+    ) {}
+
     /**
      * List vendor orders with filters scoped to vendor.
      */
@@ -131,6 +136,8 @@ class OrderController extends Controller
         $order->update([
             'status' => Order::STATUS_CANCELLED,
         ]);
+
+        $this->notificationService->notifyOrderStatusUpdated($order, Order::STATUS_CANCELLED);
 
         return response()->json([
             'message' => 'Order cancelled successfully.',

@@ -57,3 +57,14 @@ window.Auth = {
 
 // Apply token on page load if it exists
 window.Auth.applyToken();
+
+/**
+ * Echo / Reverb: only load when explicitly enabled so no WebSocket runs with just "php artisan serve".
+ */
+const reverbEnabled = import.meta.env.VITE_REVERB_ENABLED === 'true' || import.meta.env.VITE_REVERB_ENABLED === '1';
+if (reverbEnabled) {
+    import('./echo');
+} else {
+    window.Echo = null;
+    window.setupNotificationEcho = function () {};
+}

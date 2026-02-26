@@ -8,6 +8,7 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        protected NotificationService $notificationService,
+    ) {}
+
     /**
      * Paginated authenticated user order history.
      */
@@ -339,6 +344,10 @@ class OrderController extends Controller
 
         Cache::tags(['products'])->flush();
 
+        foreach ($createdOrders as $order) {
+            $this->notificationService->notifyNewOrder($order);
+        }
+
         $vendorNames = $createdOrders
             ->pluck('vendor.store_name')
             ->filter()
@@ -402,6 +411,8 @@ class OrderController extends Controller
         $order->update([
             'status' => Order::STATUS_CANCELLED,
         ]);
+
+        $this->notificationService->notifyOrderStatusUpdated($order, Order::STATUS_CANCELLED);
 
         return response()->json([
             'message' => 'Order cancelled successfully.',

@@ -49,6 +49,28 @@
 
                     {{-- Right side --}}
                     <div class="flex items-center gap-x-3">
+                        {{-- Notifications (data-context for notification links: customer | vendor | admin) --}}
+                        <div id="vendor-notif-wrap" class="relative" data-context="vendor">
+                            <button type="button" id="vendor-notif-btn" class="relative flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" title="Notifications">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+                                <span id="vendor-notif-badge" class="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold leading-none text-white hidden">0</span>
+                            </button>
+                            <div id="vendor-notif-dropdown" class="absolute right-0 top-full z-50 mt-2 hidden w-[min(420px,95vw)] max-h-[min(32rem,75vh)] overflow-hidden rounded-2xl bg-white/95 shadow-xl ring-1 ring-black/5 backdrop-blur-md dark:bg-gray-900/95 dark:ring-white/10 flex flex-col">
+                                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
+                                    <span class="text-[13px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">الإشعارات</span>
+                                    <button type="button" id="vendor-notif-mark-all" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">تحديد الكل كمقروء</button>
+                                </div>
+                                <div id="vendor-notif-list" class="flex-1 min-h-0 max-h-[min(24rem,55vh)] overflow-y-auto">
+                                    <p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">جاري التحميل...</p>
+                                </div>
+                                <div id="vendor-notif-empty" class="hidden px-4 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500 shrink-0">لا توجد إشعارات.</div>
+                                <div id="vendor-notif-pagination" class="hidden border-t border-gray-100 dark:border-gray-800 px-3 py-2 flex items-center justify-between gap-2 shrink-0 bg-gray-50/50 dark:bg-gray-800/30">
+                                    <button type="button" id="vendor-notif-prev" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">السابق</button>
+                                    <span id="vendor-notif-page-info" class="text-[11px] text-gray-500 dark:text-gray-400">صفحة 1 من 1</span>
+                                    <button type="button" id="vendor-notif-next" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">التالي</button>
+                                </div>
+                            </div>
+                        </div>
                         {{-- Dark Mode Toggle --}}
                         <button onclick="toggleVendorTheme()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" title="Toggle theme">
                             <svg class="hidden h-4 w-4 dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
@@ -180,11 +202,115 @@
                 document.getElementById('vendor-app').classList.remove('hidden');
 
                 loadSidebarCategories();
+                vendorNotificationBadge();
+                initVendorNotificationDropdown();
             } catch (e) {
                 window.Auth.removeToken();
                 window.location.href = '{{ route("login") }}';
             }
         });
+
+        function _vendorEsc(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+        function vendorNotificationBadge() {
+            window.axios.get('/api/notifications').then(function (res) {
+                const count = res.data.unread_count ?? 0;
+                const badge = document.getElementById('vendor-notif-badge');
+                if (!badge) return;
+                if (count > 0) { badge.textContent = count > 99 ? '99+' : count; badge.classList.remove('hidden'); }
+                else { badge.classList.add('hidden'); }
+            }).catch(function () {});
+        }
+        function loadVendorNotificationDropdown(page) {
+            page = typeof page === 'number' && page >= 1 ? page : 1;
+            const listEl = document.getElementById('vendor-notif-list');
+            const emptyEl = document.getElementById('vendor-notif-empty');
+            const paginationEl = document.getElementById('vendor-notif-pagination');
+            const pageInfoEl = document.getElementById('vendor-notif-page-info');
+            const prevBtn = document.getElementById('vendor-notif-prev');
+            const nextBtn = document.getElementById('vendor-notif-next');
+            if (!listEl) return;
+            listEl.innerHTML = '<p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">جاري التحميل...</p>';
+            emptyEl && emptyEl.classList.add('hidden');
+            paginationEl && paginationEl.classList.add('hidden');
+            window.axios.get('/api/notifications', { params: { page: page } }).then(function (res) {
+                const items = res.data.data || [];
+                const meta = res.data.meta || {};
+                const currentPage = typeof meta.current_page === 'number' ? meta.current_page : 1;
+                const lastPage = typeof meta.last_page === 'number' ? meta.last_page : 1;
+                const total = typeof meta.total === 'number' ? meta.total : 0;
+                const unread = res.data.unread_count ?? 0;
+                const badge = document.getElementById('vendor-notif-badge');
+                if (badge) { if (unread > 0) { badge.textContent = unread > 99 ? '99+' : unread; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
+                if (items.length === 0 && page === 1) { listEl.innerHTML = ''; emptyEl && emptyEl.classList.remove('hidden'); return; }
+                emptyEl && emptyEl.classList.add('hidden');
+                var wrapEl = document.getElementById('vendor-notif-wrap');
+                var context = (wrapEl && wrapEl.getAttribute('data-context')) || 'vendor';
+                function notificationLink(actionType, actionId) {
+                    if (!actionType || actionId == null) return '';
+                    var id = String(actionId);
+                    if (context === 'vendor') {
+                        if (actionType === 'product') return '/products/' + id;
+                        if (actionType === 'order') return '/vendor/orders/' + id;
+                    }
+                    if (context === 'admin') {
+                        if (actionType === 'product') return '/admin/products/' + id;
+                        if (actionType === 'order') return '/admin/orders/' + id;
+                    }
+                    if (actionType === 'product') return '/products/' + id;
+                    if (actionType === 'order') return '/orders/' + id;
+                    return '';
+                }
+                listEl.innerHTML = items.map(function (n) {
+                    const isUnread = !n.read_at;
+                    const time = n.sent_at ? new Date(n.sent_at).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : '';
+                    const body = n.body != null ? _vendorEsc(String(n.body)) : '';
+                    const href = notificationLink(n.action_type, n.action_id != null ? n.action_id : null);
+                    const clickable = href ? ' cursor-pointer' : '';
+                    const dataHref = href ? ' data-href="' + _vendorEsc(href) + '"' : '';
+                    return '<div class="flex border-b border-gray-100 last:border-0 dark:border-gray-800 ' + (isUnread ? 'bg-gray-50/60 dark:bg-gray-800/40' : 'hover:bg-gray-50/50 dark:hover:bg-gray-800/30') + clickable + '" data-nid="' + n.id + '"' + dataHref + ' role="' + (href ? 'button' : 'presentation') + '">' +
+                        (isUnread ? '<div class="w-0.5 shrink-0 self-stretch bg-brand-500 dark:bg-brand-400" aria-hidden="true"></div>' : '') +
+                        '<div class="min-w-0 flex-1 py-3.5 px-4 ' + (isUnread ? 'pl-3.5' : 'pl-4') + '">' +
+                        '<p class="text-[14px] leading-relaxed text-gray-800 dark:text-gray-100">' + body + '</p>' +
+                        '<p class="mt-1.5 text-[11px] text-gray-400 dark:text-gray-500">' + _vendorEsc(time) + (n.sender_name ? ' · ' + _vendorEsc(n.sender_name) : '') + '</p>' +
+                        (isUnread ? '<button type="button" class="vendor-mark-one mt-2 text-[11px] font-medium text-brand-600 hover:underline dark:text-brand-400" data-id="' + n.id + '">تحديد كمقروء</button>' : '') +
+                        '</div></div>';
+                }).join('');
+                document.querySelectorAll('#vendor-notif-list [data-nid][data-href]').forEach(function (row) {
+                    row.addEventListener('click', function (e) {
+                        if (e.target.closest('.vendor-mark-one')) return;
+                        var h = row.getAttribute('data-href');
+                        if (h) {
+                            document.getElementById('vendor-notif-dropdown')?.classList.add('hidden');
+                            window.location.href = h;
+                        }
+                    });
+                });
+                if (lastPage > 1 && paginationEl && pageInfoEl && prevBtn && nextBtn) {
+                    pageInfoEl.textContent = 'صفحة ' + currentPage + ' من ' + lastPage + (total ? ' (' + total + ')' : '');
+                    prevBtn.disabled = currentPage <= 1;
+                    nextBtn.disabled = currentPage >= lastPage;
+                    prevBtn.onclick = function () { if (currentPage > 1) loadVendorNotificationDropdown(currentPage - 1); };
+                    nextBtn.onclick = function () { if (currentPage < lastPage) loadVendorNotificationDropdown(currentPage + 1); };
+                    paginationEl.classList.remove('hidden');
+                }
+                listEl.querySelectorAll('.vendor-mark-one').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        const id = btn.getAttribute('data-id');
+                        if (id) window.axios.patch('/api/notifications/' + id + '/read').then(function () { loadVendorNotificationDropdown(currentPage); });
+                    });
+                });
+            }).catch(function () { listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">Failed to load.</p>'; });
+        }
+        function initVendorNotificationDropdown() {
+            const btn = document.getElementById('vendor-notif-btn');
+            const dd = document.getElementById('vendor-notif-dropdown');
+            const wrap = document.getElementById('vendor-notif-wrap');
+            const markAll = document.getElementById('vendor-notif-mark-all');
+            if (!btn || !dd) return;
+            btn.addEventListener('click', function (e) { e.stopPropagation(); dd.classList.toggle('hidden'); if (!dd.classList.contains('hidden')) loadVendorNotificationDropdown(); });
+            document.addEventListener('click', function (e) { if (wrap && !wrap.contains(e.target)) dd.classList.add('hidden'); });
+            markAll && markAll.addEventListener('click', function () { window.axios.post('/api/notifications/mark-all-read').then(function () { loadVendorNotificationDropdown(); vendorNotificationBadge(); }); });
+        }
 
         // Sidebar toggle (mobile)
         document.addEventListener('DOMContentLoaded', function () {

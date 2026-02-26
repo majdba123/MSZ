@@ -113,6 +113,10 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'vendor'])->group(fu
         return view('vendor.commission');
     })->name('commission');
 
+    Route::get('/notifications', function () {
+        return view('vendor.notifications.index');
+    })->name('notifications.index');
+
     Route::get('/products/create', function () {
         return view('vendor.products.create');
     })->name('products.create');
@@ -221,6 +225,14 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'admin'])->group(funct
     Route::get('/users/{id}/edit', function (string $id) {
         return view('admin.users.edit', ['userId' => $id]);
     })->name('users.edit');
+
+    Route::get('/notifications', function () {
+        return view('admin.notifications.index');
+    })->name('notifications.index');
+
+    Route::get('/notifications/send', function () {
+        return view('admin.notifications.send');
+    })->name('notifications.send');
 
     // Category Management
     Route::get('/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');

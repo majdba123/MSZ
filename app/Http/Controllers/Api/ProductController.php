@@ -14,6 +14,7 @@ use App\Models\ProductPhoto;
 use App\Models\Subcategory;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Services\NotificationService;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ use Illuminate\Validation\ValidationException;
 class ProductController extends Controller
 {
     public function __construct(
+        public NotificationService $notificationService,
         public ProductService $productService,
     ) {}
 
@@ -213,6 +215,10 @@ class ProductController extends Controller
             $product->load('photos');
         }
 
+        if ($product->discount_status === Product::DISCOUNT_STATUS_ACTIVE) {
+            $this->notificationService->notifyProductDiscountAdded($product);
+        }
+
         return response()->json([
             'message' => __('Product created successfully.'),
             'data' => new ProductResource($product),
@@ -287,8 +293,26 @@ class ProductController extends Controller
 
         // Note: Photo updates (remove, upload, set primary) are handled separately via ProductPhotoController::updatePhotos
 
+        $hadActiveDiscount = $product->discount_status === Product::DISCOUNT_STATUS_ACTIVE;
+        $oldDiscountPct = $product->discount_percentage;
+        $oldStarts = $product->discount_starts_at?->toDateTimeString();
+        $oldEnds = $product->discount_ends_at?->toDateTimeString();
+
         $product = $this->productService->update($product, $validated);
         $product->load($user && $user->type === User::TYPE_VENDOR ? ['photos', 'subcategory.category'] : ['vendor.user', 'photos', 'subcategory.category']);
+
+        if ($product->discount_status === Product::DISCOUNT_STATUS_ACTIVE) {
+            if (! $hadActiveDiscount) {
+                $this->notificationService->notifyProductDiscountAdded($product);
+            } else {
+                $pctChanged = (float) ($product->discount_percentage ?? 0) !== (float) ($oldDiscountPct ?? 0);
+                $startsChanged = ($product->discount_starts_at?->toDateTimeString() ?? '') !== ($oldStarts ?? '');
+                $endsChanged = ($product->discount_ends_at?->toDateTimeString() ?? '') !== ($oldEnds ?? '');
+                if ($pctChanged || $startsChanged || $endsChanged) {
+                    $this->notificationService->notifyProductDiscountUpdated($product);
+                }
+            }
+        }
 
         return response()->json([
             'message' => __('Product updated successfully.'),
@@ -321,6 +345,10 @@ class ProductController extends Controller
         ]);
 
         $product = $this->productService->updateStatus($product, $request->input('status'));
+
+        if ($product->status === 'approved') {
+            $this->notificationService->notifyNewProductApproved($product);
+        }
 
         return response()->json([
             'message' => __('Product status updated successfully.'),

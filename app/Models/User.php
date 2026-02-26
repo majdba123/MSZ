@@ -102,4 +102,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Order::class);
     }
+
+    /**
+     * Admin notifications this user has marked as read (pivot has read_at).
+     */
+    public function notificationReads(): BelongsToMany
+    {
+        return $this->belongsToMany(AdminNotification::class, 'admin_notification_reads', 'user_id', 'admin_notification_id')
+            ->withPivot('read_at')
+            ->withTimestamps();
+    }
 }

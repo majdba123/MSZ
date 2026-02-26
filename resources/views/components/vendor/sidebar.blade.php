@@ -86,6 +86,19 @@
             @endif
         </a>
 
+        {{-- Notifications (bill / list) --}}
+        <a href="{{ route('vendor.notifications.index') }}"
+           class="mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150
+                  {{ str_starts_with($currentRoute, 'vendor.notifications') ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200' }}">
+            <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
+            </svg>
+            سجل الإشعارات
+            @if(str_starts_with($currentRoute, 'vendor.notifications'))
+                <span class="ml-auto h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+            @endif
+        </a>
+
         {{-- My Categories --}}
         <p class="mb-2 mt-6 px-3 text-[10px] font-bold uppercase tracking-widest text-gray-500">My Categories</p>
         <div id="sidebar-categories" class="space-y-0.5">

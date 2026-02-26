@@ -19,9 +19,10 @@ class UserController extends Controller
      */
     public function index(): JsonResponse
     {
+        $perPage = min((int) request('per_page', 15), 500);
         $users = User::query()
             ->latest()
-            ->paginate(15);
+            ->paginate($perPage);
 
         return response()->json([
             'message' => __('Users retrieved successfully.'),

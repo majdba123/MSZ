@@ -4,11 +4,16 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        protected NotificationService $notificationService,
+    ) {}
+
     /**
      * List orders with admin filters.
      */
@@ -120,6 +125,8 @@ class OrderController extends Controller
         $order->update([
             'status' => Order::STATUS_COMPLETED,
         ]);
+
+        $this->notificationService->notifyOrderStatusUpdated($order, Order::STATUS_COMPLETED);
 
         return response()->json([
             'message' => 'Order marked as completed successfully.',

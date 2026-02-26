@@ -52,6 +52,29 @@
                     <span id="cart-badge" class="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold leading-none text-white shadow hidden"></span>
                 </button>
 
+                {{-- Notifications (authenticated only). data-context: customer | vendor | admin for notification links. --}}
+                <div id="nav-notifications-wrap" class="relative hidden" data-context="customer">
+                    <button id="nav-notifications-btn" type="button" class="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" title="Notifications">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+                        <span id="notification-badge" class="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold leading-none text-white shadow hidden">0</span>
+                    </button>
+                    <div id="notification-dropdown" class="absolute right-0 top-full z-50 mt-2 hidden w-[min(420px,95vw)] max-h-[min(32rem,75vh)] overflow-hidden rounded-2xl bg-white/95 shadow-xl ring-1 ring-black/5 backdrop-blur-md dark:bg-gray-900/95 dark:ring-white/10 flex flex-col" style="animation:fadeIn .15s ease-out;">
+                        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
+                            <span class="text-[13px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">الإشعارات</span>
+                            <button type="button" id="notification-mark-all-read" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">تحديد الكل كمقروء</button>
+                        </div>
+                        <div id="notification-list" class="overflow-y-auto flex-1 min-h-0 max-h-[min(24rem,55vh)]">
+                            <p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">جاري التحميل...</p>
+                        </div>
+                        <div id="notification-empty" class="hidden px-4 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500 shrink-0">لا توجد إشعارات.</div>
+                        <div id="notification-pagination" class="hidden border-t border-gray-100 dark:border-gray-800 px-3 py-2 flex items-center justify-between gap-2 shrink-0 bg-gray-50/50 dark:bg-gray-800/30">
+                            <button type="button" id="notification-prev" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">السابق</button>
+                            <span id="notification-page-info" class="text-[11px] text-gray-500 dark:text-gray-400">صفحة 1 من 1</span>
+                            <button type="button" id="notification-next" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">التالي</button>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Guest Buttons (hidden when authenticated) --}}
                 <div id="nav-guest" class="hidden items-center gap-1.5 sm:flex">
                     <a href="{{ route('login') }}" class="rounded-xl px-3.5 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">Sign In</a>
@@ -182,6 +205,10 @@ document.addEventListener('DOMContentLoaded', function () {
     initMegaMenu();
     initThemeToggle();
     initProfileDropdown();
+    initNotificationDropdown();
+    window.addEventListener('focus', function () {
+        if (window.Auth && window.Auth.isAuthenticated()) updateNotificationBadge();
+    });
 
     document.getElementById('mobile-btn')?.addEventListener('click', () => {
         document.getElementById('mobile-drawer').classList.remove('hidden');
@@ -268,13 +295,20 @@ function updateNavbar() {
             if (dashLink) { dashLink.href = '{{ url("/vendor/dashboard") }}'; dashLink.classList.remove('hidden'); dashLink.classList.add('flex'); }
             if (mobDash) { mobDash.href = '{{ url("/vendor/dashboard") }}'; mobDash.classList.remove('hidden'); }
         }
+        el('nav-notifications-wrap')?.classList.remove('hidden');
+        updateNotificationBadge();
+        if (typeof window.setupNotificationEcho === 'function') {
+            window.setupNotificationEcho(user.id);
+            setTimeout(function () { if (typeof window.setupNotificationEcho === 'function') window.setupNotificationEcho(user.id); }, 2000);
+        }
     } else if (isAuth) {
         el('nav-guest')?.classList.add('hidden');
         el('nav-guest')?.classList.remove('sm:flex');
         el('profile-wrap')?.classList.remove('hidden');
         el('mobile-guest-footer')?.classList.add('hidden');
         el('mobile-auth-footer')?.classList.remove('hidden');
-
+        el('nav-notifications-wrap')?.classList.remove('hidden');
+        updateNotificationBadge();
         fetchAndSetUser();
     } else {
         el('nav-guest')?.classList.remove('hidden');
@@ -283,8 +317,195 @@ function updateNavbar() {
         el('mobile-guest-footer')?.classList.remove('hidden');
         el('mobile-auth-footer')?.classList.add('hidden');
         el('mobile-profile')?.classList.add('hidden');
+        el('nav-notifications-wrap')?.classList.add('hidden');
     }
     updateCartBadge();
+}
+
+function updateNotificationBadge() {
+    if (!window.Auth?.isAuthenticated()) return;
+    const token = window.Auth.getToken();
+    if (!token) return;
+    const headers = { Accept: 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    window.axios.get('/api/notifications', { headers }).then(function (res) {
+        const count = res.data.unread_count ?? 0;
+        const badge = document.getElementById('notification-badge');
+        if (!badge) return;
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }).catch(function () {});
+}
+
+function loadNotificationDropdown(page) {
+    page = typeof page === 'number' && page >= 1 ? page : 1;
+    const listEl = document.getElementById('notification-list');
+    const emptyEl = document.getElementById('notification-empty');
+    const paginationEl = document.getElementById('notification-pagination');
+    const pageInfoEl = document.getElementById('notification-page-info');
+    const prevBtn = document.getElementById('notification-prev');
+    const nextBtn = document.getElementById('notification-next');
+    if (!listEl) return;
+    listEl.innerHTML = '<p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">جاري التحميل...</p>';
+    emptyEl?.classList.add('hidden');
+    paginationEl?.classList.add('hidden');
+    const token = window.Auth?.getToken();
+    const headers = { Accept: 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    window.axios.get('/api/notifications', { params: { page: page }, headers: headers }).then(function (res) {
+        try {
+            const raw = res && res.data;
+            const data = raw && typeof raw === 'object' ? raw : {};
+            const items = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+            const meta = data.meta && typeof data.meta === 'object' ? data.meta : {};
+            const currentPage = typeof meta.current_page === 'number' ? meta.current_page : 1;
+            const lastPage = typeof meta.last_page === 'number' ? meta.last_page : 1;
+            const total = typeof meta.total === 'number' ? meta.total : 0;
+            const unreadCount = typeof data.unread_count === 'number' ? data.unread_count : 0;
+            const badge = document.getElementById('notification-badge');
+            if (badge) {
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+            if (items.length === 0 && page === 1) {
+                listEl.innerHTML = '';
+                emptyEl?.classList.remove('hidden');
+                return;
+            }
+            emptyEl?.classList.add('hidden');
+            const esc = typeof _esc !== 'undefined' ? _esc : function (s) { if (s == null) return ''; var d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+            const wrapEl = document.getElementById('nav-notifications-wrap');
+            const context = (wrapEl && wrapEl.getAttribute('data-context')) || 'customer';
+            function notificationLink(actionType, actionId) {
+                if (!actionType || actionId == null) return '';
+                var id = String(actionId);
+                if (context === 'vendor') {
+                    if (actionType === 'product') return '/products/' + id;
+                    if (actionType === 'order') return '/vendor/orders/' + id;
+                }
+                if (context === 'admin') {
+                    if (actionType === 'product') return '/admin/products/' + id;
+                    if (actionType === 'order') return '/admin/orders/' + id;
+                }
+                if (actionType === 'product') return '/products/' + id;
+                if (actionType === 'order') return '/orders/' + id;
+                return '';
+            }
+            listEl.innerHTML = items.map(function (n) {
+                const isUnread = !n.read_at;
+                let time = '';
+                try {
+                    if (n.sent_at) time = new Date(n.sent_at).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' });
+                } catch (e) {}
+                const body = n && (n.body != null) ? esc(String(n.body)) : '';
+                const sender = n && n.sender_name != null ? esc(String(n.sender_name)) : '';
+                const id = n && n.id != null ? String(n.id) : '';
+                const href = notificationLink(n.action_type, n.action_id != null ? n.action_id : null);
+                const clickable = href ? ' cursor-pointer' : '';
+                const dataHref = href ? ' data-href="' + esc(href) + '"' : '';
+                return '<div class="flex border-b border-gray-100 last:border-0 dark:border-gray-800 ' + (isUnread ? 'bg-gray-50/60 dark:bg-gray-800/40' : 'hover:bg-gray-50/50 dark:hover:bg-gray-800/30') + clickable + '" data-notification-id="' + id + '"' + dataHref + ' role="' + (href ? 'button' : 'presentation') + '">' +
+                    (isUnread ? '<div class="w-0.5 shrink-0 self-stretch bg-brand-500 dark:bg-brand-400" aria-hidden="true"></div>' : '') +
+                    '<div class="min-w-0 flex-1 py-3.5 px-4 ' + (isUnread ? 'pl-3.5' : 'pl-4') + '">' +
+                    '<p class="text-[14px] leading-relaxed text-gray-800 dark:text-gray-100">' + body + '</p>' +
+                    '<p class="mt-1.5 text-[11px] text-gray-400 dark:text-gray-500">' + time + (sender ? ' · ' + sender : '') + '</p>' +
+                    (isUnread ? '<button type="button" class="notification-mark-one mt-2 text-[11px] font-medium text-brand-600 hover:underline dark:text-brand-400" data-id="' + id + '">تحديد كمقروء</button>' : '') +
+                    '</div></div>';
+            }).join('');
+            listEl.querySelectorAll('[data-notification-id][data-href]').forEach(function (row) {
+                row.addEventListener('click', function (e) {
+                    if (e.target.closest('.notification-mark-one')) return;
+                    var h = row.getAttribute('data-href');
+                    if (h) {
+                        document.getElementById('notification-dropdown')?.classList.add('hidden');
+                        window.location.href = h;
+                    }
+                });
+            });
+            if (lastPage > 1 && paginationEl && pageInfoEl && prevBtn && nextBtn) {
+                pageInfoEl.textContent = 'صفحة ' + currentPage + ' من ' + lastPage + (total ? ' (' + total + ')' : '');
+                prevBtn.disabled = currentPage <= 1;
+                nextBtn.disabled = currentPage >= lastPage;
+                prevBtn.onclick = function () { if (currentPage > 1) loadNotificationDropdown(currentPage - 1); };
+                nextBtn.onclick = function () { if (currentPage < lastPage) loadNotificationDropdown(currentPage + 1); };
+                paginationEl.classList.remove('hidden');
+            }
+            listEl.querySelectorAll('.notification-mark-one').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const id = btn.getAttribute('data-id');
+                    if (!id) return;
+                    var row = btn.closest('[data-notification-id]');
+                    btn.disabled = true;
+                    window.axios.patch('/api/notifications/' + id + '/read').then(function () {
+                        if (row) {
+                            var accent = row.querySelector('[aria-hidden="true"]');
+                            if (accent) accent.remove();
+                            row.classList.remove('bg-gray-50/60', 'dark:bg-gray-800/40');
+                            row.classList.add('hover:bg-gray-50/50', 'dark:hover:bg-gray-800/30');
+                            var inner = row.querySelector('div[class*="min-w-0"][class*="pl-3"]');
+                            if (inner) inner.classList.replace('pl-3.5', 'pl-4');
+                            btn.remove();
+                        }
+                        var badge = document.getElementById('notification-badge');
+                        if (badge && !badge.classList.contains('hidden')) {
+                            var n = parseInt(badge.textContent, 10) || 0;
+                            if (n > 1) { badge.textContent = n - 1; } else { badge.classList.add('hidden'); }
+                        }
+                    }).finally(function () { btn.disabled = false; });
+                });
+            });
+        } catch (e) {
+            listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">Failed to show notifications.</p>';
+        }
+    }).catch(function (err) {
+        const msg = err.response?.status === 401 ? 'Please sign in again.' : (err.response?.data?.message || 'Failed to load notifications.');
+        listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">' + (typeof _esc !== 'undefined' ? _esc(msg) : msg) + '</p>';
+    });
+}
+
+function initNotificationDropdown() {
+    const wrap = document.getElementById('nav-notifications-wrap');
+    const btn = document.getElementById('nav-notifications-btn');
+    const dd = document.getElementById('notification-dropdown');
+    const markAll = document.getElementById('notification-mark-all-read');
+    if (!btn || !dd) return;
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const open = dd.classList.toggle('hidden');
+        if (open) loadNotificationDropdown();
+    });
+    document.addEventListener('click', function (e) {
+        if (wrap && !wrap.contains(e.target)) dd.classList.add('hidden');
+    });
+    markAll?.addEventListener('click', function () {
+        markAll.disabled = true;
+        window.axios.post('/api/notifications/mark-all-read').then(function () {
+            var list = document.getElementById('notification-list');
+            if (list) {
+                list.querySelectorAll('.notification-mark-one').forEach(function (b) {
+                    var row = b.closest('[data-notification-id]');
+                    if (row) {
+                        var accent = row.querySelector('[aria-hidden="true"]');
+                        if (accent) accent.remove();
+                        row.classList.remove('bg-gray-50/60', 'dark:bg-gray-800/40');
+                        row.classList.add('hover:bg-gray-50/50', 'dark:hover:bg-gray-800/30');
+                        var inner = row.querySelector('div[class*="min-w-0"][class*="pl-3"]');
+                        if (inner) inner.classList.replace('pl-3.5', 'pl-4');
+                    }
+                    b.remove();
+                });
+            }
+            var badge = document.getElementById('notification-badge');
+            if (badge) badge.classList.add('hidden');
+        }).finally(function () { markAll.disabled = false; });
+    });
 }
 
 async function fetchAndSetUser() {

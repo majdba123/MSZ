@@ -33,6 +33,7 @@ Route::apiResource('coupons', \App\Http\Controllers\Api\Admin\CouponController::
 Route::get('orders', [\App\Http\Controllers\Api\Admin\OrderController::class, 'index'])->name('orders.index');
 Route::get('orders/{orderId}', [\App\Http\Controllers\Api\Admin\OrderController::class, 'show'])->name('orders.show');
 Route::patch('orders/{orderId}/complete', [\App\Http\Controllers\Api\Admin\OrderController::class, 'markCompleted'])->name('orders.complete');
+Route::post('notifications/send', [\App\Http\Controllers\Api\Admin\NotificationController::class, 'send'])->name('notifications.send');
 
 // Product Photos (separate API)
 Route::get('products/{product}/photos', [ProductPhotoController::class, 'index'])->name('products.photos.index');

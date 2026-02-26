@@ -97,4 +97,36 @@ class OrderController extends Controller
             'data' => $order,
         ]);
     }
+
+    /**
+     * Mark an order as completed (admin only).
+     */
+    public function markCompleted(int $orderId): JsonResponse
+    {
+        $order = Order::query()->findOrFail($orderId);
+
+        if ($order->status === Order::STATUS_CANCELLED) {
+            return response()->json([
+                'message' => 'Cancelled orders cannot be marked as completed.',
+            ], 422);
+        }
+
+        if ($order->status === Order::STATUS_COMPLETED) {
+            return response()->json([
+                'message' => 'Order is already completed.',
+            ]);
+        }
+
+        $order->update([
+            'status' => Order::STATUS_COMPLETED,
+        ]);
+
+        return response()->json([
+            'message' => 'Order marked as completed successfully.',
+            'data' => [
+                'id' => $order->id,
+                'status' => $order->status,
+            ],
+        ]);
+    }
 }

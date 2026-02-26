@@ -25,7 +25,7 @@ class OrderController extends Controller
         $status = strtolower((string) $request->query('status', ''));
         $vendorId = (int) $request->query('vendor_id', 0);
         $search = trim((string) $request->query('search', ''));
-        $allowedStatuses = [Order::STATUS_PENDING, Order::STATUS_CONFIRMED, Order::STATUS_CANCELLED];
+        $allowedStatuses = [Order::STATUS_PENDING, Order::STATUS_CONFIRMED, Order::STATUS_COMPLETED, Order::STATUS_CANCELLED];
 
         $query = Order::query()
             ->with([
@@ -376,6 +376,40 @@ class OrderController extends Controller
                 'orders' => $ordersData,
             ],
         ], 201);
+    }
+
+    /**
+     * Cancel an authenticated user's order.
+     */
+    public function cancel(Request $request, int $orderId): JsonResponse
+    {
+        $order = Order::query()
+            ->where('user_id', $request->user()->id)
+            ->findOrFail($orderId);
+
+        if ($order->status === Order::STATUS_COMPLETED) {
+            return response()->json([
+                'message' => 'Completed orders cannot be cancelled.',
+            ], 422);
+        }
+
+        if ($order->status === Order::STATUS_CANCELLED) {
+            return response()->json([
+                'message' => 'Order is already cancelled.',
+            ]);
+        }
+
+        $order->update([
+            'status' => Order::STATUS_CANCELLED,
+        ]);
+
+        return response()->json([
+            'message' => 'Order cancelled successfully.',
+            'data' => [
+                'id' => $order->id,
+                'status' => $order->status,
+            ],
+        ]);
     }
 
     private function resolveCoupon(string $couponCode): ?Coupon

@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const subcategorySelect = document.getElementById('subcategory_id');
     const STORAGE_KEY = 'admin_product_create_form';
     const baseApiPath = '/api/admin';
+    let savedVendorId = '';
     let savedCategoryId = '';
     let savedSubcategoryId = '';
 
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
             const data = JSON.parse(saved);
-            if (vendorSelect) vendorSelect.value = data.vendor_id || '';
+            savedVendorId = data.vendor_id || '';
             savedCategoryId = data.category_id || '';
             savedSubcategoryId = data.subcategory_id || '';
             if (form.name) form.name.value = data.name || '';
@@ -90,7 +91,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // Add event listeners to save on change
-    if (vendorSelect) vendorSelect.addEventListener('change', saveFormData);
+    if (vendorSelect) {
+        vendorSelect.addEventListener('change', async function () {
+            await loadCategoriesByVendor(this.value);
+            saveFormData();
+        });
+    }
     if (categorySelect) {
         categorySelect.addEventListener('change', async function () {
             await loadSubcategories(categorySelect.value);
@@ -116,14 +122,21 @@ document.addEventListener('DOMContentLoaded', async function () {
             vendors.filter(v => v.is_active).map(v =>
                 `<option value="${v.id}">${esc(v.store_name)} — ${esc(v.user?.name || 'N/A')}</option>`
             ).join('');
+
+        if (savedVendorId && vendorSelect.querySelector(`option[value="${savedVendorId}"]`)) {
+            vendorSelect.value = savedVendorId;
+        }
     } catch (e) {
         vendorSelect.innerHTML = '<option value="">Failed to load vendors</option>';
         console.error('Failed to load vendors:', e);
     }
 
-    await loadCategories(savedCategoryId);
+    await loadCategoriesByVendor(vendorSelect?.value || '');
+    if (savedCategoryId) {
+        categorySelect.value = savedCategoryId;
+    }
     if (categorySelect?.value) {
-        await loadSubcategories(categorySelect.value, savedSubcategoryId);
+        await loadSubcategories(categorySelect.value, savedSubcategoryId || '');
     }
 
     form.addEventListener('submit', async function (e) {
@@ -220,17 +233,23 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
     function esc(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-    async function loadCategories(selectedCategoryId = '') {
+    async function loadCategoriesByVendor(vendorId) {
         if (!categorySelect) return;
+        savedCategoryId = '';
+        savedSubcategoryId = '';
+        categorySelect.innerHTML = '<option value="">Select category...</option>';
+        subcategorySelect.innerHTML = '<option value="">Select category first...</option>';
+        subcategorySelect.disabled = true;
+
+        if (!vendorId) {
+            return;
+        }
 
         try {
-            const res = await window.axios.get(`${baseApiPath}/categories`);
-            const categories = res.data.data || [];
+            const res = await window.axios.get(`${baseApiPath}/vendors/${vendorId}`);
+            const categories = res.data?.data?.categories || [];
             categorySelect.innerHTML = '<option value="">Select category...</option>' +
                 categories.map(category => `<option value="${category.id}">${esc(category.name)}</option>`).join('');
-            if (selectedCategoryId) {
-                categorySelect.value = selectedCategoryId;
-            }
         } catch (error) {
             categorySelect.innerHTML = '<option value="">Failed to load categories</option>';
             console.error('Failed to load categories:', error);

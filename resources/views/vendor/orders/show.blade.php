@@ -30,6 +30,10 @@
                         <span id="o-payment" class="rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-700 ring-1 ring-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700">cash</span>
                     </div>
                 </div>
+                <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <button id="vendor-cancel-btn" type="button" class="hidden rounded-xl bg-red-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-red-700">Cancel Order</button>
+                    <p id="vendor-action-msg" class="hidden text-xs font-semibold"></p>
+                </div>
             </div>
             <div class="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Order ID</p><p id="o-id" class="mt-1 text-sm font-bold text-gray-900 dark:text-white">—</p></div>
@@ -127,6 +131,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         const statusEl = document.getElementById('o-status');
         statusEl.textContent = status;
         statusEl.className = 'rounded-full px-2.5 py-1 text-[11px] font-semibold ' + statusClass(status);
+        renderVendorAction(status);
 
         document.getElementById('o-payment').textContent = order.payment_way || 'cash';
         document.getElementById('o-id').textContent = order.id ?? '—';
@@ -186,9 +191,46 @@ document.addEventListener('DOMContentLoaded', async function () {
         const classes = {
             pending: 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
             confirmed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
+            completed: 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
             cancelled: 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400',
         };
         return classes[status] || classes.pending;
+    }
+
+    function renderVendorAction(status) {
+        const btn = document.getElementById('vendor-cancel-btn');
+        if (!btn) {
+            return;
+        }
+        if (status === 'cancelled' || status === 'completed') {
+            btn.classList.add('hidden');
+            return;
+        }
+        btn.classList.remove('hidden');
+        btn.onclick = async function () {
+            btn.disabled = true;
+            btn.textContent = 'Cancelling...';
+            try {
+                const res = await window.axios.patch('/api/vendor/orders/' + orderId + '/cancel');
+                showActionMessage(res.data?.message || 'Order cancelled successfully.', 'success');
+                setTimeout(() => window.location.reload(), 500);
+            } catch (error) {
+                showActionMessage(error.response?.data?.message || 'Failed to cancel order.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Cancel Order';
+            }
+        };
+    }
+
+    function showActionMessage(message, type) {
+        const el = document.getElementById('vendor-action-msg');
+        if (!el) {
+            return;
+        }
+        el.className = 'text-xs font-semibold ' + (type === 'success' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400');
+        el.textContent = message;
+        el.classList.remove('hidden');
     }
 
     function esc(value) {

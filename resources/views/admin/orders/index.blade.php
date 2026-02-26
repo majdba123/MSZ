@@ -17,6 +17,7 @@
                 <option value="">All Statuses</option>
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
             </select>
             <select id="f-user" class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
@@ -220,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const cls = {
             pending: 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
             confirmed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
+            completed: 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
             cancelled: 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'
         };
         return `<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold ${cls[s] || cls.pending}">${esc(s)}</span>`;

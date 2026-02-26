@@ -91,7 +91,8 @@ class MarketplaceDemoSeeder extends Seeder
 
             $vendor->categories()->sync($categoryIds);
 
-            $allowedSubcategories = $subcategories->whereIn('category_id', $categoryIds);
+            $allowedCategoryIds = $vendor->categories()->pluck('categories.id')->all();
+            $allowedSubcategories = $subcategories->whereIn('category_id', $allowedCategoryIds);
 
             $this->seedVendorProducts($vendor, $allowedSubcategories);
         }

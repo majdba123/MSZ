@@ -101,4 +101,43 @@ class OrderController extends Controller
             'data' => $order,
         ]);
     }
+
+    /**
+     * Cancel a vendor order.
+     */
+    public function cancel(Request $request, int $orderId): JsonResponse
+    {
+        $vendor = $request->user()?->vendor;
+        if (! $vendor) {
+            abort(403, 'Vendor profile not found.');
+        }
+
+        $order = Order::query()
+            ->where('vendor_id', $vendor->id)
+            ->findOrFail($orderId);
+
+        if ($order->status === Order::STATUS_COMPLETED) {
+            return response()->json([
+                'message' => 'Completed orders cannot be cancelled.',
+            ], 422);
+        }
+
+        if ($order->status === Order::STATUS_CANCELLED) {
+            return response()->json([
+                'message' => 'Order is already cancelled.',
+            ]);
+        }
+
+        $order->update([
+            'status' => Order::STATUS_CANCELLED,
+        ]);
+
+        return response()->json([
+            'message' => 'Order cancelled successfully.',
+            'data' => [
+                'id' => $order->id,
+                'status' => $order->status,
+            ],
+        ]);
+    }
 }

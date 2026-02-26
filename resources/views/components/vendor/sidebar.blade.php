@@ -73,6 +73,19 @@
             @endif
         </a>
 
+        {{-- Commission --}}
+        <a href="{{ route('vendor.commission') }}"
+           class="mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150
+                  {{ str_starts_with($currentRoute, 'vendor.commission') ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200' }}">
+            <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.5 4.5L21.75 7.5M15.75 7.5h6v6"/>
+            </svg>
+            Commission
+            @if(str_starts_with($currentRoute, 'vendor.commission'))
+                <span class="ml-auto h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+            @endif
+        </a>
+
         {{-- My Categories --}}
         <p class="mb-2 mt-6 px-3 text-[10px] font-bold uppercase tracking-widest text-gray-500">My Categories</p>
         <div id="sidebar-categories" class="space-y-0.5">

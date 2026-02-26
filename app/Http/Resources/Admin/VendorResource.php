@@ -23,6 +23,7 @@ class VendorResource extends JsonResource
             'logo' => $this->logo,
             'logo_url' => $this->logo ? asset('storage/'.$this->logo) : null,
             'is_active' => $this->is_active,
+            'paid_amount' => $this->paid_amount,
             'user' => new UserResource($this->whenLoaded('user')),
             'categories' => $this->whenLoaded('categories', fn () => $this->categories->map(fn ($c) => [
                 'id' => $c->id,

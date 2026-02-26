@@ -86,5 +86,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/orders', [\App\Http\Controllers\Api\OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{orderId}', [\App\Http\Controllers\Api\OrderController::class, 'show'])->name('orders.show');
+    Route::patch('/orders/{orderId}/cancel', [\App\Http\Controllers\Api\OrderController::class, 'cancel'])->name('orders.cancel');
     Route::post('/orders/checkout', [\App\Http\Controllers\Api\OrderController::class, 'store'])->name('orders.checkout');
 });

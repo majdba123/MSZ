@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\UserController;
+use App\Http\Controllers\Api\Admin\VendorCommissionController;
 use App\Http\Controllers\Api\Admin\VendorController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductPhotoController;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::apiResource('vendors', VendorController::class);
+Route::get('vendors/{vendor}/commission-stats', [VendorCommissionController::class, 'show'])->name('vendors.commission-stats');
+Route::post('vendors/{vendor}/commission-paid', [VendorCommissionController::class, 'updatePaidAmount'])->name('vendors.commission-paid');
 Route::patch('vendors/{vendor}/toggle-active', [VendorController::class, 'toggleActive'])->name('vendors.toggle-active');
 Route::apiResource('users', UserController::class);
 Route::get('users/{user}/favourites', [UserController::class, 'favourites'])->name('users.favourites');
@@ -29,6 +32,7 @@ Route::apiResource('subcategories', \App\Http\Controllers\Api\Admin\SubcategoryC
 Route::apiResource('coupons', \App\Http\Controllers\Api\Admin\CouponController::class);
 Route::get('orders', [\App\Http\Controllers\Api\Admin\OrderController::class, 'index'])->name('orders.index');
 Route::get('orders/{orderId}', [\App\Http\Controllers\Api\Admin\OrderController::class, 'show'])->name('orders.show');
+Route::patch('orders/{orderId}/complete', [\App\Http\Controllers\Api\Admin\OrderController::class, 'markCompleted'])->name('orders.complete');
 
 // Product Photos (separate API)
 Route::get('products/{product}/photos', [ProductPhotoController::class, 'index'])->name('products.photos.index');

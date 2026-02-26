@@ -16,6 +16,8 @@ class Order extends Model
 
     public const STATUS_CONFIRMED = 'confirmed';
 
+    public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     /**

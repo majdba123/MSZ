@@ -23,6 +23,7 @@ class Vendor extends Model
         'address',
         'logo',
         'is_active',
+        'paid_amount',
     ];
 
     /**
@@ -32,6 +33,7 @@ class Vendor extends Model
     {
         return [
             'is_active' => 'boolean',
+            'paid_amount' => 'decimal:2',
         ];
     }
 

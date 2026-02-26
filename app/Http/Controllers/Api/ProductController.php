@@ -13,6 +13,7 @@ use App\Models\Product;
 use App\Models\ProductPhoto;
 use App\Models\Subcategory;
 use App\Models\User;
+use App\Models\Vendor;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -160,6 +161,7 @@ class ProductController extends Controller
     {
         $user = $request->user();
         $vendor = null;
+        $targetVendor = null;
 
         // Determine which request class to use and validate
         if ($user && $user->type === User::TYPE_VENDOR) {
@@ -168,10 +170,18 @@ class ProductController extends Controller
                 abort(403, __('Vendor profile not found.'));
             }
             $validated = $request->validate((new VendorStoreProductRequest)->rules());
+            $targetVendor = $vendor;
         } else {
             $validated = $request->validate((new AdminStoreProductRequest)->rules());
+            $targetVendor = Vendor::query()->find((int) $validated['vendor_id']);
+            if (! $targetVendor) {
+                throw ValidationException::withMessages([
+                    'vendor_id' => __('Selected vendor is invalid.'),
+                ]);
+            }
         }
 
+        $this->validateCategoryBelongsToVendor($targetVendor, (int) $validated['category_id']);
         $this->validateSubcategoryBelongsToCategory(
             (int) $validated['category_id'],
             (int) $validated['subcategory_id'],
@@ -217,6 +227,7 @@ class ProductController extends Controller
     public function update(Request $request, Product $product): JsonResponse
     {
         $user = $request->user();
+        $targetVendor = $product->vendor;
 
         // Vendor can only update their own products
         if ($user && $user->type === User::TYPE_VENDOR) {
@@ -228,6 +239,7 @@ class ProductController extends Controller
                 abort(403, __('You do not own this product.'));
             }
             $validated = $request->validate((new VendorUpdateProductRequest)->rules());
+            $targetVendor = $vendor;
         } else {
             $validated = $request->validate((new AdminUpdateProductRequest)->rules());
         }
@@ -242,6 +254,7 @@ class ProductController extends Controller
                 : (int) ($product->subcategory_id ?? 0);
 
             if ($effectiveCategoryId > 0 && $effectiveSubcategoryId > 0) {
+                $this->validateCategoryBelongsToVendor($targetVendor, $effectiveCategoryId);
                 $this->validateSubcategoryBelongsToCategory($effectiveCategoryId, $effectiveSubcategoryId);
             }
         }
@@ -365,6 +378,22 @@ class ProductController extends Controller
         if (! $belongsToCategory) {
             throw ValidationException::withMessages([
                 'subcategory_id' => __('Selected subcategory does not belong to the selected category.'),
+            ]);
+        }
+    }
+
+    protected function validateCategoryBelongsToVendor(?Vendor $vendor, int $categoryId): void
+    {
+        if (! $vendor) {
+            throw ValidationException::withMessages([
+                'vendor_id' => __('Selected vendor is invalid.'),
+            ]);
+        }
+
+        $allowed = $vendor->categories()->where('categories.id', $categoryId)->exists();
+        if (! $allowed) {
+            throw ValidationException::withMessages([
+                'category_id' => __('Selected category is not assigned to this vendor.'),
             ]);
         }
     }

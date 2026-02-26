@@ -109,6 +109,10 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'vendor'])->group(fu
         return view('vendor.orders.show', ['orderId' => $id]);
     })->name('orders.show');
 
+    Route::get('/commission', function () {
+        return view('vendor.commission');
+    })->name('commission');
+
     Route::get('/products/create', function () {
         return view('vendor.products.create');
     })->name('products.create');
@@ -163,6 +167,10 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'admin'])->group(funct
     Route::get('/vendors/{id}/edit', function (string $id) {
         return view('admin.vendors.edit', ['vendorId' => $id]);
     })->name('vendors.edit');
+
+    Route::get('/vendors/{id}/commission', function (string $id) {
+        return view('admin.vendors.commission', ['vendorId' => $id]);
+    })->name('vendors.commission');
 
     // Product Management
     Route::get('/products', function () {

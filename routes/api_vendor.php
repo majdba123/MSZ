@@ -27,6 +27,8 @@ Route::post('profile', [\App\Http\Controllers\Api\Vendor\VendorProfileController
 Route::get('subcategories', [SubcategoryController::class, 'index'])->name('subcategories.index');
 Route::get('orders', [\App\Http\Controllers\Api\Vendor\OrderController::class, 'index'])->name('orders.index');
 Route::get('orders/{orderId}', [\App\Http\Controllers\Api\Vendor\OrderController::class, 'show'])->name('orders.show');
+Route::patch('orders/{orderId}/cancel', [\App\Http\Controllers\Api\Vendor\OrderController::class, 'cancel'])->name('orders.cancel');
+Route::get('commission-stats', [\App\Http\Controllers\Api\Vendor\CommissionController::class, 'show'])->name('commission.stats');
 
 // Product Photos (separate API)
 Route::get('products/{product}/photos', [ProductPhotoController::class, 'index'])->name('products.photos.index');

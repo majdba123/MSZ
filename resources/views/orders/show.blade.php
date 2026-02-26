@@ -98,9 +98,12 @@
 document.addEventListener('DOMContentLoaded', async function () {
     const orderId = '{{ $orderId }}';
     const highContrastNumberIds = ['order-number', 'order-number-fallback', 'order-id', 'order-vendor-id', 'order-items-count', 'total-val'];
+    const dataValueIds = ['order-meta', 'order-vendor-name', 'subtotal-val', 'coupon-val', 'coupon-type-val', 'coupon-value-val', 'coupon-discount-val'];
 
     function applyNumberContrast() {
         const isDark = document.documentElement.classList.contains('dark');
+        const primaryTextColor = isDark ? '#f9fafb' : '#111827';
+        const secondaryTextColor = isDark ? '#d1d5db' : '#4b5563';
         highContrastNumberIds.forEach((id) => {
             const el = document.getElementById(id);
             if (!el) {
@@ -111,8 +114,19 @@ document.addEventListener('DOMContentLoaded', async function () {
                 el.style.color = '#ffffff';
                 return;
             }
-            el.style.color = isDark ? '#f9fafb' : '#111827';
+            el.style.color = primaryTextColor;
             el.style.fontWeight = '700';
+        });
+
+        dataValueIds.forEach((id) => {
+            const el = document.getElementById(id);
+            if (!el) {
+                return;
+            }
+            el.style.color = id === 'order-meta' ? secondaryTextColor : primaryTextColor;
+            if (id !== 'order-meta') {
+                el.style.fontWeight = '600';
+            }
         });
     }
 

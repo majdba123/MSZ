@@ -32,10 +32,10 @@
                 </div>
             </div>
             <div class="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Order ID</p><p id="o-id" class="mt-1 text-sm font-bold text-gray-900 dark:text-white">—</p></div>
-                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">User ID</p><p id="o-user-id" class="mt-1 text-sm font-bold text-gray-900 dark:text-white">—</p></div>
-                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Vendor ID</p><p id="o-vendor-id" class="mt-1 text-sm font-bold text-gray-900 dark:text-white">—</p></div>
-                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Items Count</p><p id="o-items-count" class="mt-1 text-sm font-bold text-gray-900 dark:text-white">—</p></div>
+                <div data-order-surface="true" class="rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Order ID</p><p id="o-id" class="mt-1 text-sm font-bold text-gray-900 dark:text-white">—</p></div>
+                <div data-order-surface="true" class="rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">User ID</p><p id="o-user-id" class="mt-1 text-sm font-bold text-gray-900 dark:text-white">—</p></div>
+                <div data-order-surface="true" class="rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Vendor ID</p><p id="o-vendor-id" class="mt-1 text-sm font-bold text-gray-900 dark:text-white">—</p></div>
+                <div data-order-surface="true" class="rounded-2xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Items Count</p><p id="o-items-count" class="mt-1 text-sm font-bold text-gray-900 dark:text-white">—</p></div>
             </div>
         </div>
 
@@ -83,9 +83,13 @@
 document.addEventListener('DOMContentLoaded', async function () {
     const orderId = '{{ $orderId }}';
     const highContrastNumberIds = ['o-number', 'o-number-fallback', 'o-id', 'o-user-id', 'o-vendor-id', 'o-items-count', 'o-total'];
+    const dataValueIds = ['o-meta', 'o-user-name', 'o-user-email', 'o-vendor-name', 'o-subtotal', 'o-coupon-code', 'o-coupon-type', 'o-coupon-value', 'o-coupon-discount'];
 
     function applyNumberContrast() {
         const isDark = document.documentElement.classList.contains('dark');
+        const primaryTextColor = isDark ? '#f9fafb' : '#111827';
+        const secondaryTextColor = isDark ? '#d1d5db' : '#4b5563';
+
         highContrastNumberIds.forEach((id) => {
             const el = document.getElementById(id);
             if (!el) {
@@ -93,13 +97,40 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
 
             if (id === 'o-number') {
-                el.style.backgroundColor = '#0284c7';
-                el.style.color = '#ffffff';
+                el.style.setProperty('background-color', '#0284c7', 'important');
+                el.style.setProperty('color', '#ffffff', 'important');
                 return;
             }
 
-            el.style.color = isDark ? '#f9fafb' : '#111827';
-            el.style.fontWeight = '700';
+            el.style.setProperty('color', primaryTextColor, 'important');
+            el.style.setProperty('font-weight', '700', 'important');
+        });
+
+        dataValueIds.forEach((id) => {
+            const el = document.getElementById(id);
+            if (!el) {
+                return;
+            }
+            el.style.setProperty('color', id === 'o-meta' ? secondaryTextColor : primaryTextColor, 'important');
+            if (id !== 'o-meta') {
+                el.style.setProperty('font-weight', '600', 'important');
+            }
+        });
+
+        // Force all dynamic order values visible in both modes.
+        document.querySelectorAll('[data-order-value="true"]').forEach((el) => {
+            el.style.setProperty('color', primaryTextColor, 'important');
+            el.style.setProperty('font-weight', '600', 'important');
+        });
+
+        document.querySelectorAll('[data-order-surface="true"]').forEach((el) => {
+            if (isDark) {
+                el.style.setProperty('background-color', '#1f2937', 'important');
+                el.style.setProperty('border-color', '#374151', 'important');
+            } else {
+                el.style.setProperty('background-color', '#f9fafb', 'important');
+                el.style.setProperty('border-color', '#f3f4f6', 'important');
+            }
         });
     }
 
@@ -136,8 +167,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             return `<article class="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                        <p class="text-sm font-black text-gray-900 dark:text-white">${index + 1}. ${esc(item.product_name || 'Product')}</p>
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400">Item #${item.id ?? '—'} · Product #${item.product_id ?? '—'} · Qty ${item.quantity ?? 0}</p>
+                        <p data-order-value="true" class="text-sm font-black text-gray-900 dark:text-white">${index + 1}. ${esc(item.product_name || 'Product')}</p>
+                        <p data-order-value="true" class="text-[11px] text-gray-500 dark:text-gray-400">Item #${item.id ?? '—'} · Product #${item.product_id ?? '—'} · Qty ${item.quantity ?? 0}</p>
                     </div>
                     <div class="flex items-center gap-1.5">
                         ${item.has_discount ? '<span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">Discount Applied</span>' : '<span class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-700 dark:bg-gray-800 dark:text-gray-300">Standard Price</span>'}
@@ -187,9 +218,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     function paramCard(label, value) {
-        return `<div class="rounded-lg border border-gray-100 bg-gray-50 px-2.5 py-2 dark:border-gray-800 dark:bg-gray-800/60">
+        return `<div data-order-surface="true" class="rounded-lg border border-gray-100 bg-gray-50 px-2.5 py-2 dark:border-gray-800 dark:bg-gray-800/60">
             <p class="text-[10px] font-semibold uppercase tracking-wide text-gray-400">${esc(label)}</p>
-            <p class="mt-0.5 font-semibold text-gray-800 dark:text-gray-200">${esc(String(value ?? '—'))}</p>
+            <p data-order-value="true" class="mt-0.5 font-semibold text-gray-800 dark:text-gray-200">${esc(String(value ?? '—'))}</p>
         </div>`;
     }
 });

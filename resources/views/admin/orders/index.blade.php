@@ -11,13 +11,16 @@
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Refine by product, status, vendor, category and subcategory.</p>
         </div>
         <div class="p-4">
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
             <input id="f-product" type="text" placeholder="Product name" class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
             <select id="f-status" class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                 <option value="">All Statuses</option>
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
                 <option value="cancelled">Cancelled</option>
+            </select>
+            <select id="f-user" class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                <option value="">All Users</option>
             </select>
             <select id="f-vendor" class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                 <option value="">All Vendors</option>
@@ -60,11 +63,14 @@
 document.addEventListener('DOMContentLoaded', function () {
     const state = { page: 1, categories: [] };
     const $ = id => document.getElementById(id);
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialVendorId = urlParams.get('vendor_id');
+    const initialUserId = urlParams.get('user_id');
 
     loadFilterData();
     loadOrders();
 
-    ['f-product', 'f-status', 'f-vendor', 'f-category', 'f-subcategory'].forEach((id) => {
+    ['f-product', 'f-status', 'f-user', 'f-vendor', 'f-category', 'f-subcategory'].forEach((id) => {
         $(id).addEventListener('change', () => { state.page = 1; loadOrders(); });
         if (id === 'f-product') {
             $(id).addEventListener('input', debounce(() => { state.page = 1; loadOrders(); }, 300));
@@ -78,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     $('f-reset').addEventListener('click', function () {
-        ['f-product', 'f-status', 'f-vendor', 'f-category', 'f-subcategory'].forEach((id) => $(id).value = '');
+        ['f-product', 'f-status', 'f-user', 'f-vendor', 'f-category', 'f-subcategory'].forEach((id) => $(id).value = '');
         fillSubcategories('');
         state.page = 1;
         loadOrders();
@@ -89,17 +95,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function loadFilterData() {
         try {
-            const [vendorsRes, categoriesRes] = await Promise.all([
+            const [usersRes, vendorsRes, categoriesRes] = await Promise.all([
+                window.axios.get('/api/admin/users'),
                 window.axios.get('/api/vendors'),
                 window.axios.get('/api/categories'),
             ]);
 
+            const users = usersRes.data.data || [];
             const vendors = vendorsRes.data.data || [];
             const categories = categoriesRes.data.data || [];
             state.categories = categories;
 
+            $('f-user').innerHTML = '<option value="">All Users</option>' + users.map(u => `<option value="${u.id}">${esc(u.name || ('User #' + u.id))}</option>`).join('');
             $('f-vendor').innerHTML = '<option value="">All Vendors</option>' + vendors.map(v => `<option value="${v.id}">${esc(v.store_name || ('Vendor #' + v.id))}</option>`).join('');
             $('f-category').innerHTML = '<option value="">All Categories</option>' + categories.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+            if (initialUserId && $('f-user').querySelector(`option[value="${initialUserId}"]`)) {
+                $('f-user').value = initialUserId;
+            }
+            if (initialVendorId && $('f-vendor').querySelector(`option[value="${initialVendorId}"]`)) {
+                $('f-vendor').value = initialVendorId;
+                state.page = 1;
+                loadOrders();
+            }
         } catch (e) {}
     }
 
@@ -119,11 +136,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const params = new URLSearchParams({ page: String(state.page) });
             const product = $('f-product').value.trim();
             const status = $('f-status').value;
+            const user = $('f-user').value;
             const vendor = $('f-vendor').value;
             const category = $('f-category').value;
             const subcategory = $('f-subcategory').value;
             if (product) params.set('product', product);
             if (status) params.set('status', status);
+            if (user) params.set('user_id', user);
             if (vendor) params.set('vendor_id', vendor);
             if (category) params.set('category_id', category);
             if (subcategory) params.set('subcategory_id', subcategory);

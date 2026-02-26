@@ -145,6 +145,26 @@
                         <p class="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">Payment: Cash only</p>
                     </div>
 
+                    <div class="mb-4 grid gap-2 sm:grid-cols-4">
+                        <input id="orders-filter-search" type="text" placeholder="Search order/product"
+                            class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-900 outline-none transition-colors focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                        <select id="orders-filter-status"
+                            class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-900 outline-none transition-colors focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <select id="orders-filter-vendor"
+                            class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-900 outline-none transition-colors focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                            <option value="">All Vendors</option>
+                        </select>
+                        <button id="orders-filter-reset" type="button"
+                            class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
+                            Reset
+                        </button>
+                    </div>
+
                     <div id="orders-loading" class="space-y-3">
                         <div class="skeleton h-20 rounded-xl"></div>
                         <div class="skeleton h-20 rounded-xl"></div>
@@ -205,6 +225,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     loadOrderHistory();
 
     let pendingAvatar = null;
+    let orderFilterDebounce = null;
 
     $('orders-prev').addEventListener('click', () => {
         if (currentOrdersPage > 1) {
@@ -214,6 +235,32 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
     $('orders-next').addEventListener('click', () => {
         currentOrdersPage += 1;
+        loadOrderHistory();
+    });
+
+    $('orders-filter-status').addEventListener('change', () => {
+        currentOrdersPage = 1;
+        loadOrderHistory();
+    });
+
+    $('orders-filter-vendor').addEventListener('change', () => {
+        currentOrdersPage = 1;
+        loadOrderHistory();
+    });
+
+    $('orders-filter-search').addEventListener('input', () => {
+        clearTimeout(orderFilterDebounce);
+        orderFilterDebounce = setTimeout(() => {
+            currentOrdersPage = 1;
+            loadOrderHistory();
+        }, 300);
+    });
+
+    $('orders-filter-reset').addEventListener('click', () => {
+        $('orders-filter-search').value = '';
+        $('orders-filter-status').value = '';
+        $('orders-filter-vendor').value = '';
+        currentOrdersPage = 1;
         loadOrderHistory();
     });
 
@@ -301,9 +348,26 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     async function loadOrderHistory() {
         try {
-            const res = await window.axios.get('/api/orders?page=' + currentOrdersPage);
+            const params = new URLSearchParams({ page: String(currentOrdersPage) });
+            const statusValue = $('orders-filter-status').value;
+            const vendorValue = $('orders-filter-vendor').value;
+            const searchValue = $('orders-filter-search').value.trim();
+
+            if (statusValue) params.set('status', statusValue);
+            if (vendorValue) params.set('vendor_id', vendorValue);
+            if (searchValue) params.set('search', searchValue);
+
+            const res = await window.axios.get('/api/orders?' + params.toString());
             const orders = res.data.data || [];
             const meta = res.data.meta || {};
+            const vendors = meta.filters?.vendors || [];
+
+            const currentVendorValue = $('orders-filter-vendor').value;
+            $('orders-filter-vendor').innerHTML = '<option value="">All Vendors</option>' +
+                vendors.map(v => `<option value="${v.id}">${escH(v.store_name || ('Vendor #' + v.id))}</option>`).join('');
+            if (currentVendorValue) {
+                $('orders-filter-vendor').value = currentVendorValue;
+            }
 
             $('orders-loading').classList.add('hidden');
             $('orders-count').textContent = (meta.total || orders.length) + ' order' + ((meta.total || orders.length) !== 1 ? 's' : '');

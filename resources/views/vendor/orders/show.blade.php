@@ -83,9 +83,12 @@
 document.addEventListener('DOMContentLoaded', async function () {
     const orderId = '{{ $orderId }}';
     const highContrastNumberIds = ['o-number', 'o-number-fallback', 'o-id', 'o-user-id', 'o-vendor-id', 'o-items-count', 'o-total'];
+    const dataValueIds = ['o-meta', 'o-user-name', 'o-user-email', 'o-vendor-name', 'o-subtotal', 'o-coupon-code', 'o-coupon-type', 'o-coupon-value', 'o-coupon-discount'];
 
     function applyNumberContrast() {
         const isDark = document.documentElement.classList.contains('dark');
+        const primaryTextColor = isDark ? '#f9fafb' : '#111827';
+        const secondaryTextColor = isDark ? '#d1d5db' : '#4b5563';
         highContrastNumberIds.forEach((id) => {
             const el = document.getElementById(id);
             if (!el) {
@@ -96,8 +99,19 @@ document.addEventListener('DOMContentLoaded', async function () {
                 el.style.color = '#ffffff';
                 return;
             }
-            el.style.color = isDark ? '#f9fafb' : '#111827';
+            el.style.color = primaryTextColor;
             el.style.fontWeight = '700';
+        });
+
+        dataValueIds.forEach((id) => {
+            const el = document.getElementById(id);
+            if (!el) {
+                return;
+            }
+            el.style.color = id === 'o-meta' ? secondaryTextColor : primaryTextColor;
+            if (id !== 'o-meta') {
+                el.style.fontWeight = '600';
+            }
         });
     }
 

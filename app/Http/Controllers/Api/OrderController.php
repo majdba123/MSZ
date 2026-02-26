@@ -21,14 +21,52 @@ class OrderController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $orders = Order::query()
+        $userId = (int) $request->user()->id;
+        $status = strtolower((string) $request->query('status', ''));
+        $vendorId = (int) $request->query('vendor_id', 0);
+        $search = trim((string) $request->query('search', ''));
+        $allowedStatuses = [Order::STATUS_PENDING, Order::STATUS_CONFIRMED, Order::STATUS_CANCELLED];
+
+        $query = Order::query()
             ->with([
                 'vendor:id,store_name',
                 'items:id,order_id,product_id,product_name,original_unit_price,has_discount,applied_discount_percentage,unit_price,quantity,line_total,discount_amount',
             ])
-            ->where('user_id', $request->user()->id)
-            ->latest()
-            ->paginate(6);
+            ->where('user_id', $userId);
+
+        if ($status !== '' && in_array($status, $allowedStatuses, true)) {
+            $query->where('status', $status);
+        }
+
+        if ($vendorId > 0) {
+            $query->where('vendor_id', $vendorId);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($builder) use ($search) {
+                $builder->where('order_number', 'like', "%{$search}%")
+                    ->orWhereHas('items', function ($itemsQuery) use ($search) {
+                        $itemsQuery->where('product_name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $orders = $query->latest()->paginate(6);
+
+        $vendorFilters = Order::query()
+            ->where('user_id', $userId)
+            ->with('vendor:id,store_name')
+            ->select('vendor_id')
+            ->distinct()
+            ->get()
+            ->map(fn (Order $order) => $order->vendor ? [
+                'id' => $order->vendor->id,
+                'store_name' => $order->vendor->store_name,
+            ] : null)
+            ->filter()
+            ->unique('id')
+            ->values()
+            ->all();
 
         $data = $orders->getCollection()->map(function (Order $order) {
             return [
@@ -76,6 +114,9 @@ class OrderController extends Controller
                 'last_page' => $orders->lastPage(),
                 'per_page' => $orders->perPage(),
                 'total' => $orders->total(),
+                'filters' => [
+                    'vendors' => $vendorFilters,
+                ],
             ],
         ]);
     }

@@ -32,6 +32,10 @@ class OrderController extends Controller
             $query->where('vendor_id', (int) $request->input('vendor_id'));
         }
 
+        if ($request->filled('user_id')) {
+            $query->where('user_id', (int) $request->input('user_id'));
+        }
+
         if ($request->filled('category_id')) {
             $categoryId = (int) $request->input('category_id');
             $query->whereHas('items.product.subcategory', function ($builder) use ($categoryId) {

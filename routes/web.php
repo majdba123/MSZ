@@ -125,6 +125,9 @@ Route::prefix('vendor')->as('vendor.')->middleware(['auth', 'vendor'])->group(fu
         return view('vendor.products.edit', ['productId' => $id]);
     })->name('products.edit');
 
+    Route::get('/products/{id}/reviews', \App\Http\Controllers\Vendor\ProductReviewViewController::class)->name('products.reviews');
+    Route::delete('/products/{id}/reviews/{review}', [\App\Http\Controllers\Vendor\ProductReviewViewController::class, 'destroy'])->name('products.reviews.destroy');
+
     Route::get('/products/{id}', function (string $id) {
         return view('vendor.products.show', ['productId' => $id]);
     })->name('products.show');
@@ -204,6 +207,9 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'admin'])->group(funct
     Route::get('/products/{id}/edit', function (string $id) {
         return view('admin.products.edit', ['productId' => $id]);
     })->name('products.edit');
+
+    Route::get('/products/{id}/reviews', \App\Http\Controllers\Admin\ProductReviewViewController::class)->name('products.reviews');
+    Route::delete('/products/{id}/reviews/{review}', [\App\Http\Controllers\Admin\ProductReviewViewController::class, 'destroy'])->name('products.reviews.destroy');
 
     Route::get('/products/{id}', function (string $id) {
         return view('admin.products.show', ['productId' => $id]);

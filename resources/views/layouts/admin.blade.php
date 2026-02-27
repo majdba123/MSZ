@@ -49,6 +49,31 @@
 
                     {{-- Right side --}}
                     <div class="flex items-center gap-x-3">
+                        {{-- Notifications --}}
+                        <div id="admin-notif-wrap" class="relative" data-context="admin">
+                            <button type="button" id="admin-notif-btn" class="relative flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" title="Notifications">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+                                <span id="admin-notif-badge" class="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold leading-none text-white hidden">0</span>
+                            </button>
+                            <div id="admin-notif-dropdown" class="absolute right-0 top-full z-50 mt-2 hidden w-[min(420px,95vw)] max-h-[min(32rem,75vh)] overflow-hidden rounded-2xl bg-white/95 shadow-xl ring-1 ring-black/5 backdrop-blur-md dark:bg-gray-900/95 dark:ring-white/10 flex flex-col">
+                                <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800 shrink-0">
+                                    <a href="{{ route('admin.notifications.index') }}" class="text-[13px] font-medium uppercase tracking-wider text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">الإشعارات</a>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" id="admin-notif-mark-all" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">تحديد الكل كمقروء</button>
+                                        <a href="{{ route('admin.notifications.index') }}" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">عرض الكل</a>
+                                    </div>
+                                </div>
+                                <div id="admin-notif-list" class="flex-1 min-h-0 max-h-[min(24rem,55vh)] overflow-y-auto">
+                                    <p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">Loading...</p>
+                                </div>
+                                <div id="admin-notif-empty" class="hidden px-4 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500 shrink-0">No notifications.</div>
+                                <div id="admin-notif-pagination" class="hidden border-t border-gray-100 dark:border-gray-800 px-3 py-2 flex items-center justify-between gap-2 shrink-0 bg-gray-50/50 dark:bg-gray-800/30">
+                                    <button type="button" id="admin-notif-prev" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">Prev</button>
+                                    <span id="admin-notif-page-info" class="text-[11px] text-gray-500 dark:text-gray-400">Page 1 of 1</span>
+                                    <button type="button" id="admin-notif-next" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">Next</button>
+                                </div>
+                            </div>
+                        </div>
                         {{-- Dark Mode Toggle --}}
                         <button onclick="toggleAdminTheme()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" title="Toggle theme">
                             <svg id="admin-sun" class="hidden h-4 w-4 dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
@@ -171,6 +196,8 @@
                 document.getElementById('admin-avatar').textContent = (user.name || 'A').charAt(0).toUpperCase();
                 document.getElementById('admin-loading').classList.add('hidden');
                 document.getElementById('admin-app').classList.remove('hidden');
+                if (typeof adminNotificationBadge === 'function') adminNotificationBadge();
+                if (typeof initAdminNotificationDropdown === 'function') initAdminNotificationDropdown();
             } catch (e) {
                 window.Auth.removeToken();
                 window.location.href = '{{ route("login") }}';
@@ -193,6 +220,108 @@
             document.getElementById('admin-sidebar').classList.add('-translate-x-full');
             document.getElementById('sidebar-backdrop').classList.add('hidden');
             document.body.classList.remove('overflow-hidden', 'lg:overflow-auto');
+        }
+
+        function adminNotificationBadge() {
+            if (window.Auth && window.Auth.applyToken) window.Auth.applyToken();
+            window.axios.get('/api/notifications', { params: { per_page: 1 } }).then(function (res) {
+                const count = (res.data && res.data.unread_count) || 0;
+                const badge = document.getElementById('admin-notif-badge');
+                if (!badge) return;
+                if (count > 0) { badge.textContent = count > 99 ? '99+' : count; badge.classList.remove('hidden'); }
+                else { badge.classList.add('hidden'); }
+            }).catch(function () {});
+        }
+
+        function loadAdminNotificationDropdown(page) {
+            page = typeof page === 'number' && page >= 1 ? page : 1;
+            const listEl = document.getElementById('admin-notif-list');
+            const emptyEl = document.getElementById('admin-notif-empty');
+            const paginationEl = document.getElementById('admin-notif-pagination');
+            const pageInfoEl = document.getElementById('admin-notif-page-info');
+            const prevBtn = document.getElementById('admin-notif-prev');
+            const nextBtn = document.getElementById('admin-notif-next');
+            if (!listEl) return;
+            listEl.innerHTML = '<p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">Loading...</p>';
+            emptyEl && emptyEl.classList.add('hidden');
+            paginationEl && paginationEl.classList.add('hidden');
+            if (window.Auth && window.Auth.applyToken) window.Auth.applyToken();
+            window.axios.get('/api/notifications', { params: { page: page } }).then(function (res) {
+                try {
+                    const data = res.data || {};
+                    const items = Array.isArray(data.data) ? data.data : [];
+                    const meta = data.meta || {};
+                    const currentPage = meta.current_page || 1;
+                    const lastPage = meta.last_page || 1;
+                    const total = meta.total || 0;
+                    const unread = data.unread_count ?? 0;
+                    const badge = document.getElementById('admin-notif-badge');
+                    if (badge) { if (unread > 0) { badge.textContent = unread > 99 ? '99+' : unread; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
+                    if (items.length === 0 && page === 1) { listEl.innerHTML = ''; if (emptyEl) emptyEl.classList.remove('hidden'); return; }
+                    if (emptyEl) emptyEl.classList.add('hidden');
+                    function esc(s) { if (s == null) return ''; var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+                    function linkUrl(actionType, actionId) {
+                        if (!actionType || actionId == null) return '';
+                        var id = String(actionId);
+                        if (actionType === 'product') return '{{ url("/admin/products") }}/' + id;
+                        if (actionType === 'order') return '{{ url("/admin/orders") }}/' + id;
+                        return '';
+                    }
+                    listEl.innerHTML = items.map(function (n) {
+                        var isUnread = !n.read_at;
+                        var time = '';
+                        try { if (n.sent_at) time = new Date(n.sent_at).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' }); } catch (e) {}
+                        var body = n.body != null ? esc(String(n.body)) : '';
+                        var sender = n.sender_name != null ? esc(String(n.sender_name)) : '';
+                        var href = linkUrl(n.action_type, n.action_id != null ? n.action_id : null);
+                        var clickable = href ? ' cursor-pointer' : '';
+                        var dataHref = href ? ' data-href="' + esc(href) + '"' : '';
+                        var nid = n.id != null ? String(n.id) : '';
+                        return '<div class="flex border-b border-gray-100 last:border-0 dark:border-gray-800 ' + (isUnread ? 'bg-gray-50/60 dark:bg-gray-800/40' : 'hover:bg-gray-50/50 dark:hover:bg-gray-800/30') + clickable + '" data-nid="' + nid + '"' + dataHref + ' role="' + (href ? 'button' : 'presentation') + '">' +
+                            (isUnread ? '<div class="w-0.5 shrink-0 self-stretch bg-brand-500 dark:bg-brand-400" aria-hidden="true"></div>' : '') +
+                            '<div class="min-w-0 flex-1 py-3.5 px-4 ' + (isUnread ? 'pl-3.5' : 'pl-4') + '">' +
+                            '<p class="text-[14px] leading-relaxed text-gray-800 dark:text-gray-100">' + body + '</p>' +
+                            '<p class="mt-1.5 text-[11px] text-gray-400 dark:text-gray-500">' + time + (sender ? ' · ' + sender : '') + '</p>' +
+                            (isUnread ? '<button type="button" class="admin-mark-one mt-2 text-[11px] font-medium text-brand-600 hover:underline dark:text-brand-400" data-id="' + nid + '">تحديد كمقروء</button>' : '') +
+                            '</div></div>';
+                    }).join('');
+                    if (lastPage > 1 && paginationEl && pageInfoEl && prevBtn && nextBtn) {
+                        pageInfoEl.textContent = 'Page ' + currentPage + ' of ' + lastPage + (total ? ' (' + total + ')' : '');
+                        prevBtn.disabled = currentPage <= 1;
+                        nextBtn.disabled = currentPage >= lastPage;
+                        prevBtn.onclick = function () { if (currentPage > 1) loadAdminNotificationDropdown(currentPage - 1); };
+                        nextBtn.onclick = function () { if (currentPage < lastPage) loadAdminNotificationDropdown(currentPage + 1); };
+                        paginationEl.classList.remove('hidden');
+                    }
+                    listEl.querySelectorAll('.admin-mark-one').forEach(function (btn) {
+                        btn.addEventListener('click', function (e) { e.stopPropagation(); e.preventDefault(); var id = btn.getAttribute('data-id'); if (id) window.axios.patch('/api/notifications/' + id + '/read').then(function () { loadAdminNotificationDropdown(currentPage); adminNotificationBadge(); }); });
+                    });
+                    document.querySelectorAll('#admin-notif-list [data-nid][data-href]').forEach(function (row) {
+                        row.addEventListener('click', function (e) {
+                            if (e.target.closest('.admin-mark-one')) return;
+                            var h = row.getAttribute('data-href');
+                            if (h) { var dd = document.getElementById('admin-notif-dropdown'); if (dd) dd.classList.add('hidden'); window.location.href = h; }
+                        });
+                    });
+                } catch (e) {
+                    console.error('Admin notifications render error:', e);
+                    listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">فشل تحميل الإشعارات.</p>';
+                }
+            }).catch(function (err) {
+                var msg = (err.response && err.response.status === 401) ? 'Please sign in again.' : (err.response && err.response.data && err.response.data.message) ? err.response.data.message : 'فشل تحميل الإشعارات.';
+                listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">' + msg + '</p>';
+            });
+        }
+
+        function initAdminNotificationDropdown() {
+            var btn = document.getElementById('admin-notif-btn');
+            var dd = document.getElementById('admin-notif-dropdown');
+            var wrap = document.getElementById('admin-notif-wrap');
+            var markAll = document.getElementById('admin-notif-mark-all');
+            if (!btn || !dd) return;
+            btn.addEventListener('click', function (e) { e.stopPropagation(); dd.classList.toggle('hidden'); if (!dd.classList.contains('hidden')) loadAdminNotificationDropdown(1); });
+            document.addEventListener('click', function (e) { if (wrap && !wrap.contains(e.target)) dd.classList.add('hidden'); });
+            markAll && markAll.addEventListener('click', function () { markAll.disabled = true; if (window.Auth && window.Auth.applyToken) window.Auth.applyToken(); window.axios.post('/api/notifications/mark-all-read').then(function () { loadAdminNotificationDropdown(1); adminNotificationBadge(); }).finally(function () { markAll.disabled = false; }); });
         }
     </script>
 

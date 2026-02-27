@@ -57,17 +57,20 @@
                             </button>
                             <div id="vendor-notif-dropdown" class="absolute right-0 top-full z-50 mt-2 hidden w-[min(420px,95vw)] max-h-[min(32rem,75vh)] overflow-hidden rounded-2xl bg-white/95 shadow-xl ring-1 ring-black/5 backdrop-blur-md dark:bg-gray-900/95 dark:ring-white/10 flex flex-col">
                                 <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
-                                    <span class="text-[13px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">الإشعارات</span>
-                                    <button type="button" id="vendor-notif-mark-all" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">تحديد الكل كمقروء</button>
+                                    <a href="{{ route('vendor.notifications.index') }}" class="text-[13px] font-medium uppercase tracking-wider text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">الإشعارات</a>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" id="vendor-notif-mark-all" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">تحديد الكل كمقروء</button>
+                                        <a href="{{ route('vendor.notifications.index') }}" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">عرض الكل</a>
+                                    </div>
                                 </div>
                                 <div id="vendor-notif-list" class="flex-1 min-h-0 max-h-[min(24rem,55vh)] overflow-y-auto">
-                                    <p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">جاري التحميل...</p>
+                                    <p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">Loading...</p>
                                 </div>
-                                <div id="vendor-notif-empty" class="hidden px-4 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500 shrink-0">لا توجد إشعارات.</div>
+                                <div id="vendor-notif-empty" class="hidden px-4 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500 shrink-0">No notifications.</div>
                                 <div id="vendor-notif-pagination" class="hidden border-t border-gray-100 dark:border-gray-800 px-3 py-2 flex items-center justify-between gap-2 shrink-0 bg-gray-50/50 dark:bg-gray-800/30">
-                                    <button type="button" id="vendor-notif-prev" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">السابق</button>
-                                    <span id="vendor-notif-page-info" class="text-[11px] text-gray-500 dark:text-gray-400">صفحة 1 من 1</span>
-                                    <button type="button" id="vendor-notif-next" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">التالي</button>
+                                    <button type="button" id="vendor-notif-prev" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">Prev</button>
+                                    <span id="vendor-notif-page-info" class="text-[11px] text-gray-500 dark:text-gray-400">Page 1 of 1</span>
+                                    <button type="button" id="vendor-notif-next" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">Next</button>
                                 </div>
                             </div>
                         </div>
@@ -212,8 +215,9 @@
 
         function _vendorEsc(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
         function vendorNotificationBadge() {
-            window.axios.get('/api/notifications').then(function (res) {
-                const count = res.data.unread_count ?? 0;
+            if (window.Auth && window.Auth.applyToken) window.Auth.applyToken();
+            window.axios.get('/api/notifications', { params: { per_page: 1 } }).then(function (res) {
+                const count = (res.data && res.data.unread_count) ?? 0;
                 const badge = document.getElementById('vendor-notif-badge');
                 if (!badge) return;
                 if (count > 0) { badge.textContent = count > 99 ? '99+' : count; badge.classList.remove('hidden'); }
@@ -229,77 +233,88 @@
             const prevBtn = document.getElementById('vendor-notif-prev');
             const nextBtn = document.getElementById('vendor-notif-next');
             if (!listEl) return;
-            listEl.innerHTML = '<p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">جاري التحميل...</p>';
+            listEl.innerHTML = '<p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">Loading...</p>';
             emptyEl && emptyEl.classList.add('hidden');
             paginationEl && paginationEl.classList.add('hidden');
+            if (window.Auth && window.Auth.applyToken) window.Auth.applyToken();
             window.axios.get('/api/notifications', { params: { page: page } }).then(function (res) {
-                const items = res.data.data || [];
-                const meta = res.data.meta || {};
-                const currentPage = typeof meta.current_page === 'number' ? meta.current_page : 1;
-                const lastPage = typeof meta.last_page === 'number' ? meta.last_page : 1;
-                const total = typeof meta.total === 'number' ? meta.total : 0;
-                const unread = res.data.unread_count ?? 0;
-                const badge = document.getElementById('vendor-notif-badge');
-                if (badge) { if (unread > 0) { badge.textContent = unread > 99 ? '99+' : unread; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
-                if (items.length === 0 && page === 1) { listEl.innerHTML = ''; emptyEl && emptyEl.classList.remove('hidden'); return; }
-                emptyEl && emptyEl.classList.add('hidden');
-                var wrapEl = document.getElementById('vendor-notif-wrap');
-                var context = (wrapEl && wrapEl.getAttribute('data-context')) || 'vendor';
-                function notificationLink(actionType, actionId) {
-                    if (!actionType || actionId == null) return '';
-                    var id = String(actionId);
-                    if (context === 'vendor') {
-                        if (actionType === 'product') return '/products/' + id;
-                        if (actionType === 'order') return '/vendor/orders/' + id;
-                    }
-                    if (context === 'admin') {
-                        if (actionType === 'product') return '/admin/products/' + id;
-                        if (actionType === 'order') return '/admin/orders/' + id;
-                    }
-                    if (actionType === 'product') return '/products/' + id;
-                    if (actionType === 'order') return '/orders/' + id;
-                    return '';
-                }
-                listEl.innerHTML = items.map(function (n) {
-                    const isUnread = !n.read_at;
-                    const time = n.sent_at ? new Date(n.sent_at).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : '';
-                    const body = n.body != null ? _vendorEsc(String(n.body)) : '';
-                    const href = notificationLink(n.action_type, n.action_id != null ? n.action_id : null);
-                    const clickable = href ? ' cursor-pointer' : '';
-                    const dataHref = href ? ' data-href="' + _vendorEsc(href) + '"' : '';
-                    return '<div class="flex border-b border-gray-100 last:border-0 dark:border-gray-800 ' + (isUnread ? 'bg-gray-50/60 dark:bg-gray-800/40' : 'hover:bg-gray-50/50 dark:hover:bg-gray-800/30') + clickable + '" data-nid="' + n.id + '"' + dataHref + ' role="' + (href ? 'button' : 'presentation') + '">' +
-                        (isUnread ? '<div class="w-0.5 shrink-0 self-stretch bg-brand-500 dark:bg-brand-400" aria-hidden="true"></div>' : '') +
-                        '<div class="min-w-0 flex-1 py-3.5 px-4 ' + (isUnread ? 'pl-3.5' : 'pl-4') + '">' +
-                        '<p class="text-[14px] leading-relaxed text-gray-800 dark:text-gray-100">' + body + '</p>' +
-                        '<p class="mt-1.5 text-[11px] text-gray-400 dark:text-gray-500">' + _vendorEsc(time) + (n.sender_name ? ' · ' + _vendorEsc(n.sender_name) : '') + '</p>' +
-                        (isUnread ? '<button type="button" class="vendor-mark-one mt-2 text-[11px] font-medium text-brand-600 hover:underline dark:text-brand-400" data-id="' + n.id + '">تحديد كمقروء</button>' : '') +
-                        '</div></div>';
-                }).join('');
-                document.querySelectorAll('#vendor-notif-list [data-nid][data-href]').forEach(function (row) {
-                    row.addEventListener('click', function (e) {
-                        if (e.target.closest('.vendor-mark-one')) return;
-                        var h = row.getAttribute('data-href');
-                        if (h) {
-                            document.getElementById('vendor-notif-dropdown')?.classList.add('hidden');
-                            window.location.href = h;
+                try {
+                    const data = res.data || {};
+                    const items = Array.isArray(data.data) ? data.data : [];
+                    const meta = data.meta || {};
+                    const currentPage = typeof meta.current_page === 'number' ? meta.current_page : 1;
+                    const lastPage = typeof meta.last_page === 'number' ? meta.last_page : 1;
+                    const total = typeof meta.total === 'number' ? meta.total : 0;
+                    const unread = data.unread_count ?? 0;
+                    const badge = document.getElementById('vendor-notif-badge');
+                    if (badge) { if (unread > 0) { badge.textContent = unread > 99 ? '99+' : unread; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
+                    if (items.length === 0 && page === 1) { listEl.innerHTML = ''; if (emptyEl) emptyEl.classList.remove('hidden'); return; }
+                    if (emptyEl) emptyEl.classList.add('hidden');
+                    function esc(s) { if (s == null) return ''; var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+                    var wrapEl = document.getElementById('vendor-notif-wrap');
+                    var context = (wrapEl && wrapEl.getAttribute('data-context')) || 'vendor';
+                    function notificationLink(actionType, actionId) {
+                        if (!actionType || actionId == null) return '';
+                        var id = String(actionId);
+                        if (context === 'vendor') {
+                            if (actionType === 'product') return '/products/' + id;
+                            if (actionType === 'order') return '/vendor/orders/' + id;
                         }
+                        if (context === 'admin') {
+                            if (actionType === 'product') return '/admin/products/' + id;
+                            if (actionType === 'order') return '/admin/orders/' + id;
+                        }
+                        if (actionType === 'product') return '/products/' + id;
+                        if (actionType === 'order') return '/orders/' + id;
+                        return '';
+                    }
+                    listEl.innerHTML = items.map(function (n) {
+                        var isUnread = !n.read_at;
+                        var time = '';
+                        try { if (n.sent_at) time = new Date(n.sent_at).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' }); } catch (e) {}
+                        var body = n.body != null ? esc(String(n.body)) : '';
+                        var sender = n.sender_name != null ? esc(String(n.sender_name)) : '';
+                        var href = notificationLink(n.action_type, n.action_id != null ? n.action_id : null);
+                        var clickable = href ? ' cursor-pointer' : '';
+                        var dataHref = href ? ' data-href="' + esc(href) + '"' : '';
+                        var nid = n.id != null ? String(n.id) : '';
+                        return '<div class="flex border-b border-gray-100 last:border-0 dark:border-gray-800 ' + (isUnread ? 'bg-gray-50/60 dark:bg-gray-800/40' : 'hover:bg-gray-50/50 dark:hover:bg-gray-800/30') + clickable + '" data-nid="' + nid + '"' + dataHref + ' role="' + (href ? 'button' : 'presentation') + '">' +
+                            (isUnread ? '<div class="w-0.5 shrink-0 self-stretch bg-brand-500 dark:bg-brand-400" aria-hidden="true"></div>' : '') +
+                            '<div class="min-w-0 flex-1 py-3.5 px-4 ' + (isUnread ? 'pl-3.5' : 'pl-4') + '">' +
+                            '<p class="text-[14px] leading-relaxed text-gray-800 dark:text-gray-100">' + body + '</p>' +
+                            '<p class="mt-1.5 text-[11px] text-gray-400 dark:text-gray-500">' + time + (sender ? ' · ' + sender : '') + '</p>' +
+                            (isUnread ? '<button type="button" class="vendor-mark-one mt-2 text-[11px] font-medium text-brand-600 hover:underline dark:text-brand-400" data-id="' + nid + '">تحديد كمقروء</button>' : '') +
+                            '</div></div>';
+                    }).join('');
+                    document.querySelectorAll('#vendor-notif-list [data-nid][data-href]').forEach(function (row) {
+                        row.addEventListener('click', function (e) {
+                            if (e.target.closest('.vendor-mark-one')) return;
+                            var h = row.getAttribute('data-href');
+                            if (h) { var dd = document.getElementById('vendor-notif-dropdown'); if (dd) dd.classList.add('hidden'); window.location.href = h; }
+                        });
                     });
-                });
-                if (lastPage > 1 && paginationEl && pageInfoEl && prevBtn && nextBtn) {
-                    pageInfoEl.textContent = 'صفحة ' + currentPage + ' من ' + lastPage + (total ? ' (' + total + ')' : '');
-                    prevBtn.disabled = currentPage <= 1;
-                    nextBtn.disabled = currentPage >= lastPage;
-                    prevBtn.onclick = function () { if (currentPage > 1) loadVendorNotificationDropdown(currentPage - 1); };
-                    nextBtn.onclick = function () { if (currentPage < lastPage) loadVendorNotificationDropdown(currentPage + 1); };
-                    paginationEl.classList.remove('hidden');
+                    if (lastPage > 1 && paginationEl && pageInfoEl && prevBtn && nextBtn) {
+                        pageInfoEl.textContent = 'Page ' + currentPage + ' of ' + lastPage + (total ? ' (' + total + ')' : '');
+                        prevBtn.disabled = currentPage <= 1;
+                        nextBtn.disabled = currentPage >= lastPage;
+                        prevBtn.onclick = function () { if (currentPage > 1) loadVendorNotificationDropdown(currentPage - 1); };
+                        nextBtn.onclick = function () { if (currentPage < lastPage) loadVendorNotificationDropdown(currentPage + 1); };
+                        paginationEl.classList.remove('hidden');
+                    }
+                    listEl.querySelectorAll('.vendor-mark-one').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            var id = btn.getAttribute('data-id');
+                            if (id) window.axios.patch('/api/notifications/' + id + '/read').then(function () { loadVendorNotificationDropdown(currentPage); });
+                        });
+                    });
+                } catch (e) {
+                    console.error('Vendor notifications render error:', e);
+                    listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">Failed to load notifications.</p>';
                 }
-                listEl.querySelectorAll('.vendor-mark-one').forEach(function (btn) {
-                    btn.addEventListener('click', function () {
-                        const id = btn.getAttribute('data-id');
-                        if (id) window.axios.patch('/api/notifications/' + id + '/read').then(function () { loadVendorNotificationDropdown(currentPage); });
-                    });
-                });
-            }).catch(function () { listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">Failed to load.</p>'; });
+            }).catch(function (err) {
+                var msg = (err.response && err.response.status === 401) ? 'Please sign in again.' : (err.response && err.response.data && err.response.data.message) ? err.response.data.message : 'Failed to load notifications.';
+                listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">' + msg + '</p>';
+            });
         }
         function initVendorNotificationDropdown() {
             const btn = document.getElementById('vendor-notif-btn');

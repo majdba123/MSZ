@@ -14,11 +14,11 @@
 
     <div id="vendor-notif-loading" class="card py-14 text-center">
         <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-emerald-500 dark:border-gray-700 dark:border-t-emerald-400"></div>
-        <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">جاري التحميل...</p>
+        <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Loading...</p>
     </div>
 
     <div id="vendor-notif-empty" class="hidden card py-14 text-center">
-        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">لا توجد إشعارات.</p>
+        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">No notifications.</p>
     </div>
 
     <div id="vendor-notif-list-wrap" class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
@@ -27,7 +27,7 @@
             <p id="vendor-notif-page-info" class="text-xs text-gray-500 dark:text-gray-400"></p>
             <div class="flex gap-2">
                 <button type="button" id="vendor-notif-prev" class="btn-secondary btn-xs">السابق</button>
-                <button type="button" id="vendor-notif-next" class="btn-secondary btn-xs">التالي</button>
+                <button type="button" id="vendor-notif-next" class="btn-secondary btn-xs">Next</button>
             </div>
         </div>
     </div>
@@ -104,7 +104,7 @@
             }).join('');
 
             document.getElementById('vendor-notif-list-wrap').classList.remove('hidden');
-            document.getElementById('vendor-notif-page-info').textContent = 'صفحة ' + currentPage + ' من ' + lastPage + (total ? ' (' + total + ')' : '');
+            document.getElementById('vendor-notif-page-info').textContent = 'Page ' + currentPage + ' of ' + lastPage + (total ? ' (' + total + ')' : '');
             document.getElementById('vendor-notif-prev').disabled = currentPage <= 1;
             document.getElementById('vendor-notif-next').disabled = currentPage >= lastPage;
 
@@ -123,7 +123,7 @@
         }).catch(function () {
             document.getElementById('vendor-notif-loading').classList.add('hidden');
             document.getElementById('vendor-notif-empty').classList.remove('hidden');
-            document.getElementById('vendor-notif-empty').querySelector('p').textContent = 'فشل تحميل الإشعارات.';
+            document.getElementById('vendor-notif-empty').querySelector('p').textContent = 'Failed to load notifications.';
         });
     }
 

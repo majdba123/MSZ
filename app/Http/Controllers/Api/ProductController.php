@@ -67,7 +67,7 @@ class ProductController extends Controller
 
     public function publicIndex(Request $request): JsonResponse
     {
-        $filters = $request->only(['vendor_id', 'category_id', 'subcategory_id', 'has_discount', 'per_page']);
+        $filters = $request->only(['vendor_id', 'category_id', 'subcategory_id', 'has_discount', 'per_page', 'sort']);
         $perPage = min((int) ($filters['per_page'] ?? 15), 50);
         $filters['per_page'] = $perPage;
 
@@ -102,11 +102,13 @@ class ProductController extends Controller
         try {
             $productData = Cache::tags(['products'])->remember($cacheKey, 1800, function () use ($product) {
                 $product->load(['vendor:id,store_name,user_id', 'vendor.user:id,name', 'photos', 'subcategory.category']);
+                $product->loadCount('reviews')->loadAvg('reviews', 'rating');
 
                 return new ProductResource($product);
             });
         } catch (\Exception $e) {
             $product->load(['vendor:id,store_name,user_id', 'vendor.user:id,name', 'photos', 'subcategory.category']);
+            $product->loadCount('reviews')->loadAvg('reviews', 'rating');
             $productData = new ProductResource($product);
         }
 

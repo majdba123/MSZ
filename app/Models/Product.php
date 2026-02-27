@@ -110,6 +110,14 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    /**
+     * Reviews for this product.
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class)->latest();
+    }
+
     public function hasActiveDiscount(): bool
     {
         if (

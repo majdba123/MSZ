@@ -86,9 +86,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         $('loading').classList.add('hidden');
     }
 
+    function starStars(rating) {
+        const r = Math.min(5, Math.max(0, Math.round(parseFloat(rating) || 0)));
+        const filled = '<svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+        const empty = '<svg class="w-3.5 h-3.5 text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+        let h = ''; for (let i = 0; i < 5; i++) h += i < r ? filled : empty; return h;
+    }
     function productCard(p) {
         const photo = p.first_photo_url || '', inStock = p.quantity > 0;
         const isFav = window._favIds && window._favIds.has(p.id);
+        const revCount = parseInt(p.review_count, 10) || 0;
         return `<div class="product-card overflow-hidden rounded-2xl border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-900">
             <div class="relative">
                 <a href="/products/${p.id}"><div class="relative aspect-[4/5] overflow-hidden bg-gray-50 dark:bg-gray-800">
@@ -101,6 +108,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             <div class="p-3 sm:p-4">
                 ${p.vendor ? `<p class="mb-1 truncate text-[11px] font-medium text-gray-400 dark:text-gray-500">${esc(p.vendor.store_name)}</p>` : ''}
                 <a href="/products/${p.id}"><h3 class="line-clamp-2 text-sm font-bold leading-snug text-gray-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400">${esc(p.name)}</h3></a>
+                <div class="mt-1.5 flex items-center gap-1.5 text-amber-400">${starStars(p.average_rating)}<span class="text-[11px] text-gray-400 dark:text-gray-500">${revCount ? revCount + (revCount === 1 ? ' review' : ' reviews') : ''}</span></div>
                 <div class="mt-2 flex items-baseline gap-1">
                     <span class="text-lg font-black ${p.has_active_discount ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}">${parseFloat(p.has_active_discount ? p.discounted_price : p.price).toLocaleString()}</span><span class="text-[11px] text-gray-400">SYP</span>
                     ${p.has_active_discount ? `<span class="text-[11px] text-gray-400 line-through">${parseFloat(p.price).toLocaleString()} SYP</span>` : ''}

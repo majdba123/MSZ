@@ -42,7 +42,11 @@
                 <div class="lg:col-span-1">
                     <div class="sticky top-20 space-y-5">
                         <div class="rounded-2xl border border-gray-200/80 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
-                            <h1 id="product-name" class="mb-3 text-2xl font-black leading-tight text-gray-900 dark:text-white"></h1>
+                            <h1 id="product-name" class="mb-2 text-2xl font-black leading-tight text-gray-900 dark:text-white"></h1>
+                            <div id="product-rating-row" class="mb-5 flex items-center gap-2 border-b border-gray-100 pb-5 dark:border-gray-800">
+                                <div id="product-stars" class="flex items-center gap-0.5 text-amber-400"></div>
+                                <span id="product-rating-text" class="text-sm text-gray-500 dark:text-gray-400"></span>
+                            </div>
                             <div class="mb-5 flex items-center gap-2 border-b border-gray-100 pb-5 dark:border-gray-800">
                                 <span class="text-xs text-gray-400 dark:text-gray-500">Sold by</span>
                                 <a id="vendor-link" href="#" class="text-sm font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"></a>
@@ -115,6 +119,36 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Reviews section: last 5 reviews + pagination --}}
+            <div id="reviews-section" class="mt-10 hidden">
+                <div class="rounded-2xl border border-gray-200/80 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+                    <h2 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Reviews <span id="reviews-subtitle" class="text-sm font-normal text-gray-500 dark:text-gray-400"></span></h2>
+                    <div id="review-form-wrap" class="mb-8 hidden">
+                        <form id="review-form" class="space-y-4">
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Your rating (1–5 stars)</label>
+                                <div id="review-stars-input" class="flex gap-1 text-2xl text-gray-300 dark:text-gray-600" data-rating="0">
+                                    <button type="button" class="star-btn transition-colors hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 rounded p-0.5" data-value="1" aria-label="1 star"><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+                                    <button type="button" class="star-btn transition-colors hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 rounded p-0.5" data-value="2" aria-label="2 stars"><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+                                    <button type="button" class="star-btn transition-colors hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 rounded p-0.5" data-value="3" aria-label="3 stars"><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+                                    <button type="button" class="star-btn transition-colors hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 rounded p-0.5" data-value="4" aria-label="4 stars"><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+                                    <button type="button" class="star-btn transition-colors hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 rounded p-0.5" data-value="5" aria-label="5 stars"><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+                                </div>
+                                <input type="hidden" name="rating" id="review-rating-input" value="0">
+                            </div>
+                            <div>
+                                <label for="review-body" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Comment (optional)</label>
+                                <textarea id="review-body" name="body" rows="3" class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500" placeholder="Write your review here..."></textarea>
+                            </div>
+                            <button type="submit" id="review-submit-btn" class="rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-brand-600 dark:bg-white dark:text-gray-900 dark:hover:bg-brand-500">Submit review</button>
+                        </form>
+                    </div>
+                    <div id="reviews-list" class="space-y-4"></div>
+                    <div id="reviews-empty" class="hidden py-8 text-center text-sm text-gray-500 dark:text-gray-400">No reviews yet.</div>
+                    <div id="reviews-pagination" class="mt-6 flex flex-wrap items-center justify-center gap-2"></div>
+                </div>
+            </div>
         </div>
 
         <div id="product-error" class="hidden py-16 text-center">
@@ -143,6 +177,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         $('product-name').textContent = p.name || '—';
         $('bc-name').textContent = p.name || 'Details';
+        const avgRating = parseFloat(p.average_rating) || 0;
+        const reviewCount = parseInt(p.review_count, 10) || 0;
+        $('product-stars').innerHTML = renderStars(avgRating, 5, 'w-5 h-5');
+        $('product-rating-text').textContent = reviewCount === 0 ? '(No ratings yet)' : '(' + reviewCount + ' ' + (reviewCount === 1 ? 'review' : 'reviews') + ')';
         const hasDiscount = !!p.has_active_discount;
         const effectivePrice = parseFloat(hasDiscount ? p.discounted_price : p.price || 0);
         $('product-price').textContent = effectivePrice.toLocaleString();
@@ -216,6 +254,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         $('show-loading').classList.add('hidden');
         $('show-content').classList.remove('hidden');
+        $('reviews-section').classList.remove('hidden');
+        if (window.Auth?.getToken?.() || localStorage.getItem('auth_token')) {
+            $('review-form-wrap').classList.remove('hidden');
+            initReviewForm();
+        }
+        loadReviews(1);
     } catch (e) {
         console.error('Failed to load product:', e);
         $('show-loading').classList.add('hidden');
@@ -242,6 +286,149 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (status === 'expired') return 'Expired';
 
         return '—';
+    }
+
+    function renderStars(rating, max, sizeClass) {
+        const r = Math.min(max, Math.max(0, Math.round(rating)));
+        const starFilled = '<svg class="' + (sizeClass || 'w-5 h-5') + ' text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+        const starEmpty = '<svg class="' + (sizeClass || 'w-5 h-5') + ' text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+        let html = '';
+        for (let i = 0; i < max; i++) html += i < r ? starFilled : starEmpty;
+        return html;
+    }
+
+    var REVIEWS_PER_PAGE = 5;
+    window._reviewsCurrentPage = 1;
+    window._reviewsLastPage = 1;
+    function loadReviews(page) {
+        var listEl = document.getElementById('reviews-list');
+        var emptyEl = document.getElementById('reviews-empty');
+        var paginationEl = document.getElementById('reviews-pagination');
+        var subtitleEl = document.getElementById('reviews-subtitle');
+        if (!listEl) return;
+        listEl.innerHTML = '<p class="py-4 text-center text-sm text-gray-400 dark:text-gray-500">Loading...</p>';
+        if (emptyEl) emptyEl.classList.add('hidden');
+        if (paginationEl) paginationEl.innerHTML = '';
+        if (subtitleEl) subtitleEl.textContent = '';
+        var url = '/api/products/' + String(productId) + '/reviews';
+        window.axios.get(url, { params: { page: page || 1, per_page: REVIEWS_PER_PAGE } }).then(function(res) {
+            var data = (res && res.data && res.data.data) ? res.data.data : [];
+            var meta = (res && res.data && res.data.meta) ? res.data.meta : {};
+            var total = meta.total || 0;
+            var currentPage = meta.current_page || 1;
+            var lastPage = meta.last_page || 1;
+            window._reviewsCurrentPage = currentPage;
+            window._reviewsLastPage = lastPage;
+            listEl.innerHTML = '';
+            if (!Array.isArray(data) || data.length === 0) {
+                if (page === 1) {
+                    if (emptyEl) { emptyEl.classList.remove('hidden'); emptyEl.textContent = 'No reviews yet.'; }
+                }
+                return;
+            }
+            for (var i = 0; i < data.length; i++) {
+                var r = data[i];
+                var userName = (r.user && r.user.name) ? esc(r.user.name) : 'User';
+                var body = (r.body) ? '<p class="mt-1 text-sm text-gray-600 dark:text-gray-400">' + esc(r.body) + '</p>' : '';
+                var date = r.created_at ? new Date(r.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
+                var currentUserId = window.Auth && window.Auth.getUser && window.Auth.getUser() ? (window.Auth.getUser().id || null) : null;
+                var canDelete = currentUserId && r.user && r.user.id === currentUserId;
+                var deleteBtn = canDelete ? '<button type="button" data-review-id="' + r.id + '" class="review-delete-btn text-xs font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">Delete</button>' : '';
+                listEl.innerHTML += '<div class="rounded-xl border border-gray-100 p-4 dark:border-gray-800" data-review-id="' + r.id + '">' +
+                    '<div class="flex items-center justify-between gap-2">' +
+                    '<span class="font-medium text-gray-900 dark:text-white">' + userName + '</span>' +
+                    '<div class="flex items-center gap-2">' +
+                    '<div class="flex text-amber-400">' + renderStars(r.rating, 5, 'w-4 h-4') + '</div>' +
+                    (deleteBtn ? '<span class="ml-2">' + deleteBtn + '</span>' : '') +
+                    '</div></div>' +
+                    (date ? '<p class="text-[11px] text-gray-400 dark:text-gray-500">' + date + '</p>' : '') +
+                    body + '</div>';
+            }
+            listEl.querySelectorAll('.review-delete-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var rid = btn.getAttribute('data-review-id');
+                    if (!rid || !confirm('Delete this review?')) return;
+                    if (window.Auth && window.Auth.applyToken) window.Auth.applyToken();
+                    window.axios.delete('/api/products/' + productId + '/reviews/' + rid).then(function() {
+                        loadReviews(window._reviewsCurrentPage);
+                        window.axios.get('/api/products/' + productId).then(function(res) {
+                            var p = res.data.data;
+                            if (p) {
+                                $('product-stars').innerHTML = renderStars(parseFloat(p.average_rating) || 0, 5, 'w-5 h-5');
+                                $('product-rating-text').textContent = (parseInt(p.review_count, 10) || 0) === 0 ? '(No ratings yet)' : '(' + (p.review_count || 0) + ' ' + (p.review_count === 1 ? 'review' : 'reviews') + ')';
+                            }
+                        });
+                    }).catch(function(err) {
+                        alert(err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Failed to delete review.');
+                    });
+                });
+            });
+            if (subtitleEl) subtitleEl.textContent = total ? '(' + total + ' ' + (total === 1 ? 'review' : 'reviews') + ')' : '';
+            if (paginationEl && (lastPage > 1 || total > REVIEWS_PER_PAGE)) {
+                paginationEl.innerHTML = '<button type="button" onclick="window._reviewsPrev()" class="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none" ' + (currentPage <= 1 ? 'disabled' : '') + '>Prev</button>' +
+                    '<span class="text-sm text-gray-500 dark:text-gray-400">Page ' + currentPage + ' of ' + lastPage + (total ? ' (' + total + ')' : '') + '</span>' +
+                    '<button type="button" onclick="window._reviewsNext()" class="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none" ' + (currentPage >= lastPage ? 'disabled' : '') + '>Next</button>';
+            }
+        }).catch(function(err) {
+            listEl.innerHTML = '';
+            if (emptyEl) {
+                emptyEl.classList.remove('hidden');
+                emptyEl.textContent = (err.response && err.response.status === 404) ? 'Reviews not available for this product.' : 'Failed to load reviews.';
+            }
+            console.error('Reviews load error:', err);
+        });
+    }
+    window._reviewsPrev = function() { if (window._reviewsCurrentPage > 1) loadReviews(window._reviewsCurrentPage - 1); };
+    window._reviewsNext = function() { if (window._reviewsCurrentPage < window._reviewsLastPage) loadReviews(window._reviewsCurrentPage + 1); };
+
+    function initReviewForm() {
+        const container = document.getElementById('review-stars-input');
+        const hiddenInput = document.getElementById('review-rating-input');
+        if (!container || !hiddenInput) return;
+        container.querySelectorAll('.star-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const v = parseInt(btn.getAttribute('data-value'), 10);
+                hiddenInput.value = v;
+                container.setAttribute('data-rating', v);
+                container.querySelectorAll('.star-btn').forEach(function(b) {
+                    const bv = parseInt(b.getAttribute('data-value'), 10);
+                    b.classList.toggle('text-amber-400', bv <= v);
+                    b.classList.toggle('text-gray-300', bv > v);
+                    b.classList.toggle('dark:text-gray-600', bv > v);
+                });
+            });
+        });
+        document.getElementById('review-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const rating = parseInt(hiddenInput.value, 10);
+            if (rating < 1 || rating > 5) { alert('Please select a rating from 1 to 5 stars.'); return; }
+            const body = document.getElementById('review-body').value.trim();
+            const submitBtn = document.getElementById('review-submit-btn');
+            submitBtn.disabled = true;
+            if (window.Auth && window.Auth.applyToken) window.Auth.applyToken();
+            window.axios.post('/api/products/' + productId + '/reviews', { rating: rating, body: body || null }).then(function(res) {
+                submitBtn.disabled = false;
+                hiddenInput.value = 0;
+                container.setAttribute('data-rating', '0');
+                container.querySelectorAll('.star-btn').forEach(function(b) {
+                    b.classList.remove('text-amber-400');
+                    b.classList.add('text-gray-300', 'dark:text-gray-600');
+                });
+                document.getElementById('review-body').value = '';
+                var prod = res.data.product;
+                if (prod) {
+                    $('product-stars').innerHTML = renderStars(prod.average_rating, 5, 'w-5 h-5');
+                    $('product-rating-text').textContent = (parseInt(prod.review_count, 10) || 0) === 0 ? '(No ratings yet)' : '(' + (prod.review_count || 0) + ' ' + (prod.review_count === 1 ? 'review' : 'reviews') + ')';
+                }
+                loadReviews(1);
+            }).catch(function(err) {
+                submitBtn.disabled = false;
+                var msg = (err.response && err.response.data && err.response.data.message) ? err.response.data.message : 'Failed to submit review.';
+                if (err.response && err.response.status === 401) msg = 'You must be logged in to review this product.';
+                if (err.response && err.response.status === 422) msg = msg || 'Invalid data or review not allowed.';
+                alert(msg);
+            });
+        });
     }
 });
 </script>

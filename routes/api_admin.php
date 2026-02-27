@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\VendorCommissionController;
 use App\Http\Controllers\Api\Admin\VendorController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductPhotoController;
+use App\Http\Controllers\Api\ProductReviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,6 +24,7 @@ Route::post('vendors/{vendor}/commission-paid', [VendorCommissionController::cla
 Route::patch('vendors/{vendor}/toggle-active', [VendorController::class, 'toggleActive'])->name('vendors.toggle-active');
 Route::apiResource('users', UserController::class);
 Route::get('users/{user}/favourites', [UserController::class, 'favourites'])->name('users.favourites');
+Route::get('products/{product}/reviews', [ProductReviewController::class, 'indexForAdmin'])->name('products.reviews.index');
 Route::apiResource('products', ProductController::class);
 Route::patch('products/{product}/toggle-active', [ProductController::class, 'toggleActive'])->name('products.toggle-active');
 Route::patch('products/{product}/status', [ProductController::class, 'updateStatus'])->name('products.update-status');

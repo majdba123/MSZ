@@ -29,6 +29,10 @@
                         <p class="mt-0.5 text-sm text-gray-500">Product Information</p>
                     </div>
                     <div class="flex gap-2">
+                        <a id="reviews-link" href="#" class="btn-secondary btn-sm inline-flex items-center gap-1.5">
+                            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            Reviews
+                        </a>
                         <a id="edit-link" href="#" class="btn-primary btn-sm">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
                             Edit
@@ -304,6 +308,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
         document.getElementById('edit-link').href = '/admin/products/' + productId + '/edit';
+        document.getElementById('reviews-link').href = '/admin/products/' + productId + '/reviews';
 
         const photos = p.photos || [];
         document.getElementById('photo-count').textContent = photos.length + ' photo' + (photos.length !== 1 ? 's' : '');

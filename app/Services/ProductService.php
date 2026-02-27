@@ -78,6 +78,9 @@ class ProductService
     /**
      * @param  array<string, mixed>  $filters
      */
+    /**
+     * @param  array<string, mixed>  $filters
+     */
     public function listPublic(int $perPage = 15, array $filters = []): LengthAwarePaginator
     {
         $vendorId = ! empty($filters['vendor_id']) ? (int) $filters['vendor_id'] : null;
@@ -86,27 +89,35 @@ class ProductService
         $hasDiscount = isset($filters['has_discount']) && $filters['has_discount'] !== ''
             ? filter_var($filters['has_discount'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
             : null;
+        $sort = isset($filters['sort']) && in_array($filters['sort'], ['top_rated', 'best_selling', 'most_favorited'], true)
+            ? $filters['sort'] : 'latest';
         $page = (int) request()->get('page', 1);
 
-        $cacheKey = "pub_products:v{$vendorId}:c{$categoryId}:s{$subcategoryId}:d{$hasDiscount}:pp{$perPage}:p{$page}";
+        $cacheKey = "pub_products:v{$vendorId}:c{$categoryId}:s{$subcategoryId}:d{$hasDiscount}:srt{$sort}:pp{$perPage}:p{$page}";
 
-        return $this->cachedOrFetch(['products'], $cacheKey, 900, function () use ($perPage, $vendorId, $categoryId, $subcategoryId, $hasDiscount) {
-            return $this->fetchPublicProducts($perPage, $vendorId, $categoryId, $subcategoryId, $hasDiscount);
+        return $this->cachedOrFetch(['products'], $cacheKey, 900, function () use ($perPage, $vendorId, $categoryId, $subcategoryId, $hasDiscount, $sort) {
+            return $this->fetchPublicProducts($perPage, $vendorId, $categoryId, $subcategoryId, $hasDiscount, $sort);
         });
     }
 
+    /**
+     * @param  'latest'|'top_rated'|'best_selling'|'most_favorited'  $sort
+     */
     protected function fetchPublicProducts(
         int $perPage,
         ?int $vendorId,
         ?int $categoryId = null,
         ?int $subcategoryId = null,
-        ?bool $hasDiscount = null
+        ?bool $hasDiscount = null,
+        string $sort = 'latest'
     ): LengthAwarePaginator {
         $query = Product::query()
             ->where('is_active', true)
             ->where('status', Product::STATUS_APPROVED)
             ->where('quantity', '>', 0)
             ->whereHas('vendor', fn ($q) => $q->where('is_active', true))
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
             ->with([
                 'photos' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort_order')->limit(1),
                 'vendor:id,store_name,user_id',
@@ -138,7 +149,31 @@ class ProductService
             }
         }
 
-        return $query->latest('products.created_at')->paginate($perPage);
+        match ($sort) {
+            'top_rated' => $query->having('reviews_count', '>=', 1)->orderByDesc('reviews_avg_rating')->orderByDesc('reviews_count'),
+            'best_selling' => $this->applyBestSellingOrder($query),
+            'most_favorited' => $this->applyMostFavoritedOrder($query),
+            default => $query->latest('products.created_at'),
+        };
+
+        return $query->paginate($perPage);
+    }
+
+    protected function applyBestSellingOrder(\Illuminate\Database\Eloquent\Builder $query): void
+    {
+        $query->withSum(
+            [
+                'orderItems as sold_count' => function ($q) {
+                    $q->whereHas('order', fn ($o) => $o->whereIn('status', [\App\Models\Order::STATUS_CONFIRMED, \App\Models\Order::STATUS_COMPLETED]));
+                },
+            ],
+            'quantity'
+        )->orderByDesc('sold_count');
+    }
+
+    protected function applyMostFavoritedOrder(\Illuminate\Database\Eloquent\Builder $query): void
+    {
+        $query->withCount('favouritedBy')->orderByDesc('favourited_by_count');
     }
 
     public function create(?Vendor $vendor, array $data): Product

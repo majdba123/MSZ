@@ -61,6 +61,8 @@ class ProductResource extends JsonResource
             }),
             'photos' => ProductPhotoResource::collection($this->whenLoaded('photos')),
             'vendor' => new VendorResource($this->whenLoaded('vendor')),
+            'average_rating' => round((float) ($this->reviews_avg_rating ?? 0), 2),
+            'review_count' => (int) ($this->reviews_count ?? 0),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

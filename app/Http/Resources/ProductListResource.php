@@ -47,6 +47,8 @@ class ProductListResource extends JsonResource
             'is_active' => $this->is_active,
             'status' => $this->status,
             'first_photo_url' => $displayPhoto ? asset('storage/'.$displayPhoto->path) : null,
+            'average_rating' => round((float) ($this->reviews_avg_rating ?? 0), 2),
+            'review_count' => (int) ($this->reviews_count ?? 0),
         ];
 
         // Include vendor info if loaded (for public listings)

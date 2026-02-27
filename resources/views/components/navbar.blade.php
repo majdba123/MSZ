@@ -60,17 +60,17 @@
                     </button>
                     <div id="notification-dropdown" class="absolute right-0 top-full z-50 mt-2 hidden w-[min(420px,95vw)] max-h-[min(32rem,75vh)] overflow-hidden rounded-2xl bg-white/95 shadow-xl ring-1 ring-black/5 backdrop-blur-md dark:bg-gray-900/95 dark:ring-white/10 flex flex-col" style="animation:fadeIn .15s ease-out;">
                         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
-                            <span class="text-[13px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">الإشعارات</span>
-                            <button type="button" id="notification-mark-all-read" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">تحديد الكل كمقروء</button>
+                            <span class="text-[13px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Notifications</span>
+                            <button type="button" id="notification-mark-all-read" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">Mark all as read</button>
                         </div>
                         <div id="notification-list" class="overflow-y-auto flex-1 min-h-0 max-h-[min(24rem,55vh)]">
-                            <p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">جاري التحميل...</p>
+                            <p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">Loading...</p>
                         </div>
-                        <div id="notification-empty" class="hidden px-4 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500 shrink-0">لا توجد إشعارات.</div>
+                        <div id="notification-empty" class="hidden px-4 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500 shrink-0">No notifications.</div>
                         <div id="notification-pagination" class="hidden border-t border-gray-100 dark:border-gray-800 px-3 py-2 flex items-center justify-between gap-2 shrink-0 bg-gray-50/50 dark:bg-gray-800/30">
-                            <button type="button" id="notification-prev" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">السابق</button>
-                            <span id="notification-page-info" class="text-[11px] text-gray-500 dark:text-gray-400">صفحة 1 من 1</span>
-                            <button type="button" id="notification-next" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">التالي</button>
+                            <button type="button" id="notification-prev" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">Prev</button>
+                            <span id="notification-page-info" class="text-[11px] text-gray-500 dark:text-gray-400">Page 1 of 1</span>
+                            <button type="button" id="notification-next" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">Next</button>
                         </div>
                     </div>
                 </div>
@@ -324,12 +324,9 @@ function updateNavbar() {
 
 function updateNotificationBadge() {
     if (!window.Auth?.isAuthenticated()) return;
-    const token = window.Auth.getToken();
-    if (!token) return;
-    const headers = { Accept: 'application/json' };
-    if (token) headers['Authorization'] = 'Bearer ' + token;
-    window.axios.get('/api/notifications', { headers }).then(function (res) {
-        const count = res.data.unread_count ?? 0;
+    if (window.Auth.applyToken) window.Auth.applyToken();
+    window.axios.get('/api/notifications', { params: { per_page: 1 } }).then(function (res) {
+        const count = (res.data && res.data.unread_count) ?? 0;
         const badge = document.getElementById('notification-badge');
         if (!badge) return;
         if (count > 0) {
@@ -350,13 +347,11 @@ function loadNotificationDropdown(page) {
     const prevBtn = document.getElementById('notification-prev');
     const nextBtn = document.getElementById('notification-next');
     if (!listEl) return;
-    listEl.innerHTML = '<p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">جاري التحميل...</p>';
+    listEl.innerHTML = '<p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">Loading...</p>';
     emptyEl?.classList.add('hidden');
     paginationEl?.classList.add('hidden');
-    const token = window.Auth?.getToken();
-    const headers = { Accept: 'application/json' };
-    if (token) headers['Authorization'] = 'Bearer ' + token;
-    window.axios.get('/api/notifications', { params: { page: page }, headers: headers }).then(function (res) {
+    if (window.Auth?.applyToken) window.Auth.applyToken();
+    window.axios.get('/api/notifications', { params: { page: page } }).then(function (res) {
         try {
             const raw = res && res.data;
             const data = raw && typeof raw === 'object' ? raw : {};
@@ -430,7 +425,7 @@ function loadNotificationDropdown(page) {
                 });
             });
             if (lastPage > 1 && paginationEl && pageInfoEl && prevBtn && nextBtn) {
-                pageInfoEl.textContent = 'صفحة ' + currentPage + ' من ' + lastPage + (total ? ' (' + total + ')' : '');
+                pageInfoEl.textContent = 'Page ' + currentPage + ' of ' + lastPage + (total ? ' (' + total + ')' : '');
                 prevBtn.disabled = currentPage <= 1;
                 nextBtn.disabled = currentPage >= lastPage;
                 prevBtn.onclick = function () { if (currentPage > 1) loadNotificationDropdown(currentPage - 1); };

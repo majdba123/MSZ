@@ -23,6 +23,7 @@ Route::prefix('auth')->as('auth.')->middleware('web')->group(function () {
 */
 Route::prefix('products')->as('products.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\ProductController::class, 'publicIndex'])->name('public.index');
+    Route::get('/{product}/reviews', [\App\Http\Controllers\Api\ProductReviewController::class, 'index'])->name('reviews.index');
     Route::get('/{product}', [\App\Http\Controllers\Api\ProductController::class, 'publicShow'])->name('public.show');
 });
 
@@ -72,6 +73,9 @@ Route::middleware('cache.response:120')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('products/{product}/reviews', [\App\Http\Controllers\Api\ProductReviewController::class, 'store'])->name('products.reviews.store');
+    Route::delete('products/{product}/reviews/{review}', [\App\Http\Controllers\Api\ProductReviewController::class, 'destroy'])->name('products.reviews.destroy');
+
     Route::post('broadcasting/auth', [BroadcastController::class, 'authenticate'])->name('broadcasting.auth');
 
     Route::get('/user', function (Request $request) {

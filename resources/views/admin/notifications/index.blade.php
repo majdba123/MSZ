@@ -13,14 +13,14 @@
             </button>
             <a href="{{ route('admin.notifications.send') }}" class="btn-primary btn-sm inline-flex items-center gap-1.5">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                إرسال إشعار
+                Send notification
             </a>
         </div>
     </div>
 
     <div id="notif-loading" class="card py-14 text-center">
         <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500 dark:border-gray-700 dark:border-t-brand-400"></div>
-        <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">جاري التحميل...</p>
+        <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Loading...</p>
     </div>
 
     <div id="notif-empty" class="hidden card py-14 text-center">
@@ -33,7 +33,7 @@
             <p id="notif-page-info" class="text-xs text-gray-500 dark:text-gray-400"></p>
             <div class="flex gap-2">
                 <button type="button" id="notif-prev" class="btn-secondary btn-xs">السابق</button>
-                <button type="button" id="notif-next" class="btn-secondary btn-xs">التالي</button>
+                <button type="button" id="notif-next" class="btn-secondary btn-xs">Next</button>
             </div>
         </div>
     </div>
@@ -114,7 +114,7 @@
             }).join('');
 
             document.getElementById('notif-list-wrap').classList.remove('hidden');
-            document.getElementById('notif-page-info').textContent = 'صفحة ' + currentPage + ' من ' + lastPage + (total ? ' (' + total + ')' : '');
+            document.getElementById('notif-page-info').textContent = 'Page ' + currentPage + ' of ' + lastPage + (total ? ' (' + total + ')' : '');
             document.getElementById('notif-prev').disabled = currentPage <= 1;
             document.getElementById('notif-next').disabled = currentPage >= lastPage;
 
@@ -134,7 +134,7 @@
         }).catch(function () {
             document.getElementById('notif-loading').classList.add('hidden');
             document.getElementById('notif-empty').classList.remove('hidden');
-            document.getElementById('notif-empty').querySelector('p').textContent = 'فشل تحميل الإشعارات.';
+            document.getElementById('notif-empty').querySelector('p').textContent = 'Failed to load notifications.';
         });
     }
 

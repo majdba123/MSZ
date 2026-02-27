@@ -8,7 +8,6 @@
     <x-home.promo-banner />
     <x-home.vendors />
     <x-home.products />
-    <x-home.top-rated-products />
     <x-home.best-selling-products />
     <x-home.most-favorited-products />
     <x-home.trust-badges />
@@ -209,17 +208,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         gridEl.querySelectorAll('.product-card').forEach(el => observer.observe(el));
     }
 
-    async function loadTopRated() {
-        const loadingEl = $('top-rated-loading'), gridEl = $('top-rated-grid'), emptyEl = $('top-rated-empty');
-        if (!gridEl) return;
-        try {
-            const res = await window.axios.get('/api/products?per_page=5&sort=top_rated');
-            const data = res.data.data || [];
-            renderProductCards(data, gridEl, emptyEl, loadingEl);
-        } catch (e) { if (emptyEl) emptyEl.classList.remove('hidden'); }
-        if (loadingEl) loadingEl.classList.add('hidden');
-    }
-
     async function loadBestSelling() {
         const loadingEl = $('best-selling-loading'), gridEl = $('best-selling-grid'), emptyEl = $('best-selling-empty');
         if (!gridEl) return;
@@ -243,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // ═══ INIT ═══
-    await Promise.all([loadCategories(), loadVendors(), loadProducts(), loadTopRated(), loadBestSelling(), loadMostFavorited()]);
+    await Promise.all([loadCategories(), loadVendors(), loadProducts(), loadBestSelling(), loadMostFavorited()]);
 });
 </script>
 @endpush

@@ -6,6 +6,14 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
+Route::get('/locale/{locale}', function (string $locale) {
+    if (in_array($locale, ['ar', 'en'], true)) {
+        session()->put('locale', $locale);
+    }
+
+    return redirect()->back();
+})->name('locale.switch');
+
 Route::get('/login', function () {
     // If logout parameter is present, don't redirect even if authenticated
     if (request()->has('logout')) {
@@ -239,6 +247,10 @@ Route::prefix('admin')->as('admin.')->middleware(['auth', 'admin'])->group(funct
     Route::get('/notifications/send', function () {
         return view('admin.notifications.send');
     })->name('notifications.send');
+
+    Route::get('/contact-messages', [\App\Http\Controllers\Admin\ContactMessageViewController::class, 'index'])->name('contact-messages.index');
+
+    Route::get('/about-us', [\App\Http\Controllers\Admin\AboutUsController::class, 'edit'])->name('about-us.edit');
 
     // Category Management
     Route::get('/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');

@@ -22,6 +22,8 @@ class AuthController extends Controller
     {
         $result = $this->authService->register($request->validated());
 
+        $result['user']->load('city');
+
         // Establish web session alongside the API token
         Auth::login($result['user']);
 

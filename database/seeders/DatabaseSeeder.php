@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call([
+            CitySeeder::class,
             CategorySubcategorySeeder::class,
             MarketplaceDemoSeeder::class,
             CouponSeeder::class,

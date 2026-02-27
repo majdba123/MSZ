@@ -7,8 +7,8 @@
             <div class="flex items-center gap-3">
                 <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-500/10"><svg class="h-5 w-5 text-brand-600 dark:text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg></div>
                 <div>
-                    <h3 class="text-base font-bold text-gray-900 dark:text-white">Shopping Cart</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400" id="cart-item-count">0 items</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ __('cart.shopping_cart') }}</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400" id="cart-item-count" data-item="{{ __('common.item') }}" data-items="{{ __('common.items') }}">0 {{ __('common.items') }}</p>
                 </div>
             </div>
             <button onclick="window.closeCartModal && window.closeCartModal()" class="rounded-xl p-2.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
@@ -18,8 +18,8 @@
             <div id="cart-items" class="space-y-3"></div>
             <div id="cart-empty" class="hidden py-20 text-center">
                 <svg class="mx-auto h-16 w-16 text-gray-200 dark:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
-                <p class="mt-4 text-base font-bold text-gray-600 dark:text-gray-300">Your cart is empty</p>
-                <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">Add products to see them here</p>
+                <p class="mt-4 text-base font-bold text-gray-600 dark:text-gray-300">{{ __('common.your_cart_empty') }}</p>
+                <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">{{ __('cart.empty_hint') }}</p>
             </div>
             <div id="cart-order-success" class="hidden py-12">
                 <div class="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 dark:border-emerald-500/30 dark:bg-emerald-500/10">
@@ -48,8 +48,8 @@
         <div class="border-t border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-800 dark:bg-gray-800/50">
             <div id="cart-backend-message" class="mb-3 hidden rounded-xl border px-3 py-2 text-xs font-semibold"></div>
             <div class="mb-3">
-                <label for="cart-coupon-code" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Coupon Code (Optional)</label>
-                <input id="cart-coupon-code" type="text" placeholder="Enter coupon code"
+                <label for="cart-coupon-code" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __('cart.coupon_label') }}</label>
+                <input id="cart-coupon-code" type="text" placeholder="{{ __('cart.coupon_placeholder') }}"
                     class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none transition-colors focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
             </div>
             <p class="mb-3 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
@@ -59,7 +59,7 @@
                 <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Subtotal</span>
                 <span id="cart-total" class="text-xl font-black text-gray-900 dark:text-white">0.00 <span class="text-sm font-normal text-gray-400">SYP</span></span>
             </div>
-            <button id="checkout-btn" class="mt-4 hidden w-full rounded-2xl bg-brand-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-500/20 transition-all hover:bg-brand-600 hover:shadow-xl active:scale-[.98]">Proceed to Checkout</button>
+            <button id="checkout-btn" class="mt-4 hidden w-full rounded-2xl bg-brand-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-500/20 transition-all hover:bg-brand-600 hover:shadow-xl active:scale-[.98]">{{ __('cart.proceed_checkout') }}</button>
         </div>
     </div>
 </div>

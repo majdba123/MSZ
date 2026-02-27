@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -33,6 +34,9 @@ class User extends Authenticatable
         'name',
         'phone_number',
         'national_id',
+        'city_id',
+        'latitude',
+        'longitude',
         'type',
         'email',
         'avatar',
@@ -80,6 +84,14 @@ class User extends Authenticatable
     }
 
     /**
+     * The city of this user.
+     */
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    /**
      * The vendor profile linked to this user.
      */
     public function vendor(): HasOne
@@ -111,5 +123,13 @@ class User extends Authenticatable
         return $this->belongsToMany(AdminNotification::class, 'admin_notification_reads', 'user_id', 'admin_notification_id')
             ->withPivot('read_at')
             ->withTimestamps();
+    }
+
+    /**
+     * Contact messages submitted by this user.
+     */
+    public function contactMessages(): HasMany
+    {
+        return $this->hasMany(ContactMessage::class);
     }
 }

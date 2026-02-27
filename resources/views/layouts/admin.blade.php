@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ app()->getLocale() === 'ar' ? 'ar' : 'en' }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Admin — SyriaZone')</title>
+    <title>@yield('title', __('admin.dashboard') . ' — ' . __('SyriaZone'))</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700" rel="stylesheet" />
@@ -37,7 +37,7 @@
             <header class="sticky top-0 z-30 border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-gray-800 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/80">
                 <div class="flex h-14 items-center gap-x-4 px-4 sm:px-6 lg:px-8">
                     {{-- Mobile menu button --}}
-                    <button type="button" id="sidebar-toggle" class="-m-2.5 p-2.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 lg:hidden" aria-label="Open sidebar">
+                    <button type="button" id="sidebar-toggle" class="-m-2.5 p-2.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 lg:hidden" aria-label="{{ __('admin.open_sidebar') }}">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
                     </button>
 
@@ -49,33 +49,35 @@
 
                     {{-- Right side --}}
                     <div class="flex items-center gap-x-3">
+                        {{-- Language --}}
+                        <x-language-switcher variant="compact" />
                         {{-- Notifications --}}
                         <div id="admin-notif-wrap" class="relative" data-context="admin">
-                            <button type="button" id="admin-notif-btn" class="relative flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" title="Notifications">
+                            <button type="button" id="admin-notif-btn" class="relative flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" title="{{ __('admin.notifications') }}">
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
                                 <span id="admin-notif-badge" class="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold leading-none text-white hidden">0</span>
                             </button>
                             <div id="admin-notif-dropdown" class="absolute right-0 top-full z-50 mt-2 hidden w-[min(420px,95vw)] max-h-[min(32rem,75vh)] overflow-hidden rounded-2xl bg-white/95 shadow-xl ring-1 ring-black/5 backdrop-blur-md dark:bg-gray-900/95 dark:ring-white/10 flex flex-col">
                                 <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800 shrink-0">
-                                    <a href="{{ route('admin.notifications.index') }}" class="text-[13px] font-medium uppercase tracking-wider text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">الإشعارات</a>
+                                    <a href="{{ route('admin.notifications.index') }}" class="text-[13px] font-medium uppercase tracking-wider text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">{{ __('admin.notifications_title') }}</a>
                                     <div class="flex items-center gap-2">
-                                        <button type="button" id="admin-notif-mark-all" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">تحديد الكل كمقروء</button>
-                                        <a href="{{ route('admin.notifications.index') }}" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">عرض الكل</a>
+                                        <button type="button" id="admin-notif-mark-all" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">{{ __('admin.mark_all_read') }}</button>
+                                        <a href="{{ route('admin.notifications.index') }}" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">{{ __('admin.view_all') }}</a>
                                     </div>
                                 </div>
                                 <div id="admin-notif-list" class="flex-1 min-h-0 max-h-[min(24rem,55vh)] overflow-y-auto">
-                                    <p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">Loading...</p>
+                                    <p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">{{ __('admin.loading') }}</p>
                                 </div>
-                                <div id="admin-notif-empty" class="hidden px-4 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500 shrink-0">No notifications.</div>
+                                <div id="admin-notif-empty" class="hidden px-4 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500 shrink-0">{{ __('admin.no_notifications') }}</div>
                                 <div id="admin-notif-pagination" class="hidden border-t border-gray-100 dark:border-gray-800 px-3 py-2 flex items-center justify-between gap-2 shrink-0 bg-gray-50/50 dark:bg-gray-800/30">
-                                    <button type="button" id="admin-notif-prev" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">Prev</button>
-                                    <span id="admin-notif-page-info" class="text-[11px] text-gray-500 dark:text-gray-400">Page 1 of 1</span>
-                                    <button type="button" id="admin-notif-next" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">Next</button>
+                                    <button type="button" id="admin-notif-prev" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">{{ __('nav.prev') }}</button>
+                                    <span id="admin-notif-page-info" class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('nav.page') }} 1 {{ __('nav.of') }} 1</span>
+                                    <button type="button" id="admin-notif-next" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">{{ __('nav.next') }}</button>
                                 </div>
                             </div>
                         </div>
                         {{-- Dark Mode Toggle --}}
-                        <button onclick="toggleAdminTheme()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" title="Toggle theme">
+                        <button onclick="toggleAdminTheme()" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" title="{{ __('admin.toggle_theme') }}">
                             <svg id="admin-sun" class="hidden h-4 w-4 dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
                             <svg id="admin-moon" class="block h-4 w-4 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
                         </button>
@@ -83,9 +85,9 @@
                             <div class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700 dark:bg-brand-500/20 dark:text-brand-400" id="admin-avatar">A</div>
                             <span id="admin-name" class="text-sm font-medium text-gray-700 dark:text-gray-300"></span>
                         </div>
-                        <button onclick="adminLogout()" class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-500/10 dark:hover:text-red-400" title="Sign Out">
+                        <button onclick="adminLogout()" class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-500/10 dark:hover:text-red-400" title="{{ __('admin.sign_out') }}">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
-                            <span class="hidden sm:inline">Sign Out</span>
+                            <span class="hidden sm:inline">{{ __('admin.sign_out') }}</span>
                         </button>
                     </div>
                 </div>
@@ -102,11 +104,19 @@
     <div id="admin-loading" class="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
         <div class="text-center">
             <div class="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500 dark:border-gray-700"></div>
-            <p class="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">Verifying access...</p>
+            <p class="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('admin.verifying_access') }}</p>
         </div>
     </div>
 
     <script>
+        window.__adminStrings = @json([
+            'loading' => __('admin.loading'),
+            'no_notifications' => __('admin.no_notifications'),
+            'failed' => __('common.failed_notifications'),
+            'page' => __('nav.page'),
+            'of' => __('nav.of'),
+            'mark_one_read' => __('admin.mark_one_read'),
+        ]);
         function toggleAdminTheme() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('sz_theme', isDark ? 'dark' : 'light');
@@ -196,6 +206,8 @@
                 document.getElementById('admin-avatar').textContent = (user.name || 'A').charAt(0).toUpperCase();
                 document.getElementById('admin-loading').classList.add('hidden');
                 document.getElementById('admin-app').classList.remove('hidden');
+                if (window.Auth && window.Auth.applyToken) window.Auth.applyToken();
+                document.dispatchEvent(new CustomEvent('admin-ready'));
                 if (typeof adminNotificationBadge === 'function') adminNotificationBadge();
                 if (typeof initAdminNotificationDropdown === 'function') initAdminNotificationDropdown();
             } catch (e) {
@@ -242,7 +254,7 @@
             const prevBtn = document.getElementById('admin-notif-prev');
             const nextBtn = document.getElementById('admin-notif-next');
             if (!listEl) return;
-            listEl.innerHTML = '<p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">Loading...</p>';
+            listEl.innerHTML = '<p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">' + (window.__adminStrings && window.__adminStrings.loading ? window.__adminStrings.loading : 'Loading...') + '</p>';
             emptyEl && emptyEl.classList.add('hidden');
             paginationEl && paginationEl.classList.add('hidden');
             if (window.Auth && window.Auth.applyToken) window.Auth.applyToken();
@@ -282,11 +294,11 @@
                             '<div class="min-w-0 flex-1 py-3.5 px-4 ' + (isUnread ? 'pl-3.5' : 'pl-4') + '">' +
                             '<p class="text-[14px] leading-relaxed text-gray-800 dark:text-gray-100">' + body + '</p>' +
                             '<p class="mt-1.5 text-[11px] text-gray-400 dark:text-gray-500">' + time + (sender ? ' · ' + sender : '') + '</p>' +
-                            (isUnread ? '<button type="button" class="admin-mark-one mt-2 text-[11px] font-medium text-brand-600 hover:underline dark:text-brand-400" data-id="' + nid + '">تحديد كمقروء</button>' : '') +
+                            (isUnread ? '<button type="button" class="admin-mark-one mt-2 text-[11px] font-medium text-brand-600 hover:underline dark:text-brand-400" data-id="' + nid + '">' + (window.__adminStrings && window.__adminStrings.mark_one_read ? window.__adminStrings.mark_one_read : 'Mark as read') + '</button>' : '') +
                             '</div></div>';
                     }).join('');
                     if (lastPage > 1 && paginationEl && pageInfoEl && prevBtn && nextBtn) {
-                        pageInfoEl.textContent = 'Page ' + currentPage + ' of ' + lastPage + (total ? ' (' + total + ')' : '');
+                        pageInfoEl.textContent = (window.__adminStrings && window.__adminStrings.page ? window.__adminStrings.page : 'Page') + ' ' + currentPage + ' ' + (window.__adminStrings && window.__adminStrings.of ? window.__adminStrings.of : 'of') + ' ' + lastPage + (total ? ' (' + total + ')' : '');
                         prevBtn.disabled = currentPage <= 1;
                         nextBtn.disabled = currentPage >= lastPage;
                         prevBtn.onclick = function () { if (currentPage > 1) loadAdminNotificationDropdown(currentPage - 1); };
@@ -305,10 +317,10 @@
                     });
                 } catch (e) {
                     console.error('Admin notifications render error:', e);
-                    listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">فشل تحميل الإشعارات.</p>';
+                    listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">' + (window.__adminStrings && window.__adminStrings.failed ? window.__adminStrings.failed : 'Failed to load.') + '</p>';
                 }
             }).catch(function (err) {
-                var msg = (err.response && err.response.status === 401) ? 'Please sign in again.' : (err.response && err.response.data && err.response.data.message) ? err.response.data.message : 'فشل تحميل الإشعارات.';
+                var msg = (err.response && err.response.status === 401) ? 'Please sign in again.' : (err.response && err.response.data && err.response.data.message) ? err.response.data.message : (window.__adminStrings && window.__adminStrings.failed ? window.__adminStrings.failed : 'Failed to load.');
                 listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">' + msg + '</p>';
             });
         }

@@ -27,6 +27,15 @@ Route::prefix('products')->as('products.')->group(function () {
     Route::get('/{product}', [\App\Http\Controllers\Api\ProductController::class, 'publicShow'])->name('public.show');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Contact (public submit)
+|--------------------------------------------------------------------------
+*/
+Route::post('/contact', [\App\Http\Controllers\Api\ContactMessageController::class, 'store'])->name('contact.store');
+
+Route::get('/cities', [\App\Http\Controllers\Api\CityController::class, 'index'])->name('cities.index');
+
 Route::middleware('cache.response:120')->group(function () {
     Route::prefix('vendors')->as('vendors.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\VendorController::class, 'index'])->name('public.index');
@@ -99,4 +108,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/{notification}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markRead'])->name('notifications.read');
     Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Api\NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
+
+    Route::get('/contact-messages', [\App\Http\Controllers\Api\ContactMessageController::class, 'index'])->name('contact-messages.index');
 });

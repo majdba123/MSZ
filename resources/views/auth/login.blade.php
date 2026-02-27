@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
-@section('title', 'Sign In — SyriaZone')
+@section('title', __('auth.sign_in') . ' — SyriaZone')
 
 @section('content')
 <div class="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
     <div class="w-full max-w-md">
         {{-- Card --}}
-        <div class="rounded-xl bg-white p-8 shadow-xl ring-1 ring-gray-100">
+        <div class="rounded-xl bg-white p-8 shadow-xl ring-1 ring-gray-100 dark:bg-gray-900 dark:ring-gray-800">
             {{-- Header --}}
             <div class="mb-8 text-center">
-                <h1 class="text-2xl font-bold tracking-tight text-gray-900">Welcome back</h1>
-                <p class="mt-2 text-sm text-gray-500">Sign in to your SyriaZone account</p>
+                <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ __('auth.welcome_back') }}</h1>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ __('auth.sign_in_to_account') }}</p>
             </div>
 
             {{-- Alert --}}
@@ -21,7 +21,7 @@
             <form id="login-form" class="space-y-5" novalidate>
                 <x-form.input
                     name="phone_number"
-                    label="Phone Number"
+                    label="{{ __('auth.phone_number') }}"
                     type="tel"
                     placeholder="09XXXXXXXX"
                     :required="true"
@@ -30,7 +30,7 @@
 
                 <x-form.input
                     name="password"
-                    label="Password"
+                    label="{{ __('auth.password') }}"
                     type="password"
                     placeholder="Enter your password"
                     :required="true"
@@ -38,7 +38,7 @@
                 />
 
                 <x-form.button type="submit" id="login-btn">
-                    <span id="login-btn-text">Sign In</span>
+                    <span id="login-btn-text">{{ __('nav.sign_in') }}</span>
                     <svg id="login-spinner" class="ml-2 hidden h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -47,9 +47,9 @@
             </form>
 
             {{-- Footer --}}
-            <p class="mt-6 text-center text-sm text-gray-500">
-                Don't have an account?
-                <a href="{{ route('register') }}" class="font-semibold text-brand-600 hover:text-brand-500">Create one</a>
+            <p class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                {{ __('auth.dont_have_account') }}
+                <a href="{{ route('register') }}" class="font-semibold text-brand-600 hover:text-brand-500">{{ __('auth.create_one') }}</a>
             </p>
         </div>
     </div>
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         btn.disabled = true;
         spinner.classList.remove('hidden');
-        btnText.textContent = 'Signing in...';
+        btnText.textContent = '{{ __("auth.signing_in") }}';
 
         try {
             const response = await window.axios.post('/api/auth/login', {
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } finally {
             btn.disabled = false;
             spinner.classList.add('hidden');
-            btnText.textContent = 'Sign In';
+            btnText.textContent = '{{ __("nav.sign_in") }}';
         }
     });
 

@@ -14,16 +14,16 @@
             <div class="relative hidden lg:block" id="mega-wrap">
                 <button id="mega-btn" class="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700 transition-all hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-brand-500 dark:hover:bg-brand-500/10 dark:hover:text-brand-400">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
-                    Categories
+                    {{ __('nav.categories') }}
                     <svg class="h-3.5 w-3.5 text-gray-400 transition-transform duration-200" id="mega-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
                 </button>
                 <div id="mega-panel" class="absolute left-0 top-full z-50 mt-3 hidden w-[780px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/10 dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/30" style="animation:fadeIn .15s ease-out;">
                     <div class="flex" style="min-height:340px;">
                         <div id="mega-cats" class="w-64 shrink-0 overflow-y-auto border-r border-gray-100 bg-gray-50/80 py-2 dark:border-gray-800 dark:bg-gray-900/50">
-                            <div class="px-5 py-8 text-center text-xs text-gray-400">Loading categories...</div>
+                            <div class="px-5 py-8 text-center text-xs text-gray-400">{{ __('nav.loading_categories') }}</div>
                         </div>
                         <div id="mega-subs" class="flex-1 p-5 overflow-y-auto">
-                            <p class="py-8 text-center text-sm text-gray-400 dark:text-gray-500">Hover a category to browse subcategories</p>
+                            <p class="py-8 text-center text-sm text-gray-400 dark:text-gray-500">{{ __('nav.hover_category') }}</p>
                         </div>
                     </div>
                 </div>
@@ -31,15 +31,17 @@
 
             {{-- Desktop Links --}}
             <div class="hidden items-center gap-1 md:flex">
-                <a href="{{ route('products.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">Products</a>
-                <a href="{{ route('categories.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">Categories</a>
-                <a href="{{ route('vendors.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">Stores</a>
+                <a href="{{ route('products.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">{{ __('nav.products') }}</a>
+                <a href="{{ route('categories.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">{{ __('nav.categories') }}</a>
+                <a href="{{ route('vendors.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">{{ __('nav.stores') }}</a>
             </div>
 
             <div class="flex-1"></div>
 
             {{-- Right Actions --}}
             <div class="flex items-center gap-1.5">
+                {{-- Language Switcher --}}
+                <x-language-switcher />
                 {{-- Dark Mode Toggle --}}
                 <button id="theme-toggle" class="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" title="Toggle theme">
                     <svg id="icon-sun" class="h-5 w-5 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
@@ -60,25 +62,25 @@
                     </button>
                     <div id="notification-dropdown" class="absolute right-0 top-full z-50 mt-2 hidden w-[min(420px,95vw)] max-h-[min(32rem,75vh)] overflow-hidden rounded-2xl bg-white/95 shadow-xl ring-1 ring-black/5 backdrop-blur-md dark:bg-gray-900/95 dark:ring-white/10 flex flex-col" style="animation:fadeIn .15s ease-out;">
                         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
-                            <span class="text-[13px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Notifications</span>
-                            <button type="button" id="notification-mark-all-read" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">Mark all as read</button>
+                            <span class="text-[13px] font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('nav.notifications') }}</span>
+                            <button type="button" id="notification-mark-all-read" class="text-[11px] font-medium uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400">{{ __('nav.mark_all_read') }}</button>
                         </div>
                         <div id="notification-list" class="overflow-y-auto flex-1 min-h-0 max-h-[min(24rem,55vh)]">
-                            <p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">Loading...</p>
+                            <p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">{{ __('common.loading') }}</p>
                         </div>
-                        <div id="notification-empty" class="hidden px-4 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500 shrink-0">No notifications.</div>
+                        <div id="notification-empty" class="hidden px-4 py-12 text-center text-[13px] text-gray-400 dark:text-gray-500 shrink-0">{{ __('nav.no_notifications') }}</div>
                         <div id="notification-pagination" class="hidden border-t border-gray-100 dark:border-gray-800 px-3 py-2 flex items-center justify-between gap-2 shrink-0 bg-gray-50/50 dark:bg-gray-800/30">
-                            <button type="button" id="notification-prev" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">Prev</button>
-                            <span id="notification-page-info" class="text-[11px] text-gray-500 dark:text-gray-400">Page 1 of 1</span>
-                            <button type="button" id="notification-next" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">Next</button>
+                            <button type="button" id="notification-prev" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">{{ __('nav.prev') }}</button>
+                            <span id="notification-page-info" class="text-[11px] text-gray-500 dark:text-gray-400">{{ __('nav.page') }} 1 {{ __('nav.of') }} 1</span>
+                            <button type="button" id="notification-next" class="rounded-lg px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 disabled:opacity-50 disabled:pointer-events-none">{{ __('nav.next') }}</button>
                         </div>
                     </div>
                 </div>
 
                 {{-- Guest Buttons (hidden when authenticated) --}}
                 <div id="nav-guest" class="hidden items-center gap-1.5 sm:flex">
-                    <a href="{{ route('login') }}" class="rounded-xl px-3.5 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">Sign In</a>
-                    <a href="{{ route('register') }}" class="rounded-xl bg-brand-500 px-4 py-2 text-sm font-bold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600 hover:shadow-md hover:shadow-brand-500/30">Register</a>
+                    <a href="{{ route('login') }}" class="rounded-xl px-3.5 py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white">{{ __('nav.sign_in') }}</a>
+                    <a href="{{ route('register') }}" class="rounded-xl bg-brand-500 px-4 py-2 text-sm font-bold text-white shadow-sm shadow-brand-500/20 transition-all hover:bg-brand-600 hover:shadow-md hover:shadow-brand-500/30">{{ __('nav.register') }}</a>
                 </div>
 
                 {{-- Profile Dropdown (shown when authenticated) --}}
@@ -89,7 +91,7 @@
                         </div>
                         <div class="hidden sm:block text-left">
                             <p id="profile-name" class="text-sm font-bold leading-tight text-gray-900 dark:text-white"></p>
-                            <p id="profile-role" class="text-[10px] font-medium text-gray-400 dark:text-gray-500">Customer</p>
+                            <p id="profile-role" class="text-[10px] font-medium text-gray-400 dark:text-gray-500">{{ __('nav.customer') }}</p>
                         </div>
                         <svg class="h-3.5 w-3.5 text-gray-400 transition-transform duration-200" id="profile-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
                     </button>
@@ -112,17 +114,17 @@
                         <div class="py-2">
                             <a href="{{ route('profile') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800">
                                 <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-                                My Profile
+                                {{ __('nav.my_profile') }}
                             </a>
                             <a id="dd-dashboard-link" href="#" class="hidden items-center gap-3 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800">
                                 <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z"/></svg>
-                                Dashboard
+                                {{ __('nav.dashboard') }}
                             </a>
                         </div>
                         <div class="border-t border-gray-100 py-2 dark:border-gray-800">
                             <button onclick="handleLogout()" class="flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
-                                Sign Out
+                                {{ __('nav.sign_out') }}
                             </button>
                         </div>
                     </div>
@@ -139,9 +141,9 @@
     {{-- Mobile Drawer --}}
     <div id="mobile-drawer" class="fixed inset-0 z-[60] hidden">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeMobileMenu()"></div>
-        <div class="absolute right-0 top-0 flex h-full w-80 max-w-[85vw] flex-col bg-white shadow-2xl dark:bg-gray-900" style="animation:slideInRight .25s cubic-bezier(.22,1,.36,1);">
+        <div class="absolute right-0 top-0 flex h-full w-80 max-w-[85vw] flex-col bg-white shadow-2xl dark:bg-gray-900 rtl:right-auto rtl:left-0" style="animation:slideInRight .25s cubic-bezier(.22,1,.36,1);">
             <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800">
-                <span class="text-lg font-extrabold text-gray-900 dark:text-white">Menu</span>
+                <span class="text-lg font-extrabold text-gray-900 dark:text-white">{{ __('nav.menu') }}</span>
                 <button onclick="closeMobileMenu()" class="rounded-lg p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
             </div>
 
@@ -157,8 +159,8 @@
                     </div>
                 </div>
                 <div class="mt-3 flex gap-2">
-                    <a href="{{ route('profile') }}" onclick="closeMobileMenu()" class="flex-1 rounded-xl border border-gray-200 py-2 text-center text-xs font-bold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Profile</a>
-                    <a id="mob-dashboard-link" href="#" onclick="closeMobileMenu()" class="hidden flex-1 rounded-xl border border-gray-200 py-2 text-center text-xs font-bold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Dashboard</a>
+                    <a href="{{ route('profile') }}" onclick="closeMobileMenu()" class="flex-1 rounded-xl border border-gray-200 py-2 text-center text-xs font-bold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">{{ __('common.profile') }}</a>
+                    <a id="mob-dashboard-link" href="#" onclick="closeMobileMenu()" class="hidden flex-1 rounded-xl border border-gray-200 py-2 text-center text-xs font-bold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">{{ __('nav.dashboard') }}</a>
                 </div>
             </div>
 
@@ -166,32 +168,32 @@
                 <div class="space-y-1">
                     <a href="{{ route('products.index') }}" onclick="closeMobileMenu()" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
                         <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
-                        Products
+                        {{ __('nav.products') }}
                     </a>
                     <a href="{{ route('categories.index') }}" onclick="closeMobileMenu()" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
                         <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z"/></svg>
-                        Categories
+                        {{ __('nav.categories') }}
                     </a>
                     <a href="{{ route('vendors.index') }}" onclick="closeMobileMenu()" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
                         <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35"/></svg>
-                        Stores
+                        {{ __('nav.stores') }}
                     </a>
                 </div>
                 <div class="mt-4 border-t border-gray-200 pt-4 dark:border-gray-800">
-                    <p class="mb-2 text-[11px] font-bold uppercase tracking-widest text-gray-400">Categories</p>
+                    <p class="mb-2 text-[11px] font-bold uppercase tracking-widest text-gray-400">{{ __('nav.categories') }}</p>
                     <div id="mobile-cats" class="space-y-0.5"></div>
                 </div>
             </div>
 
             {{-- Mobile Footer --}}
             <div id="mobile-guest-footer" class="border-t border-gray-200 px-5 py-4 dark:border-gray-800">
-                <a href="{{ route('login') }}" class="mb-2 block w-full rounded-xl border border-gray-200 py-2.5 text-center text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Sign In</a>
-                <a href="{{ route('register') }}" class="block w-full rounded-xl bg-brand-500 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-brand-600">Create Account</a>
+                <a href="{{ route('login') }}" class="mb-2 block w-full rounded-xl border border-gray-200 py-2.5 text-center text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">{{ __('nav.sign_in') }}</a>
+                <a href="{{ route('register') }}" class="block w-full rounded-xl bg-brand-500 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-brand-600">{{ __('nav.register') }}</a>
             </div>
             <div id="mobile-auth-footer" class="hidden border-t border-gray-200 px-5 py-4 dark:border-gray-800">
                 <button onclick="handleLogout();closeMobileMenu();" class="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 py-2.5 text-sm font-bold text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
-                    Sign Out
+                    {{ __('nav.sign_out') }}
                 </button>
             </div>
         </div>
@@ -199,6 +201,16 @@
 </header>
 
 <script>
+@php
+    $navStrings = [
+        'loading' => __('common.loading'),
+        'no_categories' => __('common.no_categories'),
+        'no_subcategories' => __('common.no_subcategories'),
+        'view_all' => __('common.view_all'),
+        'failed_notifications' => __('common.failed_notifications'),
+    ];
+@endphp
+window.__navStrings = @json($navStrings);
 document.addEventListener('DOMContentLoaded', function () {
     updateNavbar();
     loadNavCategories();
@@ -347,7 +359,7 @@ function loadNotificationDropdown(page) {
     const prevBtn = document.getElementById('notification-prev');
     const nextBtn = document.getElementById('notification-next');
     if (!listEl) return;
-    listEl.innerHTML = '<p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">Loading...</p>';
+    listEl.innerHTML = '<p class="px-4 py-10 text-center text-[13px] text-gray-400 dark:text-gray-500">' + (window.__navStrings && window.__navStrings.loading ? window.__navStrings.loading : 'Loading...') + '</p>';
     emptyEl?.classList.add('hidden');
     paginationEl?.classList.add('hidden');
     if (window.Auth?.applyToken) window.Auth.applyToken();
@@ -460,7 +472,7 @@ function loadNotificationDropdown(page) {
             listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">Failed to show notifications.</p>';
         }
     }).catch(function (err) {
-        const msg = err.response?.status === 401 ? 'Please sign in again.' : (err.response?.data?.message || 'Failed to load notifications.');
+        const msg = err.response?.status === 401 ? 'Please sign in again.' : (err.response?.data?.message || (window.__navStrings && window.__navStrings.failed_notifications ? window.__navStrings.failed_notifications : 'Failed to load notifications.'));
         listEl.innerHTML = '<p class="px-4 py-6 text-center text-sm text-red-500">' + (typeof _esc !== 'undefined' ? _esc(msg) : msg) + '</p>';
     });
 }
@@ -550,7 +562,7 @@ async function loadNavCategories() {
                     <svg class="mob-chev h-3.5 w-3.5 text-gray-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
                 </button>
                 <div class="hidden ml-12 space-y-0.5 pb-2 pt-1">
-                    <a href="/categories/${c.id}" onclick="closeMobileMenu()" class="block rounded-lg px-3 py-2 text-xs font-semibold text-brand-600 hover:bg-gray-100 dark:text-brand-400">View All</a>
+                    <a href="/categories/${c.id}" onclick="closeMobileMenu()" class="block rounded-lg px-3 py-2 text-xs font-semibold text-brand-600 hover:bg-gray-100 dark:text-brand-400">${window.__navStrings && window.__navStrings.view_all ? window.__navStrings.view_all : 'View All'}</a>
                     ${subs.map(s => `<a href="/subcategories/${s.id}" onclick="closeMobileMenu()" class="block rounded-lg px-3 py-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200">${_esc(s.name)}</a>`).join('')}
                 </div>
             </div>`;
@@ -571,7 +583,7 @@ window.showNavSubs = function(catId, btn) {
     panel.innerHTML = `
         <div class="mb-4 flex items-center justify-between">
             <h3 class="text-base font-bold text-gray-900 dark:text-white">${_esc(cat.name)}</h3>
-            <a href="/categories/${cat.id}" class="text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400">View All &rarr;</a>
+            <a href="/categories/${cat.id}" class="text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400">${window.__navStrings && window.__navStrings.view_all ? window.__navStrings.view_all : 'View All'} &rarr;</a>
         </div>
         <div class="grid grid-cols-2 gap-2">
             ${cat.subcategories.map(s => `

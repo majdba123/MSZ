@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'My Profile — SyriaZone')
+@section('title', __('profile.my_profile') . ' — ' . __('SyriaZone'))
 
 @section('content')
 <div class="bg-white dark:bg-gray-950">
     <div class="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
         <div class="mx-auto max-w-screen-2xl px-4 py-3 sm:px-6 lg:px-8">
             <nav class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                <a href="{{ route('home') }}" class="hover:text-brand-600 dark:hover:text-brand-400">Home</a>
+                <a href="{{ route('home') }}" class="hover:text-brand-600 dark:hover:text-brand-400">{{ __('profile.home') }}</a>
                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
-                <span class="font-medium text-gray-900 dark:text-white">My Profile</span>
+                <span class="font-medium text-gray-900 dark:text-white">{{ __('profile.my_profile') }}</span>
             </nav>
         </div>
     </div>
@@ -18,21 +18,21 @@
         {{-- Loading --}}
         <div id="profile-loading" class="py-20 text-center">
             <div class="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500 dark:border-gray-700"></div>
-            <p class="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">Loading profile...</p>
+            <p class="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('profile.loading') }}</p>
         </div>
 
         {{-- Not Authenticated --}}
         <div id="profile-guest" class="hidden py-20 text-center">
             <svg class="mx-auto h-16 w-16 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-            <p class="mt-4 text-base font-bold text-gray-900 dark:text-white">Please sign in to view your profile</p>
-            <a href="{{ route('login') }}" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-500 px-6 py-3 text-sm font-bold text-white hover:bg-brand-600">Sign In</a>
+            <p class="mt-4 text-base font-bold text-gray-900 dark:text-white">{{ __('profile.sign_in_to_view') }}</p>
+            <a href="{{ route('login') }}" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-500 px-6 py-3 text-sm font-bold text-white hover:bg-brand-600">{{ __('auth.sign_in') }}</a>
         </div>
 
         {{-- Profile Form --}}
         <div id="profile-content" class="hidden">
             <div class="mb-8">
-                <h1 class="text-2xl font-black text-gray-900 dark:text-white">My Profile</h1>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update your personal information and manage favourites</p>
+                <h1 class="text-2xl font-black text-gray-900 dark:text-white">{{ __('profile.my_profile') }}</h1>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('profile.update_info') }}</p>
             </div>
 
             <div class="grid gap-8 lg:grid-cols-3">
@@ -41,7 +41,7 @@
 
             {{-- Avatar Section --}}
             <div class="mb-6 rounded-2xl border border-gray-200/80 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
-                <label class="mb-4 block text-sm font-bold text-gray-900 dark:text-white">Profile Photo</label>
+                <label class="mb-4 block text-sm font-bold text-gray-900 dark:text-white">{{ __('profile.profile_photo') }}</label>
                 <div class="flex items-center gap-6">
                     <div class="relative">
                         <div id="avatar-preview" class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-brand-400 to-brand-600 ring-4 ring-white shadow-lg dark:ring-gray-800">
@@ -53,29 +53,29 @@
                         <input type="file" id="avatar-input" class="hidden" accept="image/*">
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Upload a new avatar</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('profile.upload_avatar') }}</p>
                         <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">JPG, PNG or GIF. Max 2MB.</p>
-                        <button id="avatar-remove" class="mt-2 hidden text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400">Remove photo</button>
+                        <button id="avatar-remove" class="mt-2 hidden text-xs font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400">{{ __('profile.remove_photo') }}</button>
                     </div>
                 </div>
             </div>
 
             {{-- Form Fields --}}
             <div class="mb-6 rounded-2xl border border-gray-200/80 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
-                <h3 class="mb-5 text-base font-bold text-gray-900 dark:text-white">Personal Information</h3>
+                <h3 class="mb-5 text-base font-bold text-gray-900 dark:text-white">{{ __('profile.personal_info') }}</h3>
                 <form id="profile-form" class="space-y-5">
                     <div>
-                        <label for="p-name" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+                        <label for="p-name" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('profile.full_name') }}</label>
                         <input type="text" id="p-name" class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-brand-500" placeholder="Your full name">
                         <p id="err-name" class="mt-1 hidden text-xs text-red-500"></p>
                     </div>
                     <div>
-                        <label for="p-email" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
+                        <label for="p-email" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('profile.email_address') }}</label>
                         <input type="email" id="p-email" class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-brand-500" placeholder="you@example.com">
                         <p id="err-email" class="mt-1 hidden text-xs text-red-500"></p>
                     </div>
                     <div>
-                        <label for="p-phone" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                        <label for="p-phone" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('profile.phone_number') }}</label>
                         <input type="text" id="p-phone" class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-brand-500" placeholder="09XXXXXXXX">
                         <p id="err-phone_number" class="mt-1 hidden text-xs text-red-500"></p>
                     </div>
@@ -87,7 +87,7 @@
                             <p id="p-type" class="mt-0.5 text-sm font-bold text-gray-900 dark:text-white">—</p>
                         </div>
                         <div>
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Member Since</p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">{{ __('profile.member_since') }}</p>
                             <p id="p-since" class="mt-0.5 text-sm font-bold text-gray-900 dark:text-white">—</p>
                         </div>
                     </div>
@@ -98,7 +98,7 @@
                     </div>
                     <div id="save-error" class="hidden items-center gap-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:bg-red-500/10 dark:text-red-400">
                         <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-                        <span id="save-error-msg">Something went wrong.</span>
+                        <span id="save-error-msg">{{ __('profile.something_wrong') }}</span>
                     </div>
 
                     <button type="submit" id="save-btn" class="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 py-3.5 text-sm font-bold text-white transition-all hover:bg-brand-600 active:scale-[.97] dark:bg-white dark:text-gray-900 dark:hover:bg-brand-500 dark:hover:text-white">
@@ -118,8 +118,8 @@
                                 <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
                             </div>
                             <div>
-                                <h3 class="text-base font-bold text-gray-900 dark:text-white">My Favourites</h3>
-                                <p id="fav-count" class="text-xs text-gray-400 dark:text-gray-500">Loading...</p>
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ __('profile.my_favourites') }}</h3>
+                                <p id="fav-count" class="text-xs text-gray-400 dark:text-gray-500">{{ __('common.loading') }}</p>
                             </div>
                         </div>
                     </div>
@@ -139,10 +139,10 @@
                 <div class="mt-6 rounded-2xl border border-gray-200/80 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
                     <div class="mb-5 flex items-center justify-between">
                         <div>
-                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Order History</h3>
-                            <p id="orders-count" class="text-xs text-gray-400 dark:text-gray-500">Loading...</p>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ __('profile.order_history') }}</h3>
+                            <p id="orders-count" class="text-xs text-gray-400 dark:text-gray-500">{{ __('common.loading') }}</p>
                         </div>
-                        <p class="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">Payment: Cash only</p>
+                        <p class="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">{{ __('profile.payment_cash') }}</p>
                     </div>
 
                     <div class="mb-4 grid gap-2 sm:grid-cols-4">
@@ -150,7 +150,7 @@
                             class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-900 outline-none transition-colors focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                         <select id="orders-filter-status"
                             class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-900 outline-none transition-colors focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                            <option value="">All Statuses</option>
+                            <option value="">{{ __('profile.all_statuses') }}</option>
                             <option value="pending">Pending</option>
                             <option value="confirmed">Confirmed</option>
                             <option value="completed">Completed</option>
@@ -184,6 +184,39 @@
                         <div class="flex gap-2">
                             <button id="orders-prev" class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Prev</button>
                             <button id="orders-next" class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Contact messages history --}}
+                <div class="mt-6 rounded-2xl border border-gray-200/80 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+                    <div class="mb-5 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-500/10">
+                                <svg class="h-5 w-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white">Contact history</h3>
+                                <p id="contact-msgs-count" class="text-xs text-gray-400 dark:text-gray-500">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="contact-msgs-loading" class="space-y-3">
+                        <div class="skeleton h-24 rounded-xl"></div>
+                        <div class="skeleton h-24 rounded-xl"></div>
+                    </div>
+                    <div id="contact-msgs-list" class="space-y-3"></div>
+                    <div id="contact-msgs-empty" class="hidden py-10 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-200 dark:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+                        <p class="mt-3 text-sm font-bold text-gray-500 dark:text-gray-400">No contact messages yet</p>
+                        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Use the Contact Us form on the home page to get in touch.</p>
+                        <a href="{{ route('home') }}#contact" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-600 dark:bg-white dark:text-gray-900 dark:hover:bg-brand-500 dark:hover:text-white">Contact Us</a>
+                    </div>
+                    <div id="contact-msgs-pagination" class="mt-4 hidden items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
+                        <p id="contact-msgs-page-info" class="text-xs text-gray-500 dark:text-gray-400"></p>
+                        <div class="flex gap-2">
+                            <button type="button" id="contact-msgs-prev" class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Prev</button>
+                            <button type="button" id="contact-msgs-next" class="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Next</button>
                         </div>
                     </div>
                 </div>
@@ -223,7 +256,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     $('profile-content').classList.remove('hidden');
     loadFavourites();
     let currentOrdersPage = 1;
+    let currentContactMsgsPage = 1;
     loadOrderHistory();
+    loadContactMessages();
 
     let pendingAvatar = null;
     let orderFilterDebounce = null;
@@ -263,6 +298,17 @@ document.addEventListener('DOMContentLoaded', async function () {
         $('orders-filter-vendor').value = '';
         currentOrdersPage = 1;
         loadOrderHistory();
+    });
+
+    $('contact-msgs-prev').addEventListener('click', () => {
+        if (currentContactMsgsPage > 1) {
+            currentContactMsgsPage -= 1;
+            loadContactMessages();
+        }
+    });
+    $('contact-msgs-next').addEventListener('click', () => {
+        currentContactMsgsPage += 1;
+        loadContactMessages();
     });
 
     function fillForm(u) {
@@ -468,6 +514,66 @@ document.addEventListener('DOMContentLoaded', async function () {
         };
 
         return `<span class="rounded-full px-2 py-0.5 text-[10px] font-bold ${map[normalized] || map.pending}">${escH(normalized || 'pending')}</span>`;
+    }
+
+    async function loadContactMessages() {
+        const loadingEl = $('contact-msgs-loading');
+        const listEl = $('contact-msgs-list');
+        const emptyEl = $('contact-msgs-empty');
+        const countEl = $('contact-msgs-count');
+        const paginationEl = $('contact-msgs-pagination');
+        const pageInfoEl = $('contact-msgs-page-info');
+        const prevBtn = $('contact-msgs-prev');
+        const nextBtn = $('contact-msgs-next');
+        if (!listEl) return;
+        try {
+            const res = await window.axios.get('/api/contact-messages', { params: { page: currentContactMsgsPage, per_page: 10 } });
+            const messages = res.data.data || [];
+            const meta = res.data.meta || {};
+            const total = meta.total || 0;
+            const lastPage = meta.last_page || 1;
+            const currentPage = meta.current_page || 1;
+            if (loadingEl) loadingEl.classList.add('hidden');
+            countEl.textContent = total + ' message' + (total !== 1 ? 's' : '');
+            if (!messages.length) {
+                emptyEl.classList.remove('hidden');
+                if (paginationEl) paginationEl.classList.add('hidden');
+                return;
+            }
+            emptyEl.classList.add('hidden');
+            listEl.innerHTML = messages.map(function (m) {
+                const date = m.created_at ? new Date(m.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+                const statusClass = m.status === 'replied' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400';
+                let replyHtml = '';
+                if (m.admin_reply) {
+                    const repliedAt = m.replied_at ? new Date(m.replied_at).toLocaleDateString() : '';
+                    replyHtml = `<div class="mt-3 rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/60"><p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Admin reply${repliedAt ? ' · ' + repliedAt : ''}</p><p class="mt-1.5 text-sm text-gray-700 dark:text-gray-300">${escH(m.admin_reply)}</p></div>`;
+                }
+                return `<article class="rounded-2xl border border-gray-200/80 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-800/50">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="rounded-full px-2 py-0.5 text-[10px] font-bold ${statusClass}">${escH(m.status)}</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">${date}</span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">${escH(m.message)}</p>
+                    ${replyHtml}
+                </article>`;
+            }).join('');
+            if (lastPage > 1 && paginationEl && pageInfoEl && prevBtn && nextBtn) {
+                paginationEl.classList.remove('hidden');
+                paginationEl.classList.add('flex');
+                pageInfoEl.textContent = 'Page ' + currentPage + ' of ' + lastPage;
+                prevBtn.disabled = currentPage <= 1;
+                nextBtn.disabled = currentPage >= lastPage;
+            } else if (paginationEl) {
+                paginationEl.classList.add('hidden');
+                paginationEl.classList.remove('flex');
+            }
+        } catch (e) {
+            if (loadingEl) loadingEl.classList.add('hidden');
+            if (countEl) countEl.textContent = '0 messages';
+            emptyEl.classList.remove('hidden');
+            if (paginationEl) paginationEl.classList.add('hidden');
+        }
     }
 
     window.removeFav = async function(productId, cardEl) {

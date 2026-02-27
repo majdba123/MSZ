@@ -14,6 +14,9 @@ class AuthService
             'name' => $data['name'],
             'phone_number' => $data['phone_number'],
             'national_id' => $data['national_id'],
+            'city_id' => $data['city_id'],
+            'latitude' => $data['latitude'],
+            'longitude' => $data['longitude'],
             'email' => $data['email'] ?? null,
             'password' => isset($data['password']) ? $data['password'] : null,
         ]);

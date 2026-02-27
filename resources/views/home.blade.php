@@ -11,6 +11,7 @@
     <x-home.best-selling-products />
     <x-home.most-favorited-products />
     <x-home.trust-badges />
+    <x-home.contact />
 @endsection
 
 @push('scripts')
@@ -228,6 +229,60 @@ document.addEventListener('DOMContentLoaded', async function () {
             renderProductCards(data, gridEl, emptyEl, loadingEl);
         } catch (e) { if (emptyEl) emptyEl.classList.remove('hidden'); }
         if (loadingEl) loadingEl.classList.add('hidden');
+    }
+
+    // ═══ CONTACT FORM ═══
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        const user = window.Auth && window.Auth.getUser && window.Auth.getUser();
+        if (user) {
+            const nameEl = document.getElementById('contact-name');
+            const emailEl = document.getElementById('contact-email');
+            if (nameEl && !nameEl.value) nameEl.value = user.name || '';
+            if (emailEl && !emailEl.value) emailEl.value = user.email || '';
+        }
+        contactForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('contact-submit');
+            const btnText = submitBtn && submitBtn.querySelector('.contact-btn-text');
+            const name = (document.getElementById('contact-name') && document.getElementById('contact-name').value) || '';
+            const email = document.getElementById('contact-email') && document.getElementById('contact-email').value;
+            const message = document.getElementById('contact-message') && document.getElementById('contact-message').value;
+            document.getElementById('contact-success').classList.add('hidden');
+            document.getElementById('contact-error').classList.add('hidden');
+            ['name', 'email', 'message'].forEach(k => { const el = document.getElementById('contact-err-' + k); if (el) { el.classList.add('hidden'); el.textContent = ''; } });
+            if (!email || !message) return;
+            submitBtn.disabled = true;
+            if (btnText) btnText.textContent = 'Sending...';
+            try {
+                await window.axios.post('/api/contact', { name: name.trim() || null, email: email.trim(), message: message.trim() });
+                document.getElementById('contact-success').classList.remove('hidden');
+                document.getElementById('contact-success').classList.add('flex');
+                contactForm.reset();
+                if (user) {
+                    const nameEl = document.getElementById('contact-name');
+                    const emailEl = document.getElementById('contact-email');
+                    if (nameEl) nameEl.value = user.name || '';
+                    if (emailEl) emailEl.value = user.email || '';
+                }
+            } catch (err) {
+                if (err.response && err.response.status === 422 && err.response.data.errors) {
+                    const errors = err.response.data.errors;
+                    Object.keys(errors).forEach(key => {
+                        const el = document.getElementById('contact-err-' + key);
+                        if (el) { el.textContent = errors[key][0]; el.classList.remove('hidden'); }
+                    });
+                } else {
+                    document.getElementById('contact-error').classList.remove('hidden');
+                    document.getElementById('contact-error').classList.add('flex');
+                    const msgEl = document.getElementById('contact-error-msg');
+                    if (msgEl) msgEl.textContent = err.response?.data?.message || 'Something went wrong. Please try again.';
+                }
+            } finally {
+                submitBtn.disabled = false;
+                if (btnText) btnText.textContent = 'Send Message';
+            }
+        });
     }
 
     // ═══ INIT ═══

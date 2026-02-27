@@ -21,6 +21,9 @@ class Vendor extends Model
         'store_name',
         'description',
         'address',
+        'city_id',
+        'latitude',
+        'longitude',
         'logo',
         'is_active',
         'paid_amount',
@@ -34,7 +37,17 @@ class Vendor extends Model
         return [
             'is_active' => 'boolean',
             'paid_amount' => 'decimal:2',
+            'latitude' => 'decimal:8',
+            'longitude' => 'decimal:8',
         ];
+    }
+
+    /**
+     * The city where the store is located.
+     */
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
     }
 
     /**

@@ -26,7 +26,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['admin_notification_id', 'user_id']);
+            $table->unique(['admin_notification_id', 'user_id'], 'anr_notification_user_unique');
         });
     }
 

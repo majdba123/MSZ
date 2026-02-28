@@ -37,20 +37,12 @@ jobs:
       - name: Build assets
         run: npm run build
 
-      - name: Prepare SSH key
-        run: |
-          echo "$SSH_PRIVATE_KEY" | sed 's/\r$//' > deploy_key
-          chmod 600 deploy_key
-          head -1 deploy_key
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
       - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          key_path: /github/workspace/deploy_key
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd /var/www/MSZ

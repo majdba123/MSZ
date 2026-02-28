@@ -108,15 +108,18 @@
         </div>
     </div>
 
-    <script>
-        window.__adminStrings = @json([
+    @php
+        $adminStrings = [
             'loading' => __('admin.loading'),
             'no_notifications' => __('admin.no_notifications'),
             'failed' => __('common.failed_notifications'),
             'page' => __('nav.page'),
             'of' => __('nav.of'),
             'mark_one_read' => __('admin.mark_one_read'),
-        ]);
+        ];
+    @endphp
+    <script>
+        window.__adminStrings = @json($adminStrings);
         function toggleAdminTheme() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('sz_theme', isDark ? 'dark' : 'light');

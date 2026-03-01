@@ -148,14 +148,19 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildHero() {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF111827), Color(0xFF1F2937), Color(0xFFEA580C)],
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
+          colors: [
+            theme.colorScheme.inverseSurface,
+            theme.colorScheme.inverseSurface.withValues(alpha: 0.9),
+            theme.colorScheme.primary,
+          ],
         ),
       ),
       child: Column(
@@ -163,9 +168,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: const Color(0xFFF97316).withOpacity(0.3)),
+              border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.3)),
             ),
             child: const Text('Free shipping on orders over 50,000 SYP', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFFDBA74))),
           ),
@@ -193,7 +198,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               ),
               const SizedBox(width: 12),
               OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () => Navigator.of(context).pushNamed('/categories'),
                 icon: const Icon(Icons.grid_view_rounded, size: 18),
                 label: const Text('Browse Categories'),
                 style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white54)),
@@ -211,10 +216,11 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(
+          SectionHeader(
             badge: 'Shop by Category',
             title: 'Browse Our Collections',
             subtitle: "Find what you're looking for across our curated categories",
+            action: TextButton(onPressed: () => Navigator.of(context).pushNamed('/categories'), child: Text(AppStrings.tr('common.view_all'))),
           ),
           if (_loading && _categories.isEmpty)
             const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()))
@@ -231,7 +237,11 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 mainAxisSpacing: 12,
               ),
               itemCount: _categories.length,
-              itemBuilder: (context, i) => CategoryCard(category: _categories[i], onTap: () {}),
+              itemBuilder: (context, i) => CategoryCard(
+              key: ValueKey('cat_${_categories[i].id}'),
+              category: _categories[i],
+              onTap: () => Navigator.of(context).pushNamed('/category/${_categories[i].id}'),
+            ),
             ),
         ],
       ),
@@ -240,8 +250,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
 
   Widget _buildSectionSubcategories() {
     if (_subcategories.isEmpty) return const SizedBox.shrink();
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      color: const Color(0xFFF9FAFB),
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,46 +262,52 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             title: 'Popular Subcategories',
             subtitle: 'Explore specific product types',
           ),
-          SizedBox(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _subcategories.length,
-              itemBuilder: (context, i) {
-                final s = _subcategories[i];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Card(
-                    child: InkWell(
-                      onTap: () {},
-                      borderRadius: BorderRadius.circular(16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(color: const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(12)),
-                              child: const Icon(Icons.label_outline, color: Color(0xFF9CA3AF)),
-                            ),
-                            const SizedBox(width: 12),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(s.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                                if (s.categoryName != null) Text(s.categoryName!, style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF))),
-                              ],
-                            ),
-                          ],
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                cacheExtent: 200,
+                itemCount: _subcategories.length,
+                itemBuilder: (context, i) {
+                  final s = _subcategories[i];
+                  return Padding(
+                    key: ValueKey('sub_${s.id}'),
+                    padding: const EdgeInsetsDirectional.only(end: 12),
+                    child: Card(
+                      child: InkWell(
+                        onTap: () => Navigator.of(context).pushNamed('/subcategory/${s.id}'),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF3F4F6),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(Icons.label_outline, color: Color(0xFF9CA3AF)),
+                              ),
+                              const SizedBox(width: 12),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(s.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                                  if (s.categoryName != null)
+                                    Text(s.categoryName!, style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF))),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
             ),
           ),
         ],
@@ -308,7 +325,13 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             colors: [Color(0xFFEA580C), Color(0xFFF97316), Color(0xFFEAB308)],
           ),
           borderRadius: BorderRadius.circular(24),
-          boxShadow: [BoxShadow(color: const Color(0xFFF97316).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8))],
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFF97316).withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -331,7 +354,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               ),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () => Navigator.of(context).pushNamed('/products'),
               child: const Text('Shop Now →', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
             ),
           ],
@@ -341,16 +364,18 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildSectionVendors() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      color: const Color(0xFFF9FAFB),
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(
+          SectionHeader(
             badge: 'Stores',
             title: 'Featured Stores',
             subtitle: 'Trusted vendors with quality products',
+            action: TextButton(onPressed: () => Navigator.of(context).pushNamed('/vendors'), child: Text(AppStrings.tr('common.view_all'))),
           ),
           if (_vendors.isEmpty)
             const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('No stores available yet.', style: TextStyle(color: Color(0xFF6B7280)))))
@@ -359,10 +384,12 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               height: 220,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                cacheExtent: 400,
                 itemCount: _vendors.length,
                 itemBuilder: (context, i) => Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: VendorCard(vendor: _vendors[i], onTap: () {}),
+                  padding: const EdgeInsetsDirectional.only(end: 12),
+                  key: ValueKey('vendor_${_vendors[i].id}'),
+                  child: VendorCard(vendor: _vendors[i], onTap: () => Navigator.of(context).pushNamed('/vendor/${_vendors[i].id}')),
                 ),
               ),
             ),
@@ -381,10 +408,18 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             badge: badge,
             title: title,
             subtitle: subtitle,
-            action: TextButton(onPressed: () {}, child: const Text('View All')),
+            action: TextButton(onPressed: () => Navigator.of(context).pushNamed('/products'), child: Text(AppStrings.tr('common.view_all'))),
           ),
           if (list.isEmpty)
-            const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('No products yet.', style: TextStyle(color: Color(0xFF9CA3AF)))))
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  'No products yet.',
+                  style: TextStyle(color: Theme.of(context).colorScheme.outline),
+                ),
+              ),
+            )
           else
             GridView.builder(
               shrinkWrap: true,
@@ -396,11 +431,15 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 mainAxisSpacing: 12,
               ),
               itemCount: list.length,
-              itemBuilder: (context, i) => ProductCard(
-                product: list[i],
-                onTap: () {},
-                onAddToCart: () {},
-              ),
+              itemBuilder: (context, i) {
+                final product = list[i];
+                return ProductCard(
+                  key: ValueKey('product_${product.id}_$badge'),
+                  product: product,
+                  onTap: () => Navigator.of(context).pushNamed('/product/${product.id}'),
+                  onAddToCart: () {},
+                );
+              },
             ),
         ],
       ),
@@ -408,6 +447,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildTrustBadges() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final items = <Map<String, dynamic>>[
       {'icon': Icons.local_shipping_outlined, 'title': 'Fast Delivery', 'subtitle': 'Quick & reliable shipping', 'color': const Color(0xFFF97316)},
       {'icon': Icons.verified_user_outlined, 'title': 'Secure Shopping', 'subtitle': '100% safe & encrypted', 'color': const Color(0xFF059669)},
@@ -415,7 +456,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
       {'icon': Icons.support_agent, 'title': '24/7 Support', 'subtitle': 'Always here to help', 'color': const Color(0xFF9333EA)},
     ];
     return Container(
-      color: const Color(0xFFF9FAFB),
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
       child: Column(
         children: [
@@ -428,23 +469,36 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             childAspectRatio: 1.1,
             children: items.map((e) {
               final color = e['color'] as Color;
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(16)),
-                        child: Icon(e['icon'] as IconData, color: color, size: 24),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(e['title'] as String, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 4),
-                      Text(e['subtitle'] as String, style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)), textAlign: TextAlign.center),
-                    ],
+              return RepaintBoundary(
+                child: Card(
+                  color: colorScheme.surface,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Icon(e['icon'] as IconData, color: color, size: 24),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          e['title'] as String,
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: colorScheme.onSurface),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          e['subtitle'] as String,
+                          style: TextStyle(fontSize: 12, color: colorScheme.outline),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -462,7 +516,11 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         children: [
           Text(AppStrings.tr('home.contact'), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface)),
           const SizedBox(height: 8),
-          Text(AppStrings.tr('home.contact_subtitle'), style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)), textAlign: TextAlign.center),
+          Text(
+            AppStrings.tr('home.contact_subtitle'),
+            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.outline),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 24),
           Card(
             child: Padding(

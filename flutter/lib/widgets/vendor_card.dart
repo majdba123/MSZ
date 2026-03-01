@@ -24,87 +24,109 @@ class VendorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logoUrl = vendor.logo != null && vendor.logo!.startsWith('http') ? vendor.logo! : imageUrl(vendor.logo);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final logoUrl = vendor.logo != null && vendor.logo!.startsWith('http')
+        ? vendor.logo
+        : imageUrl(vendor.logo);
     final hasLogo = logoUrl != null && logoUrl.isNotEmpty;
     final initial = vendor.storeName.isNotEmpty ? vendor.storeName[0].toUpperCase() : 'S';
     final gradient = _gradients[vendor.id % _gradients.length];
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: SizedBox(
-          width: 280,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 140,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (hasLogo)
-                      Image.network(
-                        logoUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _GradientBox(colors: gradient, child: Text(initial, style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.white70))),
-                      )
-                    else
-                      _GradientBox(
-                        colors: gradient,
-                        child: Text(initial, style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.white70)),
-                      ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, Colors.black54],
+    return RepaintBoundary(
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        color: colorScheme.surface,
+        child: InkWell(
+          onTap: onTap,
+          child: SizedBox(
+            width: 280,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 140,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (hasLogo)
+                        AppNetworkImage(
+                          url: logoUrl,
+                          height: 140,
+                          fit: BoxFit.cover,
+                        )
+                      else
+                        _GradientBox(
+                          colors: gradient,
+                          child: Text(
+                            initial,
+                            style: TextStyle(
+                              fontSize: 48,
+                              fontWeight: FontWeight.w900,
+                              color: colorScheme.onSurface.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ),
+                      if (hasLogo)
+                        Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Colors.black54],
+                            ),
+                          ),
+                        ),
+                      Positioned.directional(
+                        textDirection: Directionality.of(context),
+                        start: 16,
+                        end: 16,
+                        bottom: 12,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              vendor.storeName,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (vendor.user != null)
+                              Text(
+                                'by ${vendor.user!.name}',
+                                style: const TextStyle(fontSize: 11, color: Colors.white70),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
                         ),
                       ),
-                    ),
-                    Positioned(
-                      left: 16,
-                      right: 16,
-                      bottom: 12,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            vendor.storeName,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (vendor.user != null)
-                            Text(
-                              'by ${vendor.user!.name}',
-                              style: const TextStyle(fontSize: 11, color: Colors.white70),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        vendor.description ?? 'Explore our products',
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          vendor.description ?? 'Explore our products',
+                          style: TextStyle(fontSize: 12, color: colorScheme.outline),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFFD1D5DB)),
-                  ],
+                      Icon(Icons.arrow_forward_ios, size: 12, color: colorScheme.outline),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

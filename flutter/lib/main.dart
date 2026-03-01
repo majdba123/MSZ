@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 
 import 'l10n/app_strings.dart';
+import 'screens/categories_list_screen.dart';
+import 'screens/category_detail_screen.dart';
 import 'screens/client_home_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/product_detail_screen.dart';
+import 'screens/products_list_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/subcategory_detail_screen.dart';
+import 'screens/vendor_detail_screen.dart';
+import 'screens/vendors_list_screen.dart';
 import 'services/app_settings_service.dart';
 import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
@@ -63,6 +70,41 @@ class _MszAppState extends State<MszApp> {
         );
       },
       initialRoute: widget.authService.isLoggedIn ? '/home' : '/login',
+      onGenerateRoute: (settings) {
+        final path = settings.name ?? '';
+        final uri = Uri.parse(path);
+        final segments = uri.pathSegments;
+        if (segments.length == 2) {
+          final id = int.tryParse(segments[1]);
+          if (id != null) {
+            if (segments[0] == 'product') {
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => ProductDetailScreen(productId: id),
+              );
+            }
+            if (segments[0] == 'category') {
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => CategoryDetailScreen(categoryId: id),
+              );
+            }
+            if (segments[0] == 'subcategory') {
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => SubcategoryDetailScreen(subcategoryId: id),
+              );
+            }
+            if (segments[0] == 'vendor') {
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => VendorDetailScreen(vendorId: id),
+              );
+            }
+          }
+        }
+        return null;
+      },
       routes: {
         '/login': (context) => LoginScreen(authService: widget.authService),
         '/register': (context) => RegisterScreen(authService: widget.authService),
@@ -70,6 +112,9 @@ class _MszAppState extends State<MszApp> {
               authService: widget.authService,
               appSettings: widget.appSettings,
             ),
+        '/products': (context) => ProductsListScreen(),
+        '/categories': (context) => CategoriesListScreen(),
+        '/vendors': (context) => VendorsListScreen(),
       },
     );
   }

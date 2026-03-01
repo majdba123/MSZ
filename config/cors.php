@@ -19,7 +19,10 @@ return [
 
     'allowed_origins' => array_filter(array_map('trim', explode(',', env('CORS_ALLOWED_ORIGINS', 'http://62.84.188.239')))),
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        // Flutter web (Chrome), Vite dev server, local Blade
+        '/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/',
+    ],
 
     'allowed_headers' => ['*'],
 

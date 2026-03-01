@@ -1,3 +1,5 @@
+import '../utils/json_parsers.dart';
+
 class ProductModel {
   final int id;
   final String name;
@@ -30,17 +32,17 @@ class ProductModel {
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      id: json['id'] as int,
-      name: json['name'] as String? ?? '',
-      firstPhotoUrl: json['first_photo_url'] as String?,
-      price: (json['price'] as num?)?.toDouble() ?? 0,
-      discountedPrice: (json['discounted_price'] as num?)?.toDouble(),
+      id: toInt(json['id']),
+      name: toStringVal(json['name']),
+      firstPhotoUrl: toStringOrNull(json['first_photo_url']),
+      price: toDouble(json['price']),
+      discountedPrice: toDoubleOrNull(json['discounted_price']),
       hasActiveDiscount: json['has_active_discount'] == true,
-      discountPercentage: (json['discount_percentage'] as num?)?.toDouble(),
-      quantity: json['quantity'] as int? ?? 0,
-      vendor: json['vendor'] != null ? VendorSummary.fromJson(json['vendor'] as Map<String, dynamic>) : null,
-      averageRating: (json['average_rating'] as num?)?.toDouble() ?? 0,
-      reviewCount: json['review_count'] as int? ?? 0,
+      discountPercentage: toDoubleOrNull(json['discount_percentage']),
+      quantity: toInt(json['quantity']),
+      vendor: toMap(json['vendor']) != null ? VendorSummary.fromJson(toMap(json['vendor'])!) : null,
+      averageRating: toDouble(json['average_rating']),
+      reviewCount: toInt(json['review_count']),
     );
   }
 }
@@ -53,8 +55,8 @@ class VendorSummary {
 
   factory VendorSummary.fromJson(Map<String, dynamic> json) {
     return VendorSummary(
-      id: json['id'] as int,
-      storeName: json['store_name'] as String? ?? '',
+      id: toInt(json['id']),
+      storeName: toStringVal(json['store_name']),
     );
   }
 }

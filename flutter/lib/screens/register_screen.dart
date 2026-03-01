@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../utils/json_parsers.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key, required this.authService});
@@ -49,7 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         final list = data['data'] as List<dynamic>? ?? [];
         setState(() {
           _cities = list
-              .map((e) => {'id': (e as Map)['id'], 'name': (e as Map)['name']?.toString() ?? ''})
+              .map((e) => {'id': toInt((e as Map)['id']), 'name': toStringVal((e as Map)['name'])})
               .toList();
         });
       }
@@ -209,7 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     items: _cities
                         .map((c) => DropdownMenuItem<int>(
                               value: c['id'] as int,
-                              child: Text(c['name'] as String),
+                              child: Text((c['name'] ?? '').toString()),
                             ))
                         .toList(),
                     onChanged: (v) => setState(() => _selectedCityId = v),

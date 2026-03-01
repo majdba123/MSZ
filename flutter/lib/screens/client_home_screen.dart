@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
 import '../models/vendor_model.dart';
+import '../services/app_settings_service.dart';
 import '../services/auth_service.dart';
 import '../services/client_api_service.dart';
 import '../widgets/category_card.dart';
@@ -12,9 +14,10 @@ import '../widgets/vendor_card.dart';
 
 /// Client home matching Blade: Hero, Categories, Subcategories, Promo, Vendors, Products, Best Selling, Most Favorited, Trust, Contact.
 class ClientHomeScreen extends StatefulWidget {
-  const ClientHomeScreen({super.key, required this.authService});
+  const ClientHomeScreen({super.key, required this.authService, required this.appSettings});
 
   final AuthService authService;
+  final AppSettingsService appSettings;
 
   @override
   State<ClientHomeScreen> createState() => _ClientHomeScreenState();
@@ -80,10 +83,31 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SyriaZone'),
+        title: Text(AppStrings.tr('SyriaZone')),
         actions: [
+          IconButton(
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              widget.appSettings.setThemeMode(
+                isDark ? ThemeMode.light : ThemeMode.dark,
+              );
+            },
+            tooltip: AppStrings.tr('admin.toggle_theme'),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.language),
+            tooltip: AppStrings.tr('lang.choose_language'),
+            onSelected: (code) {
+              widget.appSettings.setLocale(Locale(code));
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(value: 'en', child: Text(AppStrings.tr('lang.english'))),
+              PopupMenuItem(value: 'ar', child: Text(AppStrings.tr('lang.arabic'))),
+            ],
+          ),
           IconButton(icon: const Icon(Icons.shopping_cart_outlined), onPressed: () {}),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -91,6 +115,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               await widget.authService.logout();
               if (mounted) Navigator.of(context).pushReplacementNamed('/login');
             },
+            tooltip: AppStrings.tr('nav.sign_out'),
           ),
         ],
       ),
@@ -145,10 +170,10 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             child: const Text('Free shipping on orders over 50,000 SYP', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFFDBA74))),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Discover.\nShop. Enjoy.',
+          Text(
+            AppStrings.tr('home.hero_title'),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, height: 1.2),
+            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, height: 1.2),
           ),
           const SizedBox(height: 12),
           const Text(
@@ -435,9 +460,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
       child: Column(
         children: [
-          const Text('Contact Us', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+          Text(AppStrings.tr('home.contact'), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface)),
           const SizedBox(height: 8),
-          const Text('Send us a message and we\'ll get back to you as soon as we can.', style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)), textAlign: TextAlign.center),
+          Text(AppStrings.tr('home.contact_subtitle'), style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)), textAlign: TextAlign.center),
           const SizedBox(height: 24),
           Card(
             child: Padding(
@@ -452,7 +477,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(onPressed: () {}, child: const Text('Send Message')),
+                    child: ElevatedButton(onPressed: () {}, child: Text(AppStrings.tr('home.send_message'))),
                   ),
                 ],
               ),

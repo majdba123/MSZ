@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/api_config.dart';
@@ -29,7 +30,10 @@ class AuthService {
         _user = UserModel.fromJson(
           jsonDecode(userJson) as Map<String, dynamic>,
         );
-      } catch (_) {}
+      } catch (e, st) {
+        debugPrint('AuthService.loadStored parse error: $e');
+        debugPrint(st.toString());
+      }
     }
     _client.token = _token;
   }

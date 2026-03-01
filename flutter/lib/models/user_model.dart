@@ -27,20 +27,56 @@ class UserModel {
     this.longitude,
   });
 
+  static double? _toDouble(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  static int _toInt(dynamic v, int fallback) {
+    if (v == null) return fallback;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v) ?? fallback;
+    return fallback;
+  }
+
+  static int? _toIntNull(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v);
+    return null;
+  }
+
+  static String _str(dynamic v, [String fallback = '']) {
+    if (v == null) return fallback;
+    if (v is String) return v;
+    return v.toString();
+  }
+
+  static Map<String, dynamic>? _map(dynamic v) {
+    if (v == null) return null;
+    if (v is Map<String, dynamic>) return v;
+    if (v is Map) return Map<String, dynamic>.from(v);
+    return null;
+  }
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      phoneNumber: json['phone_number'] as String,
-      nationalId: json['national_id'] as String?,
-      email: json['email'] as String?,
-      avatar: json['avatar'] as String?,
-      avatarUrl: json['avatar_url'] as String?,
-      type: json['type'] as int,
-      cityId: json['city_id'] as int?,
-      city: json['city'] as Map<String, dynamic>?,
-      latitude: (json['latitude'] as num?)?.toDouble(),
-      longitude: (json['longitude'] as num?)?.toDouble(),
+      id: _toInt(json['id'], 0),
+      name: _str(json['name']),
+      phoneNumber: _str(json['phone_number']),
+      nationalId: json['national_id']?.toString(),
+      email: json['email']?.toString(),
+      avatar: json['avatar']?.toString(),
+      avatarUrl: json['avatar_url']?.toString(),
+      type: _toInt(json['type'], 0),
+      cityId: _toIntNull(json['city_id']),
+      city: _map(json['city']),
+      latitude: _toDouble(json['latitude']),
+      longitude: _toDouble(json['longitude']),
     );
   }
 }

@@ -1,3 +1,5 @@
+import '../utils/json_parsers.dart';
+
 class CategoryModel {
   final int id;
   final String name;
@@ -12,13 +14,13 @@ class CategoryModel {
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
-    final subs = json['subcategories'] as List<dynamic>?;
+    final subs = toList(json['subcategories']);
     return CategoryModel(
-      id: json['id'] as int,
-      name: json['name'] as String? ?? '',
-      logo: json['logo'] as String?,
+      id: toInt(json['id']),
+      name: toStringVal(json['name']),
+      logo: toStringOrNull(json['logo']),
       subcategories: subs != null
-          ? subs.map((s) => SubcategoryModel.fromJson(s as Map<String, dynamic>)).toList()
+          ? subs.map((s) => toMap(s)).whereType<Map<String, dynamic>>().map(SubcategoryModel.fromJson).toList()
           : [],
     );
   }
@@ -39,10 +41,10 @@ class SubcategoryModel {
 
   factory SubcategoryModel.fromJson(Map<String, dynamic> json) {
     return SubcategoryModel(
-      id: json['id'] as int,
-      name: json['name'] as String? ?? '',
-      image: json['image'] as String?,
-      categoryName: json['category_name'] as String?,
+      id: toInt(json['id']),
+      name: toStringVal(json['name']),
+      image: toStringOrNull(json['image']),
+      categoryName: toStringOrNull(json['category_name']),
     );
   }
 }

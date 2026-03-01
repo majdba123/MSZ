@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 
@@ -46,7 +48,11 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed('/home');
-    } catch (e) {
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('Login error: $e');
+        debugPrint(st.toString());
+      }
       if (!mounted) return;
       setState(() {
         _error = e.toString().replaceFirst('Exception: ', '');
@@ -76,15 +82,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
-                          'Sign in',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF111827)),
+                        Text(
+                          AppStrings.tr('auth.sign_in_title'),
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Sign in to your account',
-                          style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                        Text(
+                          AppStrings.tr('auth.sign_in_to_account'),
+                          style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
@@ -101,22 +107,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                         TextFormField(
                           controller: _phoneController,
-                          decoration: const InputDecoration(
-                            labelText: 'Phone number',
+                          decoration: InputDecoration(
+                            labelText: AppStrings.tr('auth.phone_number'),
                             hintText: '09XXXXXXXX',
                           ),
                           keyboardType: TextInputType.phone,
                           textInputAction: TextInputAction.next,
-                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Phone number is required.' : null,
+                          validator: (v) => (v == null || v.trim().isEmpty) ? '${AppStrings.tr('auth.phone_number')} is required.' : null,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _passwordController,
-                          decoration: const InputDecoration(labelText: 'Password'),
+                          decoration: InputDecoration(labelText: AppStrings.tr('auth.password')),
                           obscureText: true,
                           textInputAction: TextInputAction.done,
                           onFieldSubmitted: (_) => _submit(),
-                          validator: (v) => (v == null || v.isEmpty) ? 'Password is required.' : null,
+                          validator: (v) => (v == null || v.isEmpty) ? '${AppStrings.tr('auth.password')} is required.' : null,
                         ),
                         const SizedBox(height: 24),
                         FilledButton(
@@ -129,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 16),
                         TextButton(
                           onPressed: () => Navigator.of(context).pushReplacementNamed('/register'),
-                          child: const Text("Don't have an account? Create one"),
+                          child: Text('${AppStrings.tr('auth.no_account')} ${AppStrings.tr('auth.create_one')}'),
                         ),
                       ],
                     ),

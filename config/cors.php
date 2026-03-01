@@ -23,10 +23,7 @@ return [
     // Required for Flutter web / Vite / local dev (any localhost or 127.0.0.1 port).
     // Without this, the middleware sends only the single allowed_origin and browser blocks the request.
     'allowed_origins_patterns' => [
-        'http://localhost:62733/',
-        'localhost:62733',
-        'http://127.0.0.1:62733',
-        '127.0.0.1:62733',
+        '/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/',
     ],
 
     'allowed_headers' => ['*'],

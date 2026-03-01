@@ -1,3 +1,5 @@
+import '../utils/json_parsers.dart';
+
 class VendorModel {
   final int id;
   final String storeName;
@@ -14,12 +16,13 @@ class VendorModel {
   });
 
   factory VendorModel.fromJson(Map<String, dynamic> json) {
+    final userMap = toMap(json['user']);
     return VendorModel(
-      id: json['id'] as int,
-      storeName: json['store_name'] as String? ?? '',
-      logo: json['logo'] as String?,
-      description: json['description'] as String?,
-      user: json['user'] != null ? UserSummary.fromJson(json['user'] as Map<String, dynamic>) : null,
+      id: toInt(json['id']),
+      storeName: toStringVal(json['store_name']),
+      logo: toStringOrNull(json['logo']),
+      description: toStringOrNull(json['description']),
+      user: userMap != null ? UserSummary.fromJson(userMap) : null,
     );
   }
 }
@@ -30,6 +33,6 @@ class UserSummary {
   UserSummary({required this.name});
 
   factory UserSummary.fromJson(Map<String, dynamic> json) {
-    return UserSummary(name: json['name'] as String? ?? '');
+    return UserSummary(name: toStringVal(json['name']));
   }
 }

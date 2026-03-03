@@ -7,6 +7,7 @@ import 'screens/client_home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/product_detail_screen.dart';
 import 'screens/products_list_screen.dart';
+import 'screens/profile_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/subcategory_detail_screen.dart';
 import 'screens/vendor_detail_screen.dart';
@@ -115,6 +116,7 @@ class _MszAppState extends State<MszApp> {
         '/products': (context) => ProductsListScreen(),
         '/categories': (context) => CategoriesListScreen(),
         '/vendors': (context) => VendorsListScreen(),
+        '/profile': (context) => ProfileScreen(authService: widget.authService),
       },
     );
   }

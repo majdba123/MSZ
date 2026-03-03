@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/product_model.dart';
 import '../models/vendor_model.dart';
 import '../services/client_api_service.dart';
@@ -56,14 +57,19 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     if (_loading && _vendor == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Store')),
+        appBar: AppBar(title: Text(AppStrings.tr('vendor.title_generic'))),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     if (_error != null && _vendor == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Store')),
-        body: Center(child: Text(_error!, style: TextStyle(color: colorScheme.error))),
+        appBar: AppBar(title: Text(AppStrings.tr('vendor.title_generic'))),
+        body: Center(
+          child: Text(
+            _error!,
+            style: TextStyle(color: colorScheme.error),
+          ),
+        ),
       );
     }
     final vendor = _vendor!;
@@ -87,7 +93,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Products',
+                  AppStrings.tr('nav.products'),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -96,7 +102,10 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
                   ? Padding(
                       padding: const EdgeInsets.all(24),
                       child: Center(
-                        child: Text('No products from this store', style: TextStyle(color: colorScheme.outline)),
+                        child: Text(
+                          AppStrings.tr('vendor.empty_products'),
+                          style: TextStyle(color: colorScheme.outline),
+                        ),
                       ),
                     )
                   : GridView.builder(

@@ -89,6 +89,11 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         title: Text(AppStrings.tr('SyriaZone')),
         actions: [
           IconButton(
+            icon: const Icon(Icons.person_outline),
+            tooltip: AppStrings.tr('profile.title'),
+            onPressed: () => Navigator.of(context).pushNamed('/profile'),
+          ),
+          IconButton(
             icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
             onPressed: () {
               widget.appSettings.setThemeMode(
@@ -172,7 +177,10 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               borderRadius: BorderRadius.circular(999),
               border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.3)),
             ),
-            child: const Text('Free shipping on orders over 50,000 SYP', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFFDBA74))),
+            child: Text(
+              AppStrings.tr('home.hero_badge'),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFFDBA74)),
+            ),
           ),
           const SizedBox(height: 20),
           Text(
@@ -181,10 +189,10 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, height: 1.2),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Thousands of products from verified vendors. Experience premium quality, competitive prices, and fast delivery — all in one place.',
+          Text(
+            AppStrings.tr('home.hero_description'),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
+            style: const TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
           ),
           const SizedBox(height: 24),
           Row(
@@ -193,14 +201,14 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               FilledButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.shopping_bag_outlined, size: 18),
-                label: const Text('Start Shopping'),
+                label: Text(AppStrings.tr('home.hero_cta_primary')),
                 style: FilledButton.styleFrom(backgroundColor: const Color(0xFFF97316), foregroundColor: Colors.white),
               ),
               const SizedBox(width: 12),
               OutlinedButton.icon(
                 onPressed: () => Navigator.of(context).pushNamed('/categories'),
                 icon: const Icon(Icons.grid_view_rounded, size: 18),
-                label: const Text('Browse Categories'),
+                label: Text(AppStrings.tr('home.hero_cta_secondary')),
                 style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white54)),
               ),
             ],
@@ -217,15 +225,20 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SectionHeader(
-            badge: 'Shop by Category',
-            title: 'Browse Our Collections',
-            subtitle: "Find what you're looking for across our curated categories",
+            badge: AppStrings.tr('home.categories_badge'),
+            title: AppStrings.tr('home.categories_title'),
+            subtitle: AppStrings.tr('home.categories_subtitle'),
             action: TextButton(onPressed: () => Navigator.of(context).pushNamed('/categories'), child: Text(AppStrings.tr('common.view_all'))),
           ),
           if (_loading && _categories.isEmpty)
             const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()))
           else if (_categories.isEmpty)
-            const Center(child: Text('No categories yet.', style: TextStyle(color: Color(0xFF9CA3AF))))
+            Center(
+              child: Text(
+                AppStrings.tr('home.empty_categories'),
+                style: const TextStyle(color: Color(0xFF9CA3AF)),
+              ),
+            )
           else
             GridView.builder(
               shrinkWrap: true,
@@ -257,10 +270,10 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(
-            badge: 'Browse',
-            title: 'Popular Subcategories',
-            subtitle: 'Explore specific product types',
+          SectionHeader(
+            badge: AppStrings.tr('home.subcategories_badge'),
+            title: AppStrings.tr('home.subcategories_title'),
+            subtitle: AppStrings.tr('home.subcategories_subtitle'),
           ),
             SizedBox(
               height: 100,
@@ -346,16 +359,28 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('LIMITED OFFER', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.5, color: Colors.white70)),
+                  Text(
+                    AppStrings.tr('home.promo_badge'),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.5, color: Colors.white70),
+                  ),
                   const SizedBox(height: 4),
-                  const Text('New arrivals every day!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
-                  const Text('Explore fresh products from our top vendors, updated daily.', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                  Text(
+                    AppStrings.tr('home.promo_title'),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
+                  ),
+                  Text(
+                    AppStrings.tr('home.promo_subtitle'),
+                    style: const TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
                 ],
               ),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pushNamed('/products'),
-              child: const Text('Shop Now →', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+              child: Text(
+                AppStrings.tr('home.promo_cta'),
+                style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -372,13 +397,21 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SectionHeader(
-            badge: 'Stores',
-            title: 'Featured Stores',
-            subtitle: 'Trusted vendors with quality products',
+            badge: AppStrings.tr('home.vendors_badge'),
+            title: AppStrings.tr('home.vendors_title'),
+            subtitle: AppStrings.tr('home.vendors_subtitle'),
             action: TextButton(onPressed: () => Navigator.of(context).pushNamed('/vendors'), child: Text(AppStrings.tr('common.view_all'))),
           ),
           if (_vendors.isEmpty)
-            const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('No stores available yet.', style: TextStyle(color: Color(0xFF6B7280)))))
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  AppStrings.tr('home.empty_stores'),
+                  style: const TextStyle(color: Color(0xFF6B7280)),
+                ),
+              ),
+            )
           else
             SizedBox(
               height: 220,
@@ -415,7 +448,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'No products yet.',
+                  AppStrings.tr('home.empty_products'),
                   style: TextStyle(color: Theme.of(context).colorScheme.outline),
                 ),
               ),
@@ -450,10 +483,30 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final items = <Map<String, dynamic>>[
-      {'icon': Icons.local_shipping_outlined, 'title': 'Fast Delivery', 'subtitle': 'Quick & reliable shipping', 'color': const Color(0xFFF97316)},
-      {'icon': Icons.verified_user_outlined, 'title': 'Secure Shopping', 'subtitle': '100% safe & encrypted', 'color': const Color(0xFF059669)},
-      {'icon': Icons.replay, 'title': 'Easy Returns', 'subtitle': 'Hassle-free return policy', 'color': const Color(0xFF2563EB)},
-      {'icon': Icons.support_agent, 'title': '24/7 Support', 'subtitle': 'Always here to help', 'color': const Color(0xFF9333EA)},
+      {
+        'icon': Icons.local_shipping_outlined,
+        'title': AppStrings.tr('home.trust_fast_delivery_title'),
+        'subtitle': AppStrings.tr('home.trust_fast_delivery_subtitle'),
+        'color': const Color(0xFFF97316),
+      },
+      {
+        'icon': Icons.verified_user_outlined,
+        'title': AppStrings.tr('home.trust_secure_shopping_title'),
+        'subtitle': AppStrings.tr('home.trust_secure_shopping_subtitle'),
+        'color': const Color(0xFF059669),
+      },
+      {
+        'icon': Icons.replay,
+        'title': AppStrings.tr('home.trust_easy_returns_title'),
+        'subtitle': AppStrings.tr('home.trust_easy_returns_subtitle'),
+        'color': const Color(0xFF2563EB),
+      },
+      {
+        'icon': Icons.support_agent,
+        'title': AppStrings.tr('home.trust_support_title'),
+        'subtitle': AppStrings.tr('home.trust_support_subtitle'),
+        'color': const Color(0xFF9333EA),
+      },
     ];
     return Container(
       color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
@@ -527,11 +580,28 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  TextField(decoration: const InputDecoration(labelText: 'Your name (optional)', hintText: 'Your name')),
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: AppStrings.tr('auth.full_name'),
+                      hintText: AppStrings.tr('auth.full_name'),
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  TextField(decoration: const InputDecoration(labelText: 'Email *', hintText: 'you@example.com'), keyboardType: TextInputType.emailAddress),
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: AppStrings.tr('auth.email'),
+                      hintText: 'you@example.com',
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
                   const SizedBox(height: 16),
-                  TextField(decoration: const InputDecoration(labelText: 'Message *', hintText: 'Your message...'), maxLines: 4),
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Message *',
+                      hintText: 'Your message...',
+                    ),
+                    maxLines: 4,
+                  ),
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,

@@ -53,13 +53,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     if (_loading && _product == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Product')),
+        appBar: AppBar(title: Text(AppStrings.tr('product.title_generic'))),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     if (_error != null && _product == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Product')),
+        appBar: AppBar(title: Text(AppStrings.tr('product.title_generic'))),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -68,7 +68,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               children: [
                 Text(_error!, style: TextStyle(color: colorScheme.error), textAlign: TextAlign.center),
                 const SizedBox(height: 16),
-                FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Back')),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(AppStrings.tr('common.cancel')),
+                ),
               ],
             ),
           ),
@@ -93,10 +96,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               aspectRatio: 1,
               child: Container(
                 color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                child: AppNetworkImage(
-                  url: photoUrl,
-                  fit: BoxFit.contain,
-                ),
+                child: photoUrl != null
+                    ? AppNetworkImage(
+                        url: photoUrl,
+                        fit: BoxFit.contain,
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.image_outlined,
+                          size: 48,
+                          color: colorScheme.outline,
+                        ),
+                      ),
               ),
             ),
             Padding(
@@ -161,7 +172,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   if (p.description != null && p.description!.trim().isNotEmpty) ...[
                     const SizedBox(height: 24),
                     Text(
-                      'Description',
+                      AppStrings.tr('product.description'),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,

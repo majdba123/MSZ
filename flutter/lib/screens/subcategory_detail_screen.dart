@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
 import '../services/client_api_service.dart';
@@ -56,14 +57,19 @@ class _SubcategoryDetailScreenState extends State<SubcategoryDetailScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     if (_loading && _subcategory == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Subcategory')),
+        appBar: AppBar(title: Text(AppStrings.tr('subcategory.title_generic'))),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     if (_error != null && _subcategory == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Subcategory')),
-        body: Center(child: Text(_error!, style: TextStyle(color: colorScheme.error))),
+        appBar: AppBar(title: Text(AppStrings.tr('subcategory.title_generic'))),
+        body: Center(
+          child: Text(
+            _error!,
+            style: TextStyle(color: colorScheme.error),
+          ),
+        ),
       );
     }
     final sub = _subcategory!;
@@ -72,11 +78,16 @@ class _SubcategoryDetailScreenState extends State<SubcategoryDetailScreen> {
       body: RefreshIndicator(
         onRefresh: _load,
         child: _products.isEmpty
-            ? const SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
+            ? SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Center(child: Text('No products in this subcategory')),
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: Text(
+                      AppStrings.tr('subcategory.empty_products'),
+                      style: TextStyle(color: colorScheme.outline),
+                    ),
+                  ),
                 ),
               )
             : GridView.builder(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
 import '../services/client_api_service.dart';
@@ -55,12 +56,20 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     if (_loading && _category == null) {
-      return Scaffold(appBar: AppBar(title: const Text('Category')), body: const Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        appBar: AppBar(title: Text(AppStrings.tr('category.title_generic'))),
+        body: const Center(child: CircularProgressIndicator()),
+      );
     }
     if (_error != null && _category == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Category')),
-        body: Center(child: Text(_error!, style: TextStyle(color: colorScheme.error))),
+        appBar: AppBar(title: Text(AppStrings.tr('category.title_generic'))),
+        body: Center(
+          child: Text(
+            _error!,
+            style: TextStyle(color: colorScheme.error),
+          ),
+        ),
       );
     }
     final cat = _category!;
@@ -77,7 +86,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    'Subcategories',
+                    AppStrings.tr('home.subcategories_title'),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -125,7 +134,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Products',
+                  AppStrings.tr('nav.products'),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -133,7 +142,12 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
               _products.isEmpty
                   ? Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Center(child: Text('No products in this category', style: TextStyle(color: colorScheme.outline))),
+                      child: Center(
+                        child: Text(
+                          AppStrings.tr('category.empty_products'),
+                          style: TextStyle(color: colorScheme.outline),
+                        ),
+                      ),
                     )
                   : GridView.builder(
                       shrinkWrap: true,

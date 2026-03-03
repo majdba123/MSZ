@@ -94,7 +94,7 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final title = widget.title ?? AppStrings.tr('nav.products');
+    final title = widget.title ?? AppStrings.tr('products.title_generic');
 
     return Scaffold(
       appBar: AppBar(
@@ -146,9 +146,19 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
             ),
           Expanded(
             child: _error != null && _products.isEmpty
-                ? Center(child: Text(_error!, style: TextStyle(color: colorScheme.error)))
+                ? Center(
+                    child: Text(
+                      AppStrings.tr('products.error_generic'),
+                      style: TextStyle(color: colorScheme.error),
+                    ),
+                  )
                 : _products.isEmpty && !_loading
-                    ? Center(child: Text('No products found', style: TextStyle(color: colorScheme.outline)))
+                    ? Center(
+                        child: Text(
+                          AppStrings.tr('products.empty_list'),
+                          style: TextStyle(color: colorScheme.outline),
+                        ),
+                      )
                     : RefreshIndicator(
                         onRefresh: () => _loadProducts(reset: true),
                         child: GridView.builder(

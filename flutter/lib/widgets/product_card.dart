@@ -33,6 +33,11 @@ class ProductCard extends StatelessWidget {
 
     return RepaintBoundary(
       child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         clipBehavior: Clip.antiAlias,
         color: colorScheme.surface,
         child: Column(
@@ -44,43 +49,54 @@ class ProductCard extends StatelessWidget {
               child: AspectRatio(
                 aspectRatio: 4 / 5,
                 child: Container(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceVariant.withValues(alpha: 0.4),
+                  ),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      AppNetworkImage(
-                        url: effectiveUrl,
-                        fit: BoxFit.cover,
-                      ),
-                    if (!product.inStock)
-                      Container(
-                        color: colorScheme.surface.withValues(alpha: 0.85),
-                        alignment: Alignment.center,
-                        child: Chip(
-                          label: Text(
-                            AppStrings.tr('common.sold_out'),
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
-                          ),
-                          backgroundColor: colorScheme.errorContainer,
-                        ),
-                      ),
-                    if (product.hasActiveDiscount)
-                      Positioned.directional(
-                        textDirection: Directionality.of(context),
-                        start: 10,
-                        top: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: colorScheme.error,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            '-${product.discountPercentage?.toInt() ?? 0}%',
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: colorScheme.onError),
+                      if (effectiveUrl != null)
+                        AppNetworkImage(
+                          url: effectiveUrl,
+                          fit: BoxFit.cover,
+                        )
+                      else
+                        Center(
+                          child: Icon(
+                            Icons.image_outlined,
+                            size: 32,
+                            color: colorScheme.outline,
                           ),
                         ),
-                      ),
+                      if (!product.inStock)
+                        Container(
+                          color: colorScheme.surface.withValues(alpha: 0.85),
+                          alignment: Alignment.center,
+                          child: Chip(
+                            label: Text(
+                              AppStrings.tr('common.sold_out'),
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                            ),
+                            backgroundColor: colorScheme.errorContainer,
+                          ),
+                        ),
+                      if (product.hasActiveDiscount)
+                        Positioned.directional(
+                          textDirection: Directionality.of(context),
+                          start: 10,
+                          top: 10,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: colorScheme.error,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              '-${product.discountPercentage?.toInt() ?? 0}%',
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: colorScheme.onError),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),

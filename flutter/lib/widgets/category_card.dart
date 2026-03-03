@@ -18,7 +18,6 @@ class CategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final logoUrl = imageUrl(category.logo);
     final subs = category.subcategories;
 
     return RepaintBoundary(
@@ -43,9 +42,9 @@ class CategoryCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: logoUrl != null && logoUrl.isNotEmpty
+                      child: category.logo != null && category.logo!.isNotEmpty
                           ? AppNetworkImage(
-                              url: logoUrl,
+                              url: category.logo,
                               width: 64,
                               height: 64,
                               fit: BoxFit.cover,
@@ -83,8 +82,7 @@ class CategoryCard extends StatelessWidget {
                     spacing: 6,
                     runSpacing: 6,
                     children: subs.take(4).map((s) {
-                      final subUrl = imageUrl(s.image);
-                      return InkWell(
+                        return InkWell(
                         onTap: () {},
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
@@ -97,11 +95,11 @@ class CategoryCard extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (subUrl != null && subUrl.isNotEmpty)
+                              if (s.image != null && s.image!.isNotEmpty)
                                 Padding(
                                   padding: const EdgeInsetsDirectional.only(end: 4),
                                   child: AppNetworkImage(
-                                    url: subUrl,
+                                    url: s.image,
                                     width: 14,
                                     height: 14,
                                     fit: BoxFit.cover,

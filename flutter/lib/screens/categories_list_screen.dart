@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/category_model.dart';
 import '../services/client_api_service.dart';
 import '../widgets/category_card.dart';
@@ -35,13 +36,13 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Categories')),
+      appBar: AppBar(title: Text(AppStrings.tr('nav.categories'))),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _load,
               child: _categories.isEmpty
-                  ? const Center(child: Text('No categories yet.'))
+                  ? Center(child: Text(AppStrings.tr('home.empty_categories')))
                   : GridView.builder(
                       padding: const EdgeInsets.all(16),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

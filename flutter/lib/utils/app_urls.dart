@@ -1,16 +1,29 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../config/api_config.dart';
 
-/// Builds full URL for storage paths. Returns null if path is null/empty.
+/// Resolves a storage path or full URL into an absolute image URL.
+/// Idempotent: calling it multiple times on the same input always returns the
+/// same result.
 String? imageUrl(String? path) {
-  if (path == null || path.isEmpty) return null;
-  if (path.startsWith('http')) return path;
-  return '$apiBaseUrl/storage/$path';
+  if (path == null || path.trim().isEmpty) return null;
+  final p = path.trim();
+  if (p.startsWith('http://') || p.startsWith('https://')) return p;
+
+  String clean = p;
+  if (clean.startsWith('/storage/')) {
+    clean = clean.substring(9);
+  } else if (clean.startsWith('storage/')) {
+    clean = clean.substring(8);
+  } else if (clean.startsWith('/')) {
+    clean = clean.substring(1);
+  }
+  return '$apiBaseUrl/storage/$clean';
 }
 
-/// Cached, RTL-aware network image with placeholder and error. Use for all product/category/vendor images.
+/// Network image widget that works on both web and mobile.
+/// Uses [Image.network] with [WebHtmlElementStrategy.prefer] on web
+/// to bypass CORS restrictions when loading cross-origin images.
 class AppNetworkImage extends StatelessWidget {
   const AppNetworkImage({
     super.key,
@@ -29,19 +42,25 @@ class AppNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveUrl = url != null && url!.isNotEmpty ? (imageUrl(url) ?? url!) : null;
-    final child = effectiveUrl != null && effectiveUrl.isNotEmpty
-        ? CachedNetworkImage(
-            imageUrl: effectiveUrl,
-            width: width,
-            height: height,
-            fit: fit,
-            memCacheWidth: width != null ? (width! * 2).toInt() : null,
-            memCacheHeight: height != null ? (height! * 2).toInt() : null,
-            placeholder: (_, __) => _Placeholder(width: width, height: height),
-            errorWidget: (_, __, ___) => _Placeholder(width: width, height: height),
-          )
-        : _Placeholder(width: width, height: height);
+    final resolved = imageUrl(url);
+    if (resolved == null || resolved.isEmpty) {
+      return _Placeholder(width: width, height: height);
+    }
+
+    Widget child = Image.network(
+      resolved,
+      width: width,
+      height: height,
+      fit: fit,
+      webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return _Placeholder(width: width, height: height);
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return _ErrorPlaceholder(width: width, height: height);
+      },
+    );
 
     if (borderRadius != null) {
       return ClipRRect(borderRadius: borderRadius!, child: child);
@@ -62,19 +81,58 @@ class _Placeholder extends StatelessWidget {
     final content = Container(
       width: width,
       height: height,
-      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       alignment: Alignment.center,
       child: Icon(
         Icons.image_outlined,
-        size: width != null && height != null
-            ? (width! < height! ? width! * 0.4 : height! * 0.4).clamp(24.0, 64.0)
-            : 48,
-        color: colorScheme.outline.withValues(alpha: 0.5),
+        size: _iconSize,
+        color: colorScheme.outline.withValues(alpha: 0.4),
       ),
     );
     if (width == null && height == null) {
       return SizedBox.expand(child: content);
     }
     return content;
+  }
+
+  double get _iconSize {
+    if (width != null && height != null) {
+      return (width! < height! ? width! * 0.35 : height! * 0.35).clamp(20.0, 48.0);
+    }
+    return 36;
+  }
+}
+
+class _ErrorPlaceholder extends StatelessWidget {
+  const _ErrorPlaceholder({this.width, this.height});
+
+  final double? width;
+  final double? height;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final content = Container(
+      width: width,
+      height: height,
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.broken_image_outlined,
+        size: _iconSize,
+        color: colorScheme.outline.withValues(alpha: 0.4),
+      ),
+    );
+    if (width == null && height == null) {
+      return SizedBox.expand(child: content);
+    }
+    return content;
+  }
+
+  double get _iconSize {
+    if (width != null && height != null) {
+      return (width! < height! ? width! * 0.35 : height! * 0.35).clamp(20.0, 48.0);
+    }
+    return 36;
   }
 }

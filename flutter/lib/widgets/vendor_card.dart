@@ -26,10 +26,7 @@ class VendorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final logoUrl = vendor.logo != null && vendor.logo!.startsWith('http')
-        ? vendor.logo
-        : imageUrl(vendor.logo);
-    final hasLogo = logoUrl != null && logoUrl.isNotEmpty;
+    final hasLogo = vendor.logo != null && vendor.logo!.isNotEmpty;
     final initial = vendor.storeName.isNotEmpty ? vendor.storeName[0].toUpperCase() : 'S';
     final gradient = _gradients[vendor.id % _gradients.length];
 
@@ -52,7 +49,7 @@ class VendorCard extends StatelessWidget {
                     children: [
                       if (hasLogo)
                         AppNetworkImage(
-                          url: logoUrl,
+                          url: vendor.logo,
                           height: 140,
                           fit: BoxFit.cover,
                         )

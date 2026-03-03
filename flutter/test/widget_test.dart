@@ -1,22 +1,27 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:msz_app/main.dart';
 import 'package:msz_app/services/app_settings_service.dart';
 import 'package:msz_app/services/auth_service.dart';
+import 'package:msz_app/services/cart_service.dart';
+import 'package:msz_app/services/favourite_service.dart';
+import 'package:msz_app/services/notification_service.dart';
 
 void main() {
   testWidgets('App loads', (WidgetTester tester) async {
     final authService = AuthService();
     final appSettings = AppSettingsService();
-    await tester.pumpWidget(MszApp(authService: authService, appSettings: appSettings));
+    final cartService = CartService();
+    final favouriteService = FavouriteService();
+    final notificationService = NotificationService();
+    await tester.pumpWidget(MszApp(
+      authService: authService,
+      appSettings: appSettings,
+      cartService: cartService,
+      favouriteService: favouriteService,
+      notificationService: notificationService,
+    ));
     await tester.pumpAndSettle();
     expect(find.byType(MaterialApp), findsOneWidget);
   });

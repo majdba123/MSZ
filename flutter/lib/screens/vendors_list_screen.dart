@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/vendor_model.dart';
 import '../services/client_api_service.dart';
 import '../widgets/vendor_card.dart';
@@ -35,13 +36,13 @@ class _VendorsListScreenState extends State<VendorsListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Stores')),
+      appBar: AppBar(title: Text(AppStrings.tr('nav.stores'))),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _load,
               child: _vendors.isEmpty
-                  ? const Center(child: Text('No stores yet.'))
+                  ? Center(child: Text(AppStrings.tr('home.empty_stores')))
                   : ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       itemCount: _vendors.length,

@@ -42,13 +42,16 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
   bool _loading = true;
   String? _error;
   int? _selectedCategoryId;
+  int? _selectedSubcategoryId;
   int? _selectedVendorId;
   String? _sort;
+  bool? _hasDiscount;
 
   @override
   void initState() {
     super.initState();
     _selectedCategoryId = widget.categoryId;
+    _selectedSubcategoryId = widget.subcategoryId;
     _selectedVendorId = widget.vendorId;
     _loadCategoriesAndVendors();
     _loadProducts();
@@ -89,8 +92,9 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
         perPage: 15,
         sort: _sort,
         categoryId: _selectedCategoryId ?? widget.categoryId,
-        subcategoryId: widget.subcategoryId,
+        subcategoryId: _selectedSubcategoryId ?? widget.subcategoryId,
         vendorId: _selectedVendorId ?? widget.vendorId,
+        hasDiscount: _hasDiscount,
       );
       if (!mounted) return;
       final list = (data?['data'] as List<dynamic>?)?.map((e) => ProductModel.fromJson(e as Map<String, dynamic>)).toList() ?? [];
@@ -122,8 +126,10 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
   void _resetFilters() {
     setState(() {
       _selectedCategoryId = widget.categoryId;
+      _selectedSubcategoryId = widget.subcategoryId;
       _selectedVendorId = widget.vendorId;
       _sort = null;
+      _hasDiscount = null;
     });
     _loadProducts(reset: true);
   }
@@ -141,10 +147,25 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
         int? tempCat = _selectedCategoryId;
+        int? tempSubcat = _selectedSubcategoryId;
         int? tempVendor = _selectedVendorId;
         String? tempSort = _sort;
+        bool? tempDiscount = _hasDiscount;
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
+            final allSubcategories = <SubcategoryModel>[];
+            for (final c in _categories) {
+              allSubcategories.addAll(c.subcategories);
+            }
+
+            List<SubcategoryModel> availableSubs;
+            if (tempCat != null) {
+              final cat = _categories.where((c) => c.id == tempCat).toList();
+              availableSubs = cat.isNotEmpty ? cat.first.subcategories : allSubcategories;
+            } else {
+              availableSubs = allSubcategories;
+            }
+
             return SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -187,6 +208,30 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
                         ),
                         const SizedBox(height: 16),
                       ],
+                      if (availableSubs.isNotEmpty) ...[
+                        Text(AppStrings.tr('subcategory.title_generic'),
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<int>(
+                          initialValue: tempSubcat,
+                          decoration: InputDecoration(
+                            hintText: AppStrings.tr('subcategory.title_generic'),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          ),
+                          isExpanded: true,
+                          items: [
+                            DropdownMenuItem<int>(value: null, child: Text(AppStrings.tr('common.view_all'))),
+                            ...availableSubs.map(
+                              (s) => DropdownMenuItem<int>(
+                                value: s.id,
+                                child: Text(s.name),
+                              ),
+                            ),
+                          ],
+                          onChanged: (v) => setSheetState(() => tempSubcat = v),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       if (_vendors.isNotEmpty) ...[
                         Text(AppStrings.tr('products.filter_vendor'), style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
                         const SizedBox(height: 8),
@@ -201,6 +246,33 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
                           onChanged: (v) => setSheetState(() => tempVendor = v),
                         ),
                       ],
+                      const SizedBox(height: 16),
+                      Text(AppStrings.tr('products.filter_discount'),
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          _discountChip(
+                            null,
+                            AppStrings.tr('products.filter_discount_all'),
+                            tempDiscount,
+                            (v) => setSheetState(() => tempDiscount = v),
+                          ),
+                          _discountChip(
+                            true,
+                            AppStrings.tr('products.filter_discount_yes'),
+                            tempDiscount,
+                            (v) => setSheetState(() => tempDiscount = v),
+                          ),
+                          _discountChip(
+                            false,
+                            AppStrings.tr('products.filter_discount_no'),
+                            tempDiscount,
+                            (v) => setSheetState(() => tempDiscount = v),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 20),
                       Row(
                         children: [
@@ -210,7 +282,13 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
                             child: FilledButton(
                               onPressed: () {
                                 Navigator.pop(ctx);
-                                setState(() { _selectedCategoryId = tempCat; _selectedVendorId = tempVendor; _sort = tempSort; });
+                                setState(() {
+                                  _selectedCategoryId = tempCat;
+                                  _selectedSubcategoryId = tempSubcat;
+                                  _selectedVendorId = tempVendor;
+                                  _sort = tempSort;
+                                  _hasDiscount = tempDiscount;
+                                });
                                 _loadProducts(reset: true);
                               },
                               child: Text(AppStrings.tr('common.save')),
@@ -236,11 +314,26 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
       selectedColor: colorScheme.primary.withValues(alpha: 0.15));
   }
 
+  Widget _discountChip(bool? value, String label, bool? current, ValueChanged<bool?> onTap) {
+    final selected = current == value;
+    final colorScheme = Theme.of(context).colorScheme;
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(value),
+      selectedColor: colorScheme.primary.withValues(alpha: 0.15),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final title = widget.title ?? AppStrings.tr('products.title_generic');
-    final hasActiveFilter = _selectedCategoryId != null || _selectedVendorId != null || _sort != null;
+    final hasActiveFilter = _selectedCategoryId != null ||
+        _selectedSubcategoryId != null ||
+        _selectedVendorId != null ||
+        _sort != null ||
+        _hasDiscount != null;
 
     return Scaffold(
       appBar: AppBar(

@@ -19,26 +19,26 @@ class EnsureUserIsVendor
         $user = $request->user();
 
         if (! $user || $user->type !== User::TYPE_VENDOR) {
+            $message = __('Unauthorized. Vendor access required.');
+
             if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => __('Unauthorized. Vendor access required.'),
-                ], 403);
+                return response()->json(['message' => $message], 403);
             }
 
-            return redirect()->route('login');
+            return response()->view('errors.403-vendor', ['message' => $message], 403);
         }
 
-        // Check vendor profile is active
+        // Check vendor profile exists and is active
         $vendor = $user->vendor;
 
         if (! $vendor || ! $vendor->is_active) {
+            $message = __('Your vendor account is inactive. Please contact support.');
+
             if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => __('Your vendor account is inactive. Please contact support.'),
-                ], 403);
+                return response()->json(['message' => $message], 403);
             }
 
-            return redirect()->route('login')->with('error', 'Your vendor account is inactive.');
+            return response()->view('errors.403-vendor', ['message' => $message], 403);
         }
 
         return $next($request);

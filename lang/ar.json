@@ -184,5 +184,7 @@
     "cart.payment_way": "طريقة الدفع:",
     "cart.cash_only": "نقداً فقط",
     "cart.subtotal": "المجموع الفرعي",
-    "cart.proceed_checkout": "إتمام الطلب"
+    "cart.proceed_checkout": "إتمام الطلب",
+    "Forbidden": "ممنوع",
+    "Back to login": "العودة لتسجيل الدخول"
 }

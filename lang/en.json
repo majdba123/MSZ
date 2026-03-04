@@ -184,5 +184,7 @@
     "cart.payment_way": "Payment way:",
     "cart.cash_only": "Cash only",
     "cart.subtotal": "Subtotal",
-    "cart.proceed_checkout": "Proceed to Checkout"
+    "cart.proceed_checkout": "Proceed to Checkout",
+    "Forbidden": "Forbidden",
+    "Back to login": "Back to login"
 }

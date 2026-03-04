@@ -11,6 +11,7 @@
     "nav.my_profile": "My Profile",
     "nav.dashboard": "Dashboard",
     "nav.sign_out": "Sign Out",
+    "nav.home": "Home",
     "nav.menu": "Menu",
     "nav.loading_categories": "Loading categories...",
     "nav.hover_category": "Hover a category to browse subcategories",

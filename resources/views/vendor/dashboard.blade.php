@@ -175,9 +175,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                 window.axios.get('/api/vendor/products?page=1&per_page=5'),
             ]);
 
-            const user = userRes.data;
+            const user = userRes.data?.data || userRes.data || {};
 
-            document.getElementById('vendor-welcome').textContent = `Welcome back, ${user.name}!`;
+            document.getElementById('vendor-welcome').textContent = `Welcome back, ${user.name || ''}!`;
             document.getElementById('store-status').textContent = 'Active';
             document.getElementById('store-status').classList.add('text-emerald-600');
 
@@ -185,11 +185,11 @@ document.addEventListener('DOMContentLoaded', async function () {
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Owner</p>
-                        <p class="mt-1 font-medium text-gray-900">${user.name}</p>
+                        <p class="mt-1 font-medium text-gray-900">${user.name || '—'}</p>
                     </div>
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Phone</p>
-                        <p class="mt-1 font-medium text-gray-900">${user.phone_number}</p>
+                        <p class="mt-1 font-medium text-gray-900">${user.phone_number || '—'}</p>
                     </div>
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Email</p>
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     </div>
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">National ID</p>
-                        <p class="mt-1 font-medium text-gray-900">${user.national_id}</p>
+                        <p class="mt-1 font-medium text-gray-900">${user.national_id || '—'}</p>
                     </div>
                 </div>
             `;

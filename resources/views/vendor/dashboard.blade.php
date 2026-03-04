@@ -175,9 +175,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                 window.axios.get('/api/vendor/products?page=1&per_page=5'),
             ]);
 
-            const user = userRes.data?.data || userRes.data || {};
+            const apiUser = userRes.data && (userRes.data.data || userRes.data);
+            const authUser = window.Auth && window.Auth.getUser && window.Auth.getUser();
+            const user = (apiUser && (apiUser.name != null || apiUser.phone_number != null)) ? apiUser : (authUser || {});
 
-            document.getElementById('vendor-welcome').textContent = `Welcome back, ${user.name || ''}!`;
+            function safeStr(v) {
+                if (v === undefined || v === null) return '—';
+                const s = String(v).trim();
+                return (s === '' || s === 'undefined') ? '—' : s;
+            }
+
+            document.getElementById('vendor-welcome').textContent = 'Welcome back, ' + safeStr(user.name) + '!';
             document.getElementById('store-status').textContent = 'Active';
             document.getElementById('store-status').classList.add('text-emerald-600');
 
@@ -185,19 +193,19 @@ document.addEventListener('DOMContentLoaded', async function () {
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Owner</p>
-                        <p class="mt-1 font-medium text-gray-900">${user.name || '—'}</p>
+                        <p class="mt-1 font-medium text-gray-900">${safeStr(user.name)}</p>
                     </div>
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Phone</p>
-                        <p class="mt-1 font-medium text-gray-900">${user.phone_number || '—'}</p>
+                        <p class="mt-1 font-medium text-gray-900">${safeStr(user.phone_number)}</p>
                     </div>
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">Email</p>
-                        <p class="mt-1 font-medium text-gray-900">${user.email || '—'}</p>
+                        <p class="mt-1 font-medium text-gray-900">${safeStr(user.email)}</p>
                     </div>
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wider text-gray-400">National ID</p>
-                        <p class="mt-1 font-medium text-gray-900">${user.national_id || '—'}</p>
+                        <p class="mt-1 font-medium text-gray-900">${safeStr(user.national_id)}</p>
                     </div>
                 </div>
             `;
